@@ -10,14 +10,19 @@ interface TemplatePreviewProps {
   code?: string
   title?: string
   style?: string
+  templateId?: string
 }
 
 export default function TemplatePreview({
   code,
   title,
   style,
+  templateId,
 }: TemplatePreviewProps) {
   const [viewMode, setViewMode] = useState<'preview' | 'code'>('preview')
+  const [isExporting, setIsExporting] = useState(false)
+  const [exportSuccess, setExportSuccess] = useState<{ url: string } | null>(null)
+  const [exportError, setExportError] = useState<string | null>(null)
 
   const handleDownload = () => {
     if (!code) return
@@ -36,24 +41,41 @@ export default function TemplatePreview({
   const handleExportToFramer = async () => {
     if (!code || !title) return
 
+    setIsExporting(true)
+    setExportError(null)
+    setExportSuccess(null)
+
     try {
       const response = await fetch('/api/framer-upload', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ title, code }),
+        body: JSON.stringify({ title, code, templateId }),
       })
 
+      const data = await response.json()
+
       if (!response.ok) {
-        throw new Error('Failed to export to Framer')
+        throw new Error(data.details || data.error || 'Failed to export to Framer')
       }
 
-      const data = await response.json()
-      alert(`Framer integration coming in Phase 2! Mock URL: ${data.project?.url}`)
+      if (data.project?.url) {
+        setExportSuccess({ url: data.project.url })
+        // Clear success message after 10 seconds
+        setTimeout(() => setExportSuccess(null), 10000)
+      }
     } catch (error) {
       console.error('Error exporting to Framer:', error)
-      alert('Failed to export to Framer. This feature is coming in Phase 2.')
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Failed to export to Framer. Please try again.'
+      setExportError(errorMessage)
+      // Clear error after 8 seconds
+      setTimeout(() => setExportError(null), 8000)
+    } finally {
+      setIsExporting(false)
     }
   }
 
@@ -112,23 +134,75 @@ export default function TemplatePreview({
           </button>
         </div>
 
-        <div className="flex gap-2">
-          <motion.button
-            onClick={handleDownload}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="px-4 py-2 bg-gray-900 text-white rounded-framer text-sm font-medium hover:bg-gray-800 transition-all"
-          >
-            Download .tsx
-          </motion.button>
-          <motion.button
-            onClick={handleExportToFramer}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="px-4 py-2 bg-gradient-to-r from-sky-400 to-indigo-500 text-white rounded-framer text-sm font-medium hover:shadow-md transition-all"
-          >
-            Export to Framer
-          </motion.button>
+        <div className="space-y-3">
+          <div className="flex gap-2">
+            <motion.button
+              onClick={handleDownload}
+              disabled={isExporting}
+              whileHover={{ scale: isExporting ? 1 : 1.02 }}
+              whileTap={{ scale: isExporting ? 1 : 0.98 }}
+              className="px-4 py-2 bg-gray-900 text-white rounded-framer text-sm font-medium hover:bg-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Download .tsx
+            </motion.button>
+            <motion.button
+              onClick={handleExportToFramer}
+              disabled={isExporting}
+              whileHover={{ scale: isExporting ? 1 : 1.02 }}
+              whileTap={{ scale: isExporting ? 1 : 0.98 }}
+              className="px-4 py-2 bg-gradient-to-r from-sky-400 to-indigo-500 text-white rounded-framer text-sm font-medium hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {isExporting ? (
+                <>
+                  <motion.div
+                    className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                  />
+                  <span>Exporting...</span>
+                </>
+              ) : (
+                'Export to Framer'
+              )}
+            </motion.button>
+          </div>
+
+          <AnimatePresence>
+            {exportSuccess && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="p-3 bg-green-50 border border-green-200 rounded-framer"
+              >
+                <p className="text-sm text-green-800 mb-2">
+                  ✓ Successfully exported to Framer!
+                </p>
+                <a
+                  href={exportSuccess.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-green-700 hover:text-green-900 underline font-medium"
+                >
+                  Open in Framer →
+                </a>
+              </motion.div>
+            )}
+
+            {exportError && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="p-3 bg-red-50 border border-red-200 rounded-framer"
+              >
+                <p className="text-sm text-red-800 font-medium mb-1">
+                  Export failed
+                </p>
+                <p className="text-xs text-red-700">{exportError}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 

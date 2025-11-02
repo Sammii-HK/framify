@@ -8,7 +8,7 @@ Generate Framer-ready website templates from natural language prompts using AI.
 - 👀 **Live Preview**: See your generated template in real-time with Sandpack
 - 💾 **Export**: Download templates as `.tsx` files
 - 🎭 **Design Styles**: Choose from Minimal, Bold, Soft, or Dark design styles
-- 🚀 **Framer Integration**: (Coming in Phase 2) Direct export to Framer projects
+- 🚀 **Framer Integration**: Direct export to Framer projects with share links
 
 ## Tech Stack
 
@@ -49,6 +49,10 @@ Edit `.env.local` and add:
 - `OPENAI_API_KEY`: Your OpenAI API key
 - `DATABASE_URL`: Your Supabase PostgreSQL connection string
 - `NEXT_PUBLIC_APP_URL`: Your app URL (default: `http://localhost:3000`)
+- `FRAMER_ACCESS_TOKEN`: Your Framer OAuth access token (recommended), OR
+- `FRAMER_CLIENT_ID` and `FRAMER_CLIENT_SECRET`: OAuth client credentials for token generation
+- `FRAMER_PROJECT_ID`: Your existing Framer project ID (required - create a project manually first)
+- `FRAMER_API_BASE_URL`: Optional - Framer API base URL (default: `https://api.framer.com/v1`)
 
 4. Set up the database:
 ```bash
@@ -76,7 +80,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 4. **Preview**: View your template in the preview pane with live rendering
 
-5. **Export**: Download the `.tsx` file or export to Framer (Phase 2)
+5. **Export**: Download the `.tsx` file or export directly to Framer
 
 ## Project Structure
 
@@ -110,10 +114,10 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - [x] Export to `.tsx` files
 - [x] Design style selection
 
-### 🔜 Phase 2 - Framer Integration
-- [ ] Direct Framer project creation via API
-- [ ] Framer share links
-- [ ] Template management in Framer
+### ✅ Phase 2 - Framer Integration (Complete)
+- [x] Direct Framer project creation via API
+- [x] Framer share links
+- [x] Database integration for Framer URLs
 
 ### 🔜 Phase 3 - Dashboard & Marketplace
 - [ ] Template dashboard
@@ -134,6 +138,30 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## Environment Variables
 
 See `.env.local.example` for all required environment variables.
+
+### Framer API Setup (Phase 2)
+
+To enable Framer export functionality:
+
+1. **Create a Framer Project**: Since Framer doesn't provide an API to create projects, you'll need to create one manually:
+   - Go to [framer.com](https://framer.com) and create a new project
+   - Copy the project ID from the URL: `https://framer.com/projects/[PROJECT_ID]/...`
+   - Add `FRAMER_PROJECT_ID` to your `.env.local` file
+
+2. **Set up OAuth Authentication** (choose one method):
+   
+   **Method A - Direct Access Token**:
+   - Get your access token from [Framer Developer Settings](https://framer.com/developers/oauth)
+   - Add `FRAMER_ACCESS_TOKEN=your_token_here` to `.env.local`
+   
+   **Method B - OAuth Client Credentials**:
+   - Register your app at [Framer Developer Settings](https://framer.com/developers/oauth)
+   - Get your `FRAMER_CLIENT_ID` and `FRAMER_CLIENT_SECRET`
+   - Add both to `.env.local`
+
+3. **Optional**: Set `FRAMER_API_BASE_URL` if Framer uses a different API endpoint
+
+**Note**: This implementation uses Framer's CodeFile API to create code components within an existing project. The generated templates will be added as code components that you can use in your Framer project. See [Framer API Documentation](https://framer.com/developers/reference) for more details.
 
 ## License
 

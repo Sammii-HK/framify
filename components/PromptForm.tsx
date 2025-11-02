@@ -6,7 +6,12 @@ import { motion } from 'framer-motion'
 export type Style = 'Minimal' | 'Bold' | 'Soft' | 'Dark'
 
 interface PromptFormProps {
-  onGenerate?: (data: { code: string; title: string; style: string }) => void
+  onGenerate?: (data: {
+    id: string
+    code: string
+    title: string
+    style: string
+  }) => void
 }
 
 export default function PromptForm({ onGenerate }: PromptFormProps) {
@@ -44,6 +49,7 @@ export default function PromptForm({ onGenerate }: PromptFormProps) {
       
       if (onGenerate) {
         onGenerate({
+          id: data.id,
           code: data.code,
           title: data.title,
           style: data.style,

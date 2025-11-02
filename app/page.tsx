@@ -6,6 +6,7 @@ import TemplatePreview from '@/components/TemplatePreview'
 
 export default function Home() {
   const [generatedData, setGeneratedData] = useState<{
+    id: string
     code: string
     title: string
     style: string
@@ -32,6 +33,7 @@ export default function Home() {
               code={generatedData?.code}
               title={generatedData?.title}
               style={generatedData?.style}
+              templateId={generatedData?.id}
             />
           </div>
         </div>
