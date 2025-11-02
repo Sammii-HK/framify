@@ -34,5 +34,8 @@ module.exports = {
     },
   },
   plugins: [],
+  corePlugins: {
+    // Enable line-clamp utilities
+  },
 }
 

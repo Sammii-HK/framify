@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import PromptForm from '@/components/PromptForm'
 import TemplatePreview from '@/components/TemplatePreview'
 
