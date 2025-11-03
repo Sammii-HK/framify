@@ -1,8 +1,10 @@
 'use client'
 
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import TemplatePreview from './TemplatePreview'
+import { useRouter } from 'next/navigation'
 
 interface Template {
   id: string
@@ -19,6 +21,49 @@ interface TemplateViewerProps {
 }
 
 export default function TemplateViewer({ template }: TemplateViewerProps) {
+  const router = useRouter()
+  const [isCreatingVariation, setIsCreatingVariation] = useState(false)
+  const [variationStyle, setVariationStyle] = useState<string>('')
+
+  const handleCreateVariation = async (style: string) => {
+    if (!template.id) return
+
+    setIsCreatingVariation(true)
+    setVariationStyle(style)
+
+    try {
+      const response = await fetch('/api/generate-variation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          templateId: template.id,
+          newStyle: style,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to create variation')
+      }
+
+      const data = await response.json()
+      // Redirect to the new variation
+      router.push(`/template/${data.id}`)
+      router.refresh()
+    } catch (error) {
+      console.error('Error creating variation:', error)
+      alert('Failed to create style variation. Please try again.')
+    } finally {
+      setIsCreatingVariation(false)
+      setVariationStyle('')
+    }
+  }
+
+  const availableStyles = ['Minimal', 'Bold', 'Soft', 'Dark'].filter(
+    (s) => s !== template.style
+  )
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
       <div className="container mx-auto px-4 py-8 md:py-12 max-w-7xl">
@@ -34,7 +79,7 @@ export default function TemplateViewer({ template }: TemplateViewerProps) {
               {template.title}
             </h1>
             <p className="text-gray-600 mb-3">{template.prompt}</p>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 flex-wrap">
               <span
                 className={`px-3 py-1 rounded-full text-sm font-medium ${
                   template.style === 'Minimal'
@@ -59,6 +104,38 @@ export default function TemplateViewer({ template }: TemplateViewerProps) {
                 </a>
               )}
             </div>
+
+            {/* Create Style Variations */}
+            {availableStyles.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-framer-border">
+                <p className="text-sm font-medium text-gray-700 mb-2">
+                  Create in different style:
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {availableStyles.map((style) => (
+                    <motion.button
+                      key={style}
+                      onClick={() => handleCreateVariation(style)}
+                      disabled={isCreatingVariation}
+                      whileHover={{ scale: isCreatingVariation ? 1 : 1.05 }}
+                      whileTap={{ scale: isCreatingVariation ? 1 : 0.95 }}
+                      className={`px-3 py-1.5 rounded-framer text-xs font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                        variationStyle === style
+                          ? 'bg-gradient-to-r from-sky-400 to-indigo-500 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {isCreatingVariation && variationStyle === style
+                        ? 'Creating...'
+                        : `${style}`}
+                    </motion.button>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Generate the same template inspired by {template.style.toLowerCase()} design systems but in a different aesthetic
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
