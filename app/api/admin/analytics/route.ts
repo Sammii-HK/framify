@@ -7,14 +7,8 @@ import { prisma } from '@/lib/prisma'
  */
 export async function GET(req: NextRequest) {
   try {
-    // Get all templates for analytics
-    const [
-      totalTemplates,
-      publicTemplates,
-      templates,
-      styleCounts,
-      categoryCounts,
-    ] = await Promise.all([
+    // Use Promise.allSettled to handle potential errors gracefully
+    const results = await Promise.allSettled([
       prisma.template.count(),
       prisma.template.count({ where: { isPublic: true } }),
       prisma.template.findMany({
@@ -44,28 +38,41 @@ export async function GET(req: NextRequest) {
       }),
     ])
 
-    // Calculate totals
-    const totalViews = templates.reduce((sum, t) => sum + t.viewCount, 0)
-    const totalDownloads = templates.reduce((sum, t) => sum + t.downloadCount, 0)
-    const totalSales = templates.reduce((sum, t) => sum + t.salesCount, 0)
+    // Extract results, defaulting to safe values on error
+    const totalTemplates = results[0].status === 'fulfilled' ? results[0].value : 0
+    const publicTemplates = results[1].status === 'fulfilled' ? results[1].value : 0
+    const templates = results[2].status === 'fulfilled' ? results[2].value : []
+    const styleCounts = results[3].status === 'fulfilled' ? results[3].value : []
+    const categoryCounts = results[4].status === 'fulfilled' ? results[4].value : []
+
+    // Calculate totals (handle empty arrays and null values)
+    const totalViews = templates.reduce((sum: number, t: any) => sum + (t.viewCount || 0), 0)
+    const totalDownloads = templates.reduce((sum: number, t: any) => sum + (t.downloadCount || 0), 0)
+    const totalSales = templates.reduce((sum: number, t: any) => sum + (t.salesCount || 0), 0)
     const revenue = templates.reduce(
-      (sum, t) => sum + (t.price || 0) * t.salesCount,
+      (sum: number, t: any) => sum + ((t.price || 0) * (t.salesCount || 0)),
       0
     )
 
     // Format style counts
     const templatesByStyle: Record<string, number> = {}
-    styleCounts.forEach((item) => {
-      templatesByStyle[item.style] = item._count
-    })
+    if (Array.isArray(styleCounts)) {
+      styleCounts.forEach((item: any) => {
+        if (item?.style && typeof item._count === 'number') {
+          templatesByStyle[item.style] = item._count
+        }
+      })
+    }
 
     // Format category counts
     const templatesByCategory: Record<string, number> = {}
-    categoryCounts.forEach((item) => {
-      if (item.category) {
-        templatesByCategory[item.category] = item._count
-      }
-    })
+    if (Array.isArray(categoryCounts)) {
+      categoryCounts.forEach((item: any) => {
+        if (item?.category && typeof item._count === 'number') {
+          templatesByCategory[item.category] = item._count
+        }
+      })
+    }
 
     return NextResponse.json({
       totalTemplates,
@@ -76,12 +83,12 @@ export async function GET(req: NextRequest) {
       revenue,
       templatesByStyle,
       templatesByCategory,
-      recentTemplates: templates.map((t) => ({
+      recentTemplates: templates.map((t: any) => ({
         id: t.id,
         title: t.title,
         style: t.style,
-        viewCount: t.viewCount,
-        salesCount: t.salesCount,
+        viewCount: t.viewCount || 0,
+        salesCount: t.salesCount || 0,
         createdAt: t.createdAt.toISOString(),
       })),
     })
@@ -96,4 +103,3 @@ export async function GET(req: NextRequest) {
     )
   }
 }
-

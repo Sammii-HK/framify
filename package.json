@@ -16,8 +16,8 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^0.0.68",
-    "@prisma/client": "^5.19.1",
     "@codesandbox/sandpack-react": "^2.7.0",
+    "@prisma/client": "^5.22.0",
     "ai": "^3.4.32",
     "framer-motion": "^11.5.4",
     "next": "14.2.5",
@@ -41,4 +41,3 @@
     "typescript": "^5.5.4"
   }
 }
-

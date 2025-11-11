@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,43 +7,38 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Template {
-  id            String   @id @default(cuid())
-  userId        String
-  title         String
-  prompt        String
-  style         String
-  code          String   @db.Text
-  framerUrl     String?
-  createdAt     DateTime @default(now())
-  
-  // Monetization fields
-  isPublic      Boolean  @default(false)
-  price         Float?
-  description   String?  @db.Text
-  tags          String[]  @default([]) // Array of tags for categorization
-  category      String?  // "landing-page", "portfolio", "saas", etc.
-  licenseType   String?  @default("personal") // "personal" | "commercial"
-  thumbnailUrl  String?
-  viewCount     Int      @default(0)
-  downloadCount Int      @default(0)
-  salesCount    Int      @default(0)
-  featured      Boolean  @default(false)
-  
-  // Base template relationship (for style variations)
-  baseTemplateId String?
-  baseTemplate   Template? @relation("TemplateVariations", fields: [baseTemplateId], references: [id])
-  variations     Template[] @relation("TemplateVariations")
-}
-
 model PromptTemplate {
-  id          String   @id @default(cuid())
+  id          String   @id
   name        String
-  prompt      String   @db.Text
-  description String?  @db.Text
+  prompt      String
+  description String?
   category    String?
   tags        String[] @default([])
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime
 }
 
+model Template {
+  id             String     @id
+  userId         String
+  title          String
+  prompt         String
+  style          String
+  code           String
+  framerUrl      String?
+  createdAt      DateTime   @default(now())
+  isPublic       Boolean    @default(false)
+  price          Float?
+  description    String?
+  tags           String[]   @default([])
+  category       String?
+  licenseType    String?    @default("personal")
+  thumbnailUrl   String?
+  viewCount      Int        @default(0)
+  downloadCount  Int        @default(0)
+  salesCount     Int        @default(0)
+  featured       Boolean    @default(false)
+  baseTemplateId String?
+  Template       Template?  @relation("TemplateToTemplate", fields: [baseTemplateId], references: [id])
+  other_Template Template[] @relation("TemplateToTemplate")
+}
