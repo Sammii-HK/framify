@@ -11,13 +11,42 @@ datasource db {
 }
 
 model Template {
-  id        String   @id @default(cuid())
-  userId    String
-  title     String
-  prompt    String
-  style     String
-  code      String   @db.Text
-  framerUrl String?
-  createdAt DateTime @default(now())
+  id            String   @id @default(cuid())
+  userId        String
+  title         String
+  prompt        String
+  style         String
+  code          String   @db.Text
+  framerUrl     String?
+  createdAt     DateTime @default(now())
+  
+  // Monetization fields
+  isPublic      Boolean  @default(false)
+  price         Float?
+  description   String?  @db.Text
+  tags          String[]  @default([]) // Array of tags for categorization
+  category      String?  // "landing-page", "portfolio", "saas", etc.
+  licenseType   String?  @default("personal") // "personal" | "commercial"
+  thumbnailUrl  String?
+  viewCount     Int      @default(0)
+  downloadCount Int      @default(0)
+  salesCount    Int      @default(0)
+  featured      Boolean  @default(false)
+  
+  // Base template relationship (for style variations)
+  baseTemplateId String?
+  baseTemplate   Template? @relation("TemplateVariations", fields: [baseTemplateId], references: [id])
+  variations     Template[] @relation("TemplateVariations")
+}
+
+model PromptTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  prompt      String   @db.Text
+  description String?  @db.Text
+  category    String?
+  tags        String[] @default([])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 

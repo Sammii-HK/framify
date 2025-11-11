@@ -103,6 +103,9 @@ async function createFramerCodeComponent(
         name: name,
         code: code,
         type: 'component', // Code component type
+        // Additional metadata for Framer
+        description: `AI-generated Framer template: ${name}`,
+        tags: ['ai-generated', 'template', 'framer'],
       }),
     }
   )

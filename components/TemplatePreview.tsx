@@ -217,32 +217,30 @@ export default function TemplatePreview({
               transition={{ duration: 0.2 }}
               className="h-full w-full"
             >
-              <Sandpack
-                template="react-ts"
-                files={{
-                  '/App.tsx': code,
-                }}
-                customSetup={{
-                  dependencies: {
-                    'framer-motion': '^11.5.4',
-                    react: '^18.3.1',
-                    'react-dom': '^18.3.1',
-                  },
-                }}
-                theme="light"
-                options={{
-                  showNavigator: false,
-                  showTabs: false,
-                  showLineNumbers: false,
-                  showInlineErrors: true,
-                  editorHeight: '100%',
-                  editorWidthPercentage: 50,
-                }}
-                style={{
-                  height: '100%',
-                  width: '100%',
-                }}
-              />
+              <div style={{ height: '100%', width: '100%' }}>
+                <Sandpack
+                  template="react-ts"
+                  files={{
+                    '/App.tsx': code,
+                  }}
+                  customSetup={{
+                    dependencies: {
+                      'framer-motion': '^11.5.4',
+                      react: '^18.3.1',
+                      'react-dom': '^18.3.1',
+                    },
+                  }}
+                  theme="light"
+                  options={{
+                    showNavigator: false,
+                    showTabs: false,
+                    showLineNumbers: false,
+                    showInlineErrors: true,
+                    editorHeight: '100%',
+                    editorWidthPercentage: 50,
+                  }}
+                />
+              </div>
             </motion.div>
           ) : (
             <motion.div
