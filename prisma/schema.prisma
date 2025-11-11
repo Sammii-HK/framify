@@ -8,18 +8,18 @@ datasource db {
 }
 
 model PromptTemplate {
-  id          String   @id
+  id          String   @id @default(cuid())
   name        String
   prompt      String
   description String?
   category    String?
   tags        String[] @default([])
   createdAt   DateTime @default(now())
-  updatedAt   DateTime
+  updatedAt   DateTime @updatedAt
 }
 
 model Template {
-  id             String     @id
+  id             String     @id @default(cuid())
   userId         String
   title          String
   prompt         String
