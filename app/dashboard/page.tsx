@@ -28,7 +28,7 @@ export default function DashboardPage() {
 	// Redirect to login if not authenticated
 	useEffect(() => {
 		if (!userLoading && !user) {
-			router.push("/auth/login");
+			router.push("/api/auth/login");
 		}
 	}, [user, userLoading, router]);
 
@@ -45,7 +45,7 @@ export default function DashboardPage() {
 			const response = await fetch(`/api/templates?${params.toString()}`);
 			if (!response.ok) {
 				if (response.status === 401) {
-					router.push("/auth/login");
+					router.push("/api/auth/login");
 					return;
 				}
 				throw new Error("Failed to fetch templates");
