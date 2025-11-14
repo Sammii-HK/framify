@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useUser } from "@auth0/nextjs-auth0/client";
 
 export default function Navigation() {
 	const pathname = usePathname();
+	const { user, isLoading } = useUser();
 
 	return (
 		<nav className="border-b border-framer-border bg-white/80 backdrop-blur-sm sticky top-0 z-50">
@@ -48,26 +50,52 @@ export default function Navigation() {
 						>
 							Style Bank
 						</Link>
-						<Link
-							href="/dashboard"
-							className={`px-4 py-2 rounded-framer font-medium transition-all ${
-								pathname === "/dashboard"
-									? "bg-gradient-to-r from-sky-400 to-indigo-500 text-white"
-									: "text-gray-700 hover:bg-gray-100"
-							}`}
-						>
-							Dashboard
-						</Link>
-						<Link
-							href="/admin"
-							className={`px-4 py-2 rounded-framer font-medium transition-all ${
-								pathname === "/admin"
-									? "bg-gradient-to-r from-sky-400 to-indigo-500 text-white"
-									: "text-gray-700 hover:bg-gray-100"
-							}`}
-						>
-							Admin
-						</Link>
+						{user && (
+							<>
+								<Link
+									href="/dashboard"
+									className={`px-4 py-2 rounded-framer font-medium transition-all ${
+										pathname === "/dashboard"
+											? "bg-gradient-to-r from-sky-400 to-indigo-500 text-white"
+											: "text-gray-700 hover:bg-gray-100"
+									}`}
+								>
+									Dashboard
+								</Link>
+								<Link
+									href="/admin"
+									className={`px-4 py-2 rounded-framer font-medium transition-all ${
+										pathname === "/admin"
+											? "bg-gradient-to-r from-sky-400 to-indigo-500 text-white"
+											: "text-gray-700 hover:bg-gray-100"
+									}`}
+								>
+									Admin
+								</Link>
+							</>
+						)}
+						{isLoading ? (
+							<div className="px-4 py-2 text-gray-400">Loading...</div>
+						) : user ? (
+							<div className="flex items-center gap-3">
+								<span className="text-sm text-gray-600">
+									{user.name || user.email}
+								</span>
+								<a
+									href="/auth/logout"
+									className="px-4 py-2 bg-gray-100 text-gray-700 rounded-framer font-medium hover:bg-gray-200 transition-all"
+								>
+									Logout
+								</a>
+							</div>
+						) : (
+							<a
+								href="/auth/login"
+								className="px-4 py-2 bg-gradient-to-r from-sky-400 to-indigo-500 text-white rounded-framer font-medium hover:shadow-md transition-all"
+							>
+								Login
+							</a>
+						)}
 					</div>
 				</div>
 			</div>

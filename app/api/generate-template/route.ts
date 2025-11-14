@@ -1,9 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth0 } from "@/lib/auth0";
 import { generateTemplateCode, type Style } from "@/lib/openai";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
 	try {
+		// Get user session
+		const session = await auth0.getSession();
+		if (!session?.user) {
+			return NextResponse.json(
+				{ error: "Authentication required" },
+				{ status: 401 }
+			);
+		}
+
+		const userId = session.user.sub; // Auth0 user ID
+
 		const body = await req.json();
 		const { prompt, style, baseTemplateId } = body;
 
@@ -24,10 +36,10 @@ export async function POST(req: NextRequest) {
 		// Generate template code using OpenAI
 		const { code, title } = await generateTemplateCode(prompt, style as Style);
 
-		// Save to database (using placeholder userId for now)
+		// Save to database with real user ID
 		const template = await prisma.template.create({
 			data: {
-				userId: "anonymous", // TODO: Replace with actual user ID from auth
+				userId: userId,
 				title,
 				prompt,
 				style: style as string,

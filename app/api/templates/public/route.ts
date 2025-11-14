@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { corsHeaders, handleCORS } from "@/lib/cors";
 
 /**
  * Public API endpoint for studio store integration
@@ -8,6 +9,10 @@ import { prisma } from "@/lib/prisma";
  * Usage: GET /api/templates/public?style=Minimal&limit=10
  */
 export async function GET(req: NextRequest) {
+	// Handle CORS preflight
+	const corsResponse = handleCORS(req);
+	if (corsResponse) return corsResponse;
+
 	try {
 		const { searchParams } = new URL(req.url);
 		const style = searchParams.get("style") || "";
@@ -73,7 +78,9 @@ export async function GET(req: NextRequest) {
 
 		const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
-		return NextResponse.json({
+		const origin = req.headers.get("origin");
+		return NextResponse.json(
+			{
 			templates: templates.map((template) => ({
 				id: template.id,
 				title: template.title,
@@ -100,15 +107,29 @@ export async function GET(req: NextRequest) {
 				offset,
 				hasMore: offset + limit < total,
 			},
-		});
+		},
+		{
+			headers: corsHeaders(origin),
+		}
+		);
 	} catch (error) {
 		console.error("Error fetching public templates:", error);
+		const origin = req.headers.get("origin");
 		return NextResponse.json(
 			{
 				error: "Failed to fetch templates",
 				details: error instanceof Error ? error.message : "Unknown error",
 			},
-			{ status: 500 }
+			{
+				status: 500,
+				headers: corsHeaders(origin),
+			}
 		);
 	}
+}
+
+// Handle OPTIONS preflight requests
+export async function OPTIONS(req: NextRequest) {
+	const corsResponse = handleCORS(req);
+	return corsResponse || new NextResponse(null, { status: 200 });
 }

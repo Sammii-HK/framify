@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { corsHeaders, handleCORS } from '@/lib/cors'
 
 /**
  * Get single public template by ID
@@ -9,6 +10,10 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // Handle CORS preflight
+  const corsResponse = handleCORS(req)
+  if (corsResponse) return corsResponse
+
   try {
     const { id } = await params
 
@@ -38,10 +43,15 @@ export async function GET(
       },
     })
 
+    const origin = req.headers.get('origin')
+
     if (!template) {
       return NextResponse.json(
         { error: 'Template not found or not public' },
-        { status: 404 }
+        {
+          status: 404,
+          headers: corsHeaders(origin),
+        }
       )
     }
 
@@ -53,7 +63,8 @@ export async function GET(
       })
       .catch(console.error)
 
-    return NextResponse.json({
+    return NextResponse.json(
+      {
       id: template.id,
       title: template.title,
       description: template.description || template.prompt,
@@ -73,16 +84,30 @@ export async function GET(
       },
       featured: template.featured,
       createdAt: template.createdAt.toISOString(),
-    })
+    },
+    {
+      headers: corsHeaders(origin),
+    }
+    )
   } catch (error) {
     console.error('Error fetching template:', error)
+    const origin = req.headers.get('origin')
     return NextResponse.json(
       {
         error: 'Failed to fetch template',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      {
+        status: 500,
+        headers: corsHeaders(origin),
+      }
     )
   }
+}
+
+// Handle OPTIONS preflight requests
+export async function OPTIONS(req: NextRequest) {
+  const corsResponse = handleCORS(req)
+  return corsResponse || new NextResponse(null, { status: 200 })
 }
 

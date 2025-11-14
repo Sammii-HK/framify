@@ -1,66 +1,71 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { useState } from "react";
+import { motion } from "framer-motion";
 
-export type Style = 'Minimal' | 'Bold' | 'Soft' | 'Dark'
+export type Style = "Minimal" | "Bold" | "Soft" | "Dark";
 
 interface PromptFormProps {
   onGenerate?: (data: {
-    id: string
-    code: string
-    title: string
-    style: string
-  }) => void
+    id: string;
+    code: string;
+    title: string;
+    style: string;
+  }) => void;
 }
 
 export default function PromptForm({ onGenerate }: PromptFormProps) {
-  const [prompt, setPrompt] = useState('')
-  const [style, setStyle] = useState<Style>('Minimal')
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [prompt, setPrompt] = useState("");
+  const [style, setStyle] = useState<Style>("Minimal");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+    e.preventDefault();
+
     if (!prompt.trim()) {
-      setError('Please enter a prompt')
-      return
+      setError("Please enter a prompt");
+      return;
     }
 
-    setIsGenerating(true)
-    setError(null)
+    setIsGenerating(true);
+    setError(null);
 
     try {
-      const response = await fetch('/api/generate-template', {
-        method: 'POST',
+      const response = await fetch("/api/generate-template", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ prompt, style }),
-      })
+      });
 
       if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to generate template')
+        const data = await response.json();
+        if (response.status === 401) {
+          // Redirect to login if not authenticated
+          window.location.href = "/auth/login";
+          return;
+        }
+        throw new Error(data.error || "Failed to generate template");
       }
 
-      const data = await response.json()
-      
+      const data = await response.json();
+
       if (onGenerate) {
         onGenerate({
           id: data.id,
           code: data.code,
           title: data.title,
           style: data.style,
-        })
+        });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong')
+      setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
-      setIsGenerating(false)
+      setIsGenerating(false);
     }
-  }
+  };
 
   return (
     <motion.div
@@ -135,16 +140,15 @@ export default function PromptForm({ onGenerate }: PromptFormProps) {
               <motion.div
                 className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
                 animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
               />
               <span>Generating...</span>
             </>
           ) : (
-            'Generate Template'
+            "Generate Template"
           )}
         </motion.button>
       </form>
     </motion.div>
-  )
+  );
 }
-

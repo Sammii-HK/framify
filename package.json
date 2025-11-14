@@ -12,15 +12,18 @@
     "db:studio": "prisma studio",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:deploy": "prisma migrate deploy"
+    "db:deploy": "prisma migrate deploy",
+    "setup:auth0": "node scripts/setup-auth0.js",
+    "setup:vercel": "bash scripts/setup-vercel-env.sh"
   },
   "dependencies": {
     "@ai-sdk/openai": "^0.0.68",
+    "@auth0/nextjs-auth0": "^4.12.0",
     "@codesandbox/sandpack-react": "^2.7.0",
     "@prisma/client": "^5.22.0",
     "ai": "^3.4.32",
     "framer-motion": "^11.5.4",
-    "next": "14.2.5",
+    "next": "^16.0.1",
     "openai": "^4.52.7",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

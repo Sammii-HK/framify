@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
+import { useUser } from '@auth0/nextjs-auth0/client'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 interface Analytics {
@@ -24,14 +26,30 @@ interface Analytics {
 }
 
 export default function AdminPage() {
+  const { user, isLoading: userLoading } = useUser()
+  const router = useRouter()
   const [analytics, setAnalytics] = useState<Analytics | null>(null)
   const [loading, setLoading] = useState(true)
 
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!userLoading && !user) {
+      router.push('/auth/login')
+    }
+  }, [user, userLoading, router])
+
   const fetchAnalytics = useCallback(async () => {
+    if (!user) return // Don't fetch if not logged in
     setLoading(true)
     try {
       const response = await fetch('/api/admin/analytics')
-      if (!response.ok) throw new Error('Failed to fetch analytics')
+      if (!response.ok) {
+        if (response.status === 401) {
+          router.push('/auth/login')
+          return
+        }
+        throw new Error('Failed to fetch analytics')
+      }
       const data = await response.json()
       setAnalytics(data)
     } catch (error) {
@@ -39,14 +57,39 @@ export default function AdminPage() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [user, router])
 
   useEffect(() => {
-    fetchAnalytics()
-    // Refresh every 30 seconds
-    const interval = setInterval(fetchAnalytics, 30000)
-    return () => clearInterval(interval)
-  }, [fetchAnalytics])
+    if (user) {
+      fetchAnalytics()
+      // Refresh every 30 seconds
+      const interval = setInterval(fetchAnalytics, 30000)
+      return () => clearInterval(interval)
+    }
+  }, [fetchAnalytics, user])
+
+  // Show loading while checking auth
+  if (userLoading) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+        <div className="container mx-auto px-4 py-12 max-w-7xl">
+          <div className="text-center py-12">
+            <motion.div
+              className="w-12 h-12 border-4 border-sky-400 border-t-transparent rounded-full mx-auto mb-4"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+            />
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        </div>
+      </main>
+    )
+  }
+
+  // Don't render if not authenticated (will redirect)
+  if (!user) {
+    return null
+  }
 
   if (loading && !analytics) {
     return (
