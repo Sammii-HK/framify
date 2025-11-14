@@ -44,7 +44,7 @@ export default function PromptForm({ onGenerate }: PromptFormProps) {
         const data = await response.json();
         if (response.status === 401) {
           // Redirect to login if not authenticated
-          window.location.href = "/auth/login";
+          window.location.href = "/api/auth/login";
           return;
         }
         throw new Error(data.error || "Failed to generate template");
