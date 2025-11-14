@@ -42,8 +42,8 @@ export default function LoginPage() {
 					</a>
 
 					<div className="text-center text-sm text-gray-500 mt-6">
-						<p>
-							Don't have an account?{" "}
+							<p>
+								Don&apos;t have an account?{" "}
 							<a
 								href="/auth/login?screen_hint=signup"
 								className="text-sky-500 hover:text-sky-600 font-medium"
