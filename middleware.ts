@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server'
 import { auth0 } from './lib/auth0'
 
 export async function middleware(request: NextRequest) {
-  // Auth0 middleware handles errors internally
+  // Auth0 SDK v4 handles /auth/* routes via middleware automatically
   return await auth0.middleware(request)
 }
 
