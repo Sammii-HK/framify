@@ -1,10 +1,47 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Sandpack } from '@codesandbox/sandpack-react'
+import { Sandpack, useSandpack } from '@codesandbox/sandpack-react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
+
+// Component to capture Sandpack errors
+function SandpackErrorCapture({ onError }: { onError: (error: string) => void }) {
+  const { sandpack } = useSandpack()
+  
+  useEffect(() => {
+    if (sandpack.error) {
+      let errorMessage = ''
+      
+      // Try to get detailed error info
+      if (sandpack.error.message) {
+        errorMessage = sandpack.error.message
+      } else if (typeof sandpack.error === 'string') {
+        errorMessage = sandpack.error
+      } else {
+        errorMessage = JSON.stringify(sandpack.error, null, 2)
+      }
+      
+      // Include file path if available
+      if (sandpack.error.path) {
+        errorMessage = `${sandpack.error.path}: ${errorMessage}`
+      }
+      
+      // Include line number if available
+      if (sandpack.error.line) {
+        errorMessage = `${errorMessage}\nLine: ${sandpack.error.line}`
+      }
+      
+      onError(errorMessage)
+    } else {
+      // Clear error when it's resolved
+      onError('')
+    }
+  }, [sandpack.error, onError])
+  
+  return null
+}
 
 interface TemplatePreviewProps {
   code?: string
@@ -23,6 +60,8 @@ export default function TemplatePreview({
   const [isExporting, setIsExporting] = useState(false)
   const [exportSuccess, setExportSuccess] = useState<{ url: string } | null>(null)
   const [exportError, setExportError] = useState<string | null>(null)
+  const [runtimeError, setRuntimeError] = useState<string | null>(null)
+  const [errorCopied, setErrorCopied] = useState(false)
 
   const handleDownload = () => {
     if (!code) return
@@ -38,44 +77,60 @@ export default function TemplatePreview({
     URL.revokeObjectURL(url)
   }
 
+  const copyErrorToClipboard = () => {
+    if (runtimeError) {
+      navigator.clipboard.writeText(runtimeError).then(() => {
+        setErrorCopied(true)
+        setTimeout(() => setErrorCopied(false), 2000)
+      })
+    }
+  }
+
+  // Listen for console errors from Sandpack
+  useEffect(() => {
+    if (!code) return
+
+    const originalError = console.error
+    const errorMessages: string[] = []
+
+    console.error = (...args: any[]) => {
+      const errorMsg = args.map(arg => 
+        typeof arg === 'string' ? arg : 
+        arg?.message || arg?.toString() || JSON.stringify(arg)
+      ).join(' ')
+      
+      if (errorMsg.includes('Cannot read') || errorMsg.includes('undefined') || errorMsg.includes('Error:')) {
+        errorMessages.push(errorMsg)
+        setRuntimeError(errorMessages.join('\n'))
+      }
+      
+      originalError.apply(console, args)
+    }
+
+    return () => {
+      console.error = originalError
+    }
+  }, [code])
+
   const handleExportToFramer = async () => {
     if (!code || !title) return
 
-    setIsExporting(true)
-    setExportError(null)
-    setExportSuccess(null)
-
+    // Framer doesn't have a public API - show helpful message
+    setExportError(
+      'Framer API is not publicly available. ' +
+      'Download the .tsx file and paste it into Framer manually, or create a Framer plugin to automate this.'
+    )
+    setTimeout(() => setExportError(null), 10000)
+    
+    // Alternative: Copy code to clipboard with instructions
     try {
-      const response = await fetch('/api/framer-upload', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ title, code, templateId }),
+      await navigator.clipboard.writeText(code)
+      setExportSuccess({
+        url: 'https://framer.com',
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.details || data.error || 'Failed to export to Framer')
-      }
-
-      if (data.project?.url) {
-        setExportSuccess({ url: data.project.url })
-        // Clear success message after 10 seconds
-        setTimeout(() => setExportSuccess(null), 10000)
-      }
-    } catch (error) {
-      console.error('Error exporting to Framer:', error)
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : 'Failed to export to Framer. Please try again.'
-      setExportError(errorMessage)
-      // Clear error after 8 seconds
-      setTimeout(() => setExportError(null), 8000)
-    } finally {
-      setIsExporting(false)
+      setTimeout(() => setExportSuccess(null), 5000)
+    } catch (err) {
+      console.error('Failed to copy to clipboard:', err)
     }
   }
 
@@ -151,19 +206,9 @@ export default function TemplatePreview({
               whileHover={{ scale: isExporting ? 1 : 1.02 }}
               whileTap={{ scale: isExporting ? 1 : 0.98 }}
               className="px-4 py-2 bg-gradient-to-r from-sky-400 to-indigo-500 text-white rounded-framer text-sm font-medium hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              title="Copy code to clipboard - Framer doesn't have a public API"
             >
-              {isExporting ? (
-                <>
-                  <motion.div
-                    className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                  />
-                  <span>Exporting...</span>
-                </>
-              ) : (
-                'Export to Framer'
-              )}
+              Copy for Framer
             </motion.button>
           </div>
 
@@ -176,15 +221,18 @@ export default function TemplatePreview({
                 className="p-3 bg-green-50 border border-green-200 rounded-framer"
               >
                 <p className="text-sm text-green-800 mb-2">
-                  ✓ Successfully exported to Framer!
+                  ✓ Code copied to clipboard!
+                </p>
+                <p className="text-xs text-green-700 mb-2">
+                  Paste it into Framer as a code component, or download the .tsx file.
                 </p>
                 <a
-                  href={exportSuccess.url}
+                  href="https://framer.com"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-green-700 hover:text-green-900 underline font-medium"
                 >
-                  Open in Framer →
+                  Open Framer →
                 </a>
               </motion.div>
             )}
@@ -206,7 +254,7 @@ export default function TemplatePreview({
         </div>
       </div>
 
-      <div className="flex-1 overflow-hidden" style={{ minHeight: '600px' }}>
+      <div className="flex-1 overflow-hidden relative" style={{ minHeight: '600px' }}>
         <AnimatePresence mode="wait">
           {viewMode === 'preview' ? (
             <motion.div
@@ -215,9 +263,9 @@ export default function TemplatePreview({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="h-full w-full"
+              className="h-full w-full relative"
             >
-              <div style={{ height: '100%', width: '100%' }}>
+              <div style={{ height: '100%', width: '100%' }} className="relative">
                 <Sandpack
                   template="react-ts"
                   files={{
@@ -229,17 +277,67 @@ export default function TemplatePreview({
                       react: '^18.3.1',
                       'react-dom': '^18.3.1',
                     },
+                    entry: '/App.tsx',
                   }}
                   theme="light"
                   options={{
-                    showNavigator: false,
-                    showTabs: false,
+                    showNavigator: true,
+                    showTabs: true,
                     showLineNumbers: false,
                     showInlineErrors: true,
                     editorHeight: '100%',
                     editorWidthPercentage: 50,
+                    showConsole: false,
+                    showConsoleButton: true,
+                    resizablePanels: true,
                   }}
-                />
+                >
+                  <SandpackErrorCapture onError={(error) => setRuntimeError(error)} />
+                </Sandpack>
+                {runtimeError && runtimeError.trim() && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute top-4 right-4 left-4 bg-red-50 border-2 border-red-300 rounded-lg p-4 shadow-lg z-50 max-w-2xl mx-auto"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="text-sm font-bold text-red-900">Something went wrong</h3>
+                      <button
+                        onClick={() => setRuntimeError('')}
+                        className="text-red-600 hover:text-red-800"
+                        aria-label="Close error"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                    <div className="bg-white rounded border border-red-200 p-3 mb-3 font-mono text-xs text-red-800 overflow-x-auto max-h-48 overflow-y-auto">
+                      <pre className="whitespace-pre-wrap break-words">{runtimeError}</pre>
+                    </div>
+                    <button
+                      onClick={copyErrorToClipboard}
+                      className="flex items-center gap-2 px-3 py-2 bg-red-600 text-white rounded text-sm font-medium hover:bg-red-700 transition-all"
+                    >
+                      {errorCopied ? (
+                        <>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          Copied!
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                          Copy Error
+                        </>
+                      )}
+                    </button>
+                  </motion.div>
+                )}
               </div>
             </motion.div>
           ) : (
