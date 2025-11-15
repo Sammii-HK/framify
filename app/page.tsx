@@ -1,17 +1,23 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import PromptForm from '@/components/PromptForm'
+import PromptForm, { type Style } from '@/components/PromptForm'
 import TemplatePreview from '@/components/TemplatePreview'
 
-export default function Home() {
+function HomeContent() {
+  const searchParams = useSearchParams()
   const [generatedData, setGeneratedData] = useState<{
     id: string
     code: string
     title: string
     style: string
   } | null>(null)
+
+  // Get initial values from URL params
+  const initialPrompt = searchParams.get('prompt') || ''
+  const initialStyle = searchParams.get('style') as Style | null
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
@@ -27,7 +33,11 @@ export default function Home() {
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
           <div className="space-y-6">
-            <PromptForm onGenerate={setGeneratedData} />
+            <PromptForm 
+              onGenerate={setGeneratedData}
+              initialPrompt={initialPrompt}
+              initialStyle={initialStyle || undefined}
+            />
           </div>
           <div className="space-y-6">
             <TemplatePreview
@@ -40,6 +50,22 @@ export default function Home() {
         </div>
       </div>
     </main>
+  )
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+        <div className="container mx-auto px-4 py-8 md:py-12 max-w-7xl">
+          <div className="text-center">
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        </div>
+      </main>
+    }>
+      <HomeContent />
+    </Suspense>
   )
 }
 

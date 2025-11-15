@@ -18,6 +18,7 @@ interface Template {
   tags?: string[]
   category?: string
   viewCount: number
+  thumbnailUrl?: string
 }
 
 export default function MarketplacePage() {
@@ -26,6 +27,7 @@ export default function MarketplacePage() {
   const [search, setSearch] = useState('')
   const [filterStyle, setFilterStyle] = useState<string>('')
   const [filterCategory, setFilterCategory] = useState<string>('')
+  const [filterPrice, setFilterPrice] = useState<string>('')
   const [sortBy, setSortBy] = useState<'newest' | 'popular' | 'price'>('newest')
 
   const fetchTemplates = useCallback(async () => {
@@ -36,6 +38,7 @@ export default function MarketplacePage() {
       if (search) params.set('search', search)
       if (filterStyle) params.set('style', filterStyle)
       if (filterCategory) params.set('category', filterCategory)
+      if (filterPrice) params.set('price', filterPrice)
       params.set('sort', sortBy)
 
       const response = await fetch(`/api/templates/marketplace?${params.toString()}`)
@@ -50,7 +53,7 @@ export default function MarketplacePage() {
     } finally {
       setLoading(false)
     }
-  }, [search, filterStyle, filterCategory, sortBy])
+  }, [search, filterStyle, filterCategory, filterPrice, sortBy])
 
   useEffect(() => {
     fetchTemplates()
@@ -86,10 +89,26 @@ export default function MarketplacePage() {
               className="px-4 py-3 border border-gray-300 rounded-framer focus:ring-2 focus:ring-sky-400 focus:border-transparent outline-none transition-all bg-white"
             >
               <option value="">All Styles</option>
-              <option value="Minimal">Minimal</option>
-              <option value="Bold">Bold</option>
-              <option value="Soft">Soft</option>
-              <option value="Dark">Dark</option>
+							<option value="Minimal Corporate">Minimal Corporate</option>
+							<option value="Dark Tech / SaaS">Dark Tech / SaaS</option>
+							<option value="E-commerce Product Showcase">E-commerce Product Showcase</option>
+							<option value="Creative Portfolio / Designer">Creative Portfolio / Designer</option>
+							<option value="Agency / Studio Bold">Agency / Studio Bold</option>
+							<option value="Grid / Magazine Editorial">Grid / Magazine Editorial</option>
+							<option value="Luxury / Premium Brand">Luxury / Premium Brand</option>
+							<option value="Retro / Y2K">Retro / Y2K</option>
+							<option value="Pastel / Playful">Pastel / Playful</option>
+							<option value="Single-Page App / Startup Landing">Single-Page App / Startup Landing</option>
+            </select>
+            <select
+              value={filterPrice}
+              onChange={(e) => setFilterPrice(e.target.value)}
+              className="px-4 py-3 border border-gray-300 rounded-framer focus:ring-2 focus:ring-sky-400 focus:border-transparent outline-none transition-all bg-white"
+            >
+              <option value="">All Prices</option>
+              <option value="free">Free</option>
+              <option value="standard">Standard ($49)</option>
+              <option value="premium">Premium ($99+)</option>
             </select>
             <select
               value={sortBy}

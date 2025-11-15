@@ -82,7 +82,7 @@ export default function Navigation() {
 									{user.name || user.email}
 								</span>
 								<a
-									href="/api/auth/logout"
+									href="/auth/logout"
 									className="px-4 py-2 bg-gray-100 text-gray-700 rounded-framer font-medium hover:bg-gray-200 transition-all"
 								>
 									Logout
@@ -90,7 +90,10 @@ export default function Navigation() {
 							</div>
 						) : (
 							<a
-								href="/api/auth/login"
+								href="/auth/login"
+								onClick={(e) => {
+									console.log('Login clicked, navigating to:', e.currentTarget.href);
+								}}
 								className="px-4 py-2 bg-gradient-to-r from-sky-400 to-indigo-500 text-white rounded-framer font-medium hover:shadow-md transition-all"
 							>
 								Login

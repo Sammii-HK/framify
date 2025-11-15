@@ -41,9 +41,20 @@ export default function StyleBankPage() {
 
   const handleGenerateAllStyles = async (promptTemplate: PromptTemplate) => {
     setIsGeneratingAll(true)
-    setGenerationProgress('Generating all style variations...')
+    setGenerationProgress('Generating style variations...')
     
-    const styles = ['Minimal', 'Bold', 'Soft', 'Dark']
+    const styles = [
+      'Minimal Corporate',
+      'Dark Tech / SaaS',
+      'E-commerce Product Showcase',
+      'Creative Portfolio / Designer',
+      'Agency / Studio Bold',
+      'Grid / Magazine Editorial',
+      'Luxury / Premium Brand',
+      'Retro / Y2K',
+      'Pastel / Playful',
+      'Single-Page App / Startup Landing'
+    ]
     const results = []
 
     try {
@@ -185,7 +196,7 @@ export default function StyleBankPage() {
                     Generate All Styles
                   </button>
                   <Link
-                    href={`/?prompt=${encodeURIComponent(prompt.prompt)}`}
+                    href={`/?prompt=${encodeURIComponent(prompt.prompt)}&style=${encodeURIComponent('Minimal Corporate')}`}
                     className="px-4 py-2 bg-gray-100 text-gray-700 rounded-framer text-sm font-medium hover:bg-gray-200 transition-all"
                   >
                     Use

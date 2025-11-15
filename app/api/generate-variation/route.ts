@@ -18,9 +18,22 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    if (!newStyle || !['Minimal', 'Bold', 'Soft', 'Dark'].includes(newStyle)) {
+    const validStyles = [
+      'Minimal Corporate',
+      'Dark Tech / SaaS',
+      'E-commerce Product Showcase',
+      'Creative Portfolio / Designer',
+      'Agency / Studio Bold',
+      'Grid / Magazine Editorial',
+      'Luxury / Premium Brand',
+      'Retro / Y2K',
+      'Pastel / Playful',
+      'Single-Page App / Startup Landing'
+    ];
+    
+    if (!newStyle || !validStyles.includes(newStyle)) {
       return NextResponse.json(
-        { error: 'Valid style is required (Minimal, Bold, Soft, or Dark)' },
+        { error: `Valid style is required. Available styles: ${validStyles.join(', ')}` },
         { status: 400 }
       )
     }

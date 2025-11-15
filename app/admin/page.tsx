@@ -34,7 +34,7 @@ export default function AdminPage() {
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!userLoading && !user) {
-      router.push('/api/auth/login')
+      router.push('/auth/login')
     }
   }, [user, userLoading, router])
 
@@ -45,7 +45,7 @@ export default function AdminPage() {
       const response = await fetch('/api/admin/analytics')
       if (!response.ok) {
         if (response.status === 401) {
-          router.push('/api/auth/login')
+          router.push('/auth/login')
           return
         }
         throw new Error('Failed to fetch analytics')

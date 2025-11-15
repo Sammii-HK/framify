@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { PRICING_TIERS } from '@/lib/pricing'
 
 /**
  * Public marketplace endpoint - returns only public templates
@@ -10,6 +11,7 @@ export async function GET(req: NextRequest) {
     const search = searchParams.get('search') || ''
     const style = searchParams.get('style') || ''
     const category = searchParams.get('category') || ''
+    const priceFilter = searchParams.get('price') || ''
     const sortBy = searchParams.get('sort') || 'newest'
 
     // Build where clause - only public templates
@@ -18,6 +20,7 @@ export async function GET(req: NextRequest) {
       title?: { contains: string; mode?: 'insensitive' }
       style?: string
       category?: string
+      price?: number | { gte?: number; lte?: number }
     } = {
       isPublic: true, // Only show public templates
     }
@@ -29,12 +32,34 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    if (style && ['Minimal', 'Bold', 'Soft', 'Dark'].includes(style)) {
+    const validStyles = [
+      'Minimal Corporate',
+      'Dark Tech / SaaS',
+      'E-commerce Product Showcase',
+      'Creative Portfolio / Designer',
+      'Agency / Studio Bold',
+      'Grid / Magazine Editorial',
+      'Luxury / Premium Brand',
+      'Retro / Y2K',
+      'Pastel / Playful',
+      'Single-Page App / Startup Landing'
+    ];
+    
+    if (style && validStyles.includes(style)) {
       where.style = style
     }
 
     if (category) {
       where.category = category
+    }
+
+    // Price filter
+    if (priceFilter === 'free') {
+      where.price = 0
+    } else if (priceFilter === 'standard') {
+      where.price = PRICING_TIERS.standard.price
+    } else if (priceFilter === 'premium') {
+      where.price = { gte: PRICING_TIERS.premium.price }
     }
 
     // Build orderBy based on sort parameter

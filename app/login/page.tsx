@@ -22,7 +22,7 @@ export default function LoginPage() {
 
         <div className="space-y-4">
           <a
-            href="/api/auth/login"
+            href="/auth/login"
             className="w-full px-6 py-4 bg-gradient-to-r from-sky-400 to-indigo-500 text-white rounded-framer-lg font-medium hover:shadow-md transition-all flex items-center justify-center gap-2"
           >
             <svg
@@ -45,7 +45,7 @@ export default function LoginPage() {
             <p>
               Don&apos;t have an account?{" "}
               <a
-                href="/api/auth/login?screen_hint=signup"
+                href="/auth/login?screen_hint=signup"
                 className="text-sky-500 hover:text-sky-600 font-medium"
               >
                 Sign up

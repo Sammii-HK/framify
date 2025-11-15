@@ -31,7 +31,20 @@ export async function GET(req: NextRequest) {
 			isPublic: true,
 		};
 
-		if (style && ["Minimal", "Bold", "Soft", "Dark"].includes(style)) {
+		const validStyles = [
+			"Minimal Corporate",
+			"Dark Tech / SaaS",
+			"E-commerce Product Showcase",
+			"Creative Portfolio / Designer",
+			"Agency / Studio Bold",
+			"Grid / Magazine Editorial",
+			"Luxury / Premium Brand",
+			"Retro / Y2K",
+			"Pastel / Playful",
+			"Single-Page App / Startup Landing"
+		];
+		
+		if (style && validStyles.includes(style)) {
 			where.style = style;
 		}
 
