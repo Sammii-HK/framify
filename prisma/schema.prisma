@@ -41,4 +41,33 @@ model Template {
   baseTemplateId String?
   Template       Template?  @relation("TemplateToTemplate", fields: [baseTemplateId], references: [id])
   other_Template Template[] @relation("TemplateToTemplate")
+  components     Component[]
+}
+
+model Component {
+  id              String    @id @default(cuid())
+  templateId      String?
+  userId          String
+  name            String
+  code            String
+  description     String?
+  componentType  String
+  price           Float?
+  isPublic        Boolean   @default(false)
+  tags            String[]  @default([])
+  category        String?
+  licenseType     String?   @default("personal")
+  thumbnailUrl    String?
+  framerUrl       String?
+  previewUrl      String?
+  viewCount       Int       @default(0)
+  downloadCount   Int       @default(0)
+  salesCount      Int       @default(0)
+  featured        Boolean   @default(false)
+  marketplaceReady Boolean  @default(false)
+  marketplaceUrl  String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  template        Template? @relation(fields: [templateId], references: [id])
 }

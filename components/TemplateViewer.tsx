@@ -103,6 +103,12 @@ export default function TemplateViewer({ template }: TemplateViewerProps) {
                   Open in Framer →
                 </a>
               )}
+              <Link
+                href={`/template/${template.id}/extract`}
+                className="px-4 py-2 bg-gradient-to-r from-purple-400 to-pink-500 text-white rounded-lg text-sm font-medium hover:shadow-md transition-all"
+              >
+                Extract Components
+              </Link>
             </div>
 
             {/* Create Style Variations */}

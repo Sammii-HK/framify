@@ -4,6 +4,7 @@ import { generateTemplateCode, type Style, extractMetadata } from "@/lib/openai"
 import { prisma } from "@/lib/prisma";
 import { validateTemplateQuality, validateRuntimeSafety } from "@/lib/template-quality";
 import { suggestPricing } from "@/lib/pricing";
+import { detectComponents, extractComponent } from "@/lib/component-extractor";
 
 export async function POST(req: NextRequest) {
 	try {
@@ -164,10 +165,104 @@ export async function POST(req: NextRequest) {
 			},
 		});
 
-		// Note: Framer doesn't have a public API, so auto-publish is disabled
-		// Users can download .tsx files or copy code to paste into Framer manually
-		// See FRAMER_INTEGRATION.md for details
-		const framerUrl = null;
+		// Optional: Auto-extract components from template
+		const autoExtractComponents = process.env.AUTO_EXTRACT_COMPONENTS === "true";
+		const extractedComponents: any[] = [];
+
+		if (autoExtractComponents) {
+			try {
+				// Detect all reusable components in the template code
+				const detected = detectComponents(code);
+				
+				console.log(`🔍 Detected ${detected.length} reusable components in template`);
+				
+				// Extract ALL detected reusable components (buttons, cards, sections, etc.)
+				// Process in batches to avoid overwhelming the system
+				const batchSize = 3;
+				for (let i = 0; i < detected.length; i += batchSize) {
+					const batch = detected.slice(i, i + batchSize);
+					
+					// Process batch in parallel
+					const batchPromises = batch.map(async (comp) => {
+						try {
+							const extracted = await extractComponent(
+								code,
+								comp.name,
+								style as string,
+								metadata.category,
+								comp.startLine,
+								comp.endLine
+							);
+
+							// Save component to database
+							const savedComponent = await prisma.component.create({
+								data: {
+									userId,
+									name: extracted.name,
+									code: extracted.code,
+									description: extracted.description,
+									componentType: extracted.componentType,
+									price: extracted.price,
+									templateId: template.id,
+									tags: extracted.tags,
+									category: metadata.category,
+									licenseType: "personal",
+									isPublic: false, // User can enable later
+									marketplaceReady: true,
+								},
+							});
+
+							return {
+								id: savedComponent.id,
+								name: savedComponent.name,
+								componentType: savedComponent.componentType,
+								price: savedComponent.price,
+							};
+						} catch (compError) {
+							console.warn(`Failed to extract component ${comp.name}:`, compError);
+							return null;
+						}
+					});
+
+					// Wait for batch to complete
+					const batchResults = await Promise.all(batchPromises);
+					const successful = batchResults.filter((r): r is NonNullable<typeof r> => r !== null);
+					extractedComponents.push(...successful);
+					
+					// Small delay between batches to avoid rate limiting
+					if (i + batchSize < detected.length) {
+						await new Promise(resolve => setTimeout(resolve, 500));
+					}
+				}
+
+				console.log(`✅ Auto-extracted ${extractedComponents.length} reusable components from template:`, 
+					extractedComponents.map(c => `${c.name} (${c.componentType})`).join(', '));
+			} catch (extractError) {
+				console.warn("Auto-extraction failed (non-critical):", extractError);
+				// Don't fail template creation if extraction fails
+			}
+		}
+
+		// Optional: Auto-publish to Framer if enabled
+		const autoPublishToFramer = process.env.AUTO_PUBLISH_TO_FRAMER === "true";
+		let framerUrl = null;
+
+		if (autoPublishToFramer) {
+			try {
+				const { createFramerProject } = await import("@/lib/framer");
+				const framerProject = await createFramerProject(title, code);
+				framerUrl = framerProject.url;
+
+				// Update template with Framer URL
+				await prisma.template.update({
+					where: { id: template.id },
+					data: { framerUrl },
+				});
+			} catch (error) {
+				// Log but don't fail - template was created successfully
+				console.warn("Auto-publish to Framer failed:", error);
+			}
+		}
 
 		return NextResponse.json({
 			id: template.id,
@@ -189,6 +284,7 @@ export async function POST(req: NextRequest) {
 				tags: metadata.tags,
 				description: metadata.description,
 			},
+			extractedComponents: extractedComponents.length > 0 ? extractedComponents : undefined,
 		});
 	} catch (error) {
 		console.error("Error in generate-template API:", error);

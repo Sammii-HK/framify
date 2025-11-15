@@ -41,6 +41,16 @@ export default function Navigation() {
 							Marketplace
 						</Link>
 						<Link
+							href="/components"
+							className={`px-4 py-2 rounded-framer font-medium transition-all ${
+								pathname === "/components" || pathname?.startsWith("/components/")
+									? "bg-gradient-to-r from-sky-400 to-indigo-500 text-white"
+									: "text-gray-700 hover:bg-gray-100"
+							}`}
+						>
+							Components
+						</Link>
+						<Link
 							href="/style-bank"
 							className={`px-4 py-2 rounded-framer font-medium transition-all ${
 								pathname === "/style-bank"
