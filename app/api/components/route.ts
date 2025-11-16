@@ -1,146 +1,139 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { auth0 } from '@/lib/auth0'
-import { prisma } from '@/lib/prisma'
+import { NextRequest, NextResponse } from "next/server";
+import { auth0 } from "@/lib/auth0";
+import { prisma } from "@/lib/prisma";
 
 /**
- * GET /api/components
- * List components with filters
+ * GET: List components for authenticated user
+ * POST: Create a new component
  */
 export async function GET(req: NextRequest) {
-  try {
-    const { searchParams } = new URL(req.url)
-    const search = searchParams.get('search') || ''
-    const componentType = searchParams.get('type') || ''
-    const style = searchParams.get('style') || ''
-    const category = searchParams.get('category') || ''
-    const isPublic = searchParams.get('public') === 'true'
-    const featured = searchParams.get('featured') === 'true'
-    const limit = parseInt(searchParams.get('limit') || '20')
-    const offset = parseInt(searchParams.get('offset') || '0')
+	try {
+		// Get user session
+		const session = await auth0.getSession();
+		if (!session?.user) {
+			return NextResponse.json(
+				{ error: "Authentication required" },
+				{ status: 401 }
+			);
+		}
 
-    // Build where clause
-    const where: any = {}
+		const userId = session.user.sub; // Auth0 user ID
 
-    if (isPublic) {
-      where.isPublic = true
-    }
+		const { searchParams } = new URL(req.url);
+		const search = searchParams.get("search") || "";
+		const category = searchParams.get("category") || "";
+		const componentType = searchParams.get("componentType") || "";
 
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-        { tags: { hasSome: [search] } },
-      ]
-    }
+		// Build where clause - only get components for logged-in user
+		const where: {
+			userId: string;
+			name?: { contains: string; mode?: "insensitive" };
+			category?: string;
+			componentType?: string;
+		} = {
+			userId,
+		};
 
-    if (componentType) {
-      where.componentType = componentType
-    }
+		if (search) {
+			where.name = {
+				contains: search,
+				mode: "insensitive",
+			};
+		}
 
-    if (style) {
-      where.tags = { hasSome: [style.toLowerCase()] }
-    }
+		if (category) {
+			where.category = category;
+		}
 
-    if (category) {
-      where.category = category
-    }
+		if (componentType) {
+			where.componentType = componentType;
+		}
 
-    if (featured) {
-      where.featured = true
-    }
+		const components = await prisma.component.findMany({
+			where,
+			orderBy: {
+				createdAt: "desc",
+			},
+			select: {
+				id: true,
+				name: true,
+				description: true,
+				componentType: true,
+				category: true,
+				isPublic: true,
+				framerUrl: true,
+				createdAt: true,
+			},
+		});
 
-    const [components, total] = await Promise.all([
-      prisma.component.findMany({
-        where,
-        orderBy: [
-          { featured: 'desc' },
-          { viewCount: 'desc' },
-          { createdAt: 'desc' },
-        ],
-        take: limit,
-        skip: offset,
-      }),
-      prisma.component.count({ where }),
-    ])
-
-    return NextResponse.json({
-      components,
-      pagination: {
-        total,
-        limit,
-        offset,
-        hasMore: offset + limit < total,
-      },
-    })
-  } catch (error) {
-    console.error('Error fetching components:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch components' },
-      { status: 500 }
-    )
-  }
+		return NextResponse.json({ components });
+	} catch (error) {
+		console.error("Error fetching components:", error);
+		return NextResponse.json(
+			{
+				error: "Failed to fetch components",
+				details: error instanceof Error ? error.message : "Unknown error",
+			},
+			{ status: 500 }
+		);
+	}
 }
 
-/**
- * POST /api/components
- * Create a new component
- */
 export async function POST(req: NextRequest) {
-  try {
-    const session = await auth0.getSession()
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
-    }
+	try {
+		// Get user session
+		const session = await auth0.getSession();
+		if (!session?.user) {
+			return NextResponse.json(
+				{ error: "Authentication required" },
+				{ status: 401 }
+			);
+		}
 
-    const userId = session.user.sub
-    const body = await req.json()
-    const {
-      name,
-      code,
-      description,
-      componentType,
-      price,
-      templateId,
-      tags,
-      category,
-      licenseType,
-      isPublic,
-    } = body
+		const userId = session.user.sub; // Auth0 user ID
 
-    if (!name || !code || !componentType) {
-      return NextResponse.json(
-        { error: 'Name, code, and componentType are required' },
-        { status: 400 }
-      )
-    }
+		const body = await req.json();
+		const {
+			name,
+			code,
+			description,
+			componentType,
+			category,
+			tags,
+			templateId,
+		} = body;
 
-    const component = await prisma.component.create({
-      data: {
-        userId,
-        name,
-        code,
-        description,
-        componentType,
-        price: price || null,
-        templateId: templateId || null,
-        tags: tags || [],
-        category: category || null,
-        licenseType: licenseType || 'personal',
-        isPublic: isPublic || false,
-        marketplaceReady: !!(name && description && code && componentType),
-      },
-    })
+		if (!name || !code || !componentType) {
+			return NextResponse.json(
+				{
+					error: "Name, code, and componentType are required",
+				},
+				{ status: 400 }
+			);
+		}
 
-    return NextResponse.json(component, { status: 201 })
-  } catch (error) {
-    console.error('Error creating component:', error)
-    return NextResponse.json(
-      { error: 'Failed to create component' },
-      { status: 500 }
-    )
-  }
+		const component = await prisma.component.create({
+			data: {
+				userId,
+				name,
+				code,
+				description,
+				componentType,
+				category,
+				tags: tags || [],
+				templateId: templateId || null,
+			},
+		});
+
+		return NextResponse.json({ component }, { status: 201 });
+	} catch (error) {
+		console.error("Error creating component:", error);
+		return NextResponse.json(
+			{
+				error: "Failed to create component",
+				details: error instanceof Error ? error.message : "Unknown error",
+			},
+			{ status: 500 }
+		);
+	}
 }
-

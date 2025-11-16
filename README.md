@@ -89,18 +89,28 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
   /app
     /api
       /generate-template    # AI template generation endpoint
-      /framer-upload        # Framer export endpoint (Phase 2)
+      /framer-upload        # Framer export endpoint
+      /plugin               # Plugin-specific endpoints (with code access)
+      /components           # Components API endpoints
+      /templates            # Templates API endpoints
     /layout.tsx             # Root layout
     /page.tsx               # Home page
   /components
     PromptForm.tsx          # Input form for prompts
     TemplatePreview.tsx     # Preview and export component
-    Dashboard.tsx           # Dashboard (Phase 3)
+    Dashboard.tsx           # Dashboard
+  /framer-plugin            # Framer plugin (Phase 4)
+    /src
+      /code.tsx             # Plugin code (runs in Framer)
+      /ui.tsx               # Plugin UI (React)
+      /components           # UI components
+      /utils                 # API utilities
   /lib
     openai.ts               # OpenAI integration
-    framer.ts               # Framer API integration (stub)
+    framer.ts               # Framer API integration
     prisma.ts               # Prisma client
-  /db
+    cors.ts                 # CORS configuration
+  /prisma
     schema.prisma           # Database schema
   /styles
     globals.css             # Global styles
@@ -124,6 +134,12 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - [x] Search and filter templates
 - [x] Template detail view
 - [x] Dashboard navigation
+
+### ✅ Phase 4 - Framer Plugin (Complete)
+- [x] Framer plugin for browsing templates/components
+- [x] Plugin-specific API endpoints with code access
+- [x] Components support (database model and API)
+- [x] One-click insertion into Framer projects
 
 ## Scripts
 

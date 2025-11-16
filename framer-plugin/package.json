@@ -1,0 +1,29 @@
+{
+  "name": "framify-plugin",
+  "version": "1.0.0",
+  "description": "Browse and insert Framify templates and components directly into Framer",
+  "main": "code.js",
+  "scripts": {
+    "dev": "framer dev",
+    "build": "framer build",
+    "watch": "framer watch"
+  },
+  "keywords": [
+    "framer",
+    "plugin",
+    "templates",
+    "components"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "typescript": "^5.0.0"
+  }
+}
+

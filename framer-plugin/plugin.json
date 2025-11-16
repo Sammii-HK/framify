@@ -1,0 +1,21 @@
+{
+  "id": "framify",
+  "name": "Framify",
+  "version": "1.0.0",
+  "description": "Browse and insert Framify templates and components directly into Framer",
+  "author": "Framify",
+  "main": "code.js",
+  "ui": "ui.html",
+  "apiVersion": 1,
+  "editorType": [
+    "framer"
+  ],
+  "networkAccess": {
+    "allowedDomains": [
+      "https://framify-nine.vercel.app",
+      "http://localhost:3000",
+      "https://studio.sammii.dev"
+    ]
+  }
+}
+
