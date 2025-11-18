@@ -1,6 +1,7 @@
 import { generatePageMetadata, generateStructuredData } from "@/lib/seo";
 import type { Metadata } from "next";
 import Link from "next/link";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export const metadata: Metadata = generatePageMetadata({
 	title: "The Grimoire - Complete Astrology & Tarot Reference | Lunary",
@@ -350,7 +351,7 @@ const zodiacSigns = [
 ];
 
 export default function GrimoirePage() {
-	const structuredData = generateStructuredData({
+	const itemListStructuredData = generateStructuredData({
 		type: "ItemList",
 		data: {
 			name: "The Grimoire - Complete Astrology & Tarot Reference",
@@ -373,13 +374,79 @@ export default function GrimoirePage() {
 		},
 	});
 
+	const faqStructuredData = generateStructuredData({
+		type: "FAQPage",
+		data: {
+			mainEntity: [
+				{
+					"@type": "Question",
+					name: "What does a reversed tarot card mean?",
+					acceptedAnswer: {
+						"@type": "Answer",
+						text: "A reversed tarot card typically indicates blocked energy, internal reflection, or a need to look inward. The meaning can be opposite to the upright position, represent internalization of the energy, or suggest delays. Each card has specific reversed meanings that provide deeper insight into your situation.",
+					},
+				},
+				{
+					"@type": "Question",
+					name: "How do I calculate my birth chart?",
+					acceptedAnswer: {
+						"@type": "Answer",
+						text: "To calculate your birth chart (natal chart), you need your exact birth date, time, and location. The chart shows the positions of planets, sun, moon, and other celestial bodies at the moment of your birth. This reveals your zodiac sign, rising sign (ascendant), moon sign, and planetary aspects that influence your personality and life path.",
+					},
+				},
+				{
+					"@type": "Question",
+					name: "What's the difference between sun sign and moon sign?",
+					acceptedAnswer: {
+						"@type": "Answer",
+						text: "Your sun sign (zodiac sign) represents your core identity, ego, and conscious self - it's determined by your birth date. Your moon sign represents your emotional nature, inner self, and subconscious - it's determined by the moon's position at your birth. Both are important for understanding your complete astrological profile.",
+					},
+				},
+				{
+					"@type": "Question",
+					name: "How often should I do a tarot reading?",
+					acceptedAnswer: {
+						"@type": "Answer",
+						text: "There's no set rule, but many readers recommend daily one-card draws for guidance, weekly three-card spreads for deeper insight, and monthly comprehensive readings for major life questions. Avoid over-reading the same question, as this can create confusion. Trust your intuition and let the cards guide you.",
+					},
+				},
+				{
+					"@type": "Question",
+					name: "Which zodiac signs are most compatible?",
+					acceptedAnswer: {
+						"@type": "Answer",
+						text: "Generally, signs of the same element (Fire: Aries, Leo, Sagittarius; Earth: Taurus, Virgo, Capricorn; Air: Gemini, Libra, Aquarius; Water: Cancer, Scorpio, Pisces) are compatible. However, compatibility depends on many factors including moon signs, rising signs, and planetary aspects. Opposites can also attract - like Aries and Libra, or Taurus and Scorpio.",
+					},
+				},
+				{
+					"@type": "Question",
+					name: "What is a tarot spread and how do I use one?",
+					acceptedAnswer: {
+						"@type": "Answer",
+						text: "A tarot spread is a specific layout of cards, each position representing a different aspect of your question. Common spreads include the three-card spread (past, present, future), Celtic Cross (comprehensive 10-card reading), and one-card daily draws. Choose a spread that matches the depth of insight you're seeking.",
+					},
+				},
+			],
+		},
+	});
+
 	return (
 		<main className="min-h-screen bg-gradient-to-br from-purple-50 via-indigo-50 to-pink-50">
 			<script
 				type="application/ld+json"
-				dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+				dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListStructuredData) }}
+			/>
+			<script
+				type="application/ld+json"
+				dangerouslySetInnerHTML={{ __html: JSON.stringify(faqStructuredData) }}
 			/>
 			<div className="container mx-auto px-4 py-8 md:py-12 max-w-7xl">
+				<Breadcrumbs
+					items={[
+						{ name: "Home", url: "/" },
+						{ name: "The Grimoire", url: "/grimoire" },
+					]}
+				/>
 				<div className="mb-8 md:mb-12">
 					<h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 bg-clip-text text-transparent">
 						The Grimoire
@@ -387,8 +454,11 @@ export default function GrimoirePage() {
 					<p className="text-lg md:text-xl text-gray-700 mb-2">
 						Your Complete Reference Guide to Astrology, Tarot Cards, and Mystical Wisdom
 					</p>
+					<p className="text-gray-600 mb-4">
+						Explore the most comprehensive index of tarot card meanings (including reversed cards), zodiac signs, astrology symbols, and spiritual knowledge. Whether you're a beginner seeking guidance or an experienced practitioner deepening your understanding, this grimoire serves as your ultimate spiritual reference.
+					</p>
 					<p className="text-gray-600">
-						Explore the most comprehensive index of tarot card meanings (including reversed cards), zodiac signs, astrology symbols, and spiritual knowledge.
+						Discover detailed interpretations for all 78 tarot cards with both upright and reversed meanings, explore the 12 zodiac signs with their unique traits and characteristics, and learn about astrology fundamentals including birth charts, moon phases, and planetary influences.
 					</p>
 				</div>
 
@@ -568,6 +638,63 @@ export default function GrimoirePage() {
 					</div>
 				</section>
 
+				{/* FAQ Section */}
+				<section className="mb-12 bg-white rounded-lg p-8 shadow-md border border-gray-200" id="faq">
+					<h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900">
+						Frequently Asked Questions
+					</h2>
+					<div className="space-y-6">
+						<div>
+							<h3 className="text-xl font-semibold mb-2 text-indigo-700">
+								What does a reversed tarot card mean?
+							</h3>
+							<p className="text-gray-700">
+								A reversed tarot card typically indicates blocked energy, internal reflection, or a need to look inward. The meaning can be opposite to the upright position, represent internalization of the energy, or suggest delays. Each card has specific reversed meanings that provide deeper insight into your situation.
+							</p>
+						</div>
+						<div>
+							<h3 className="text-xl font-semibold mb-2 text-indigo-700">
+								How do I calculate my birth chart?
+							</h3>
+							<p className="text-gray-700">
+								To calculate your birth chart (natal chart), you need your exact birth date, time, and location. The chart shows the positions of planets, sun, moon, and other celestial bodies at the moment of your birth. This reveals your zodiac sign, rising sign (ascendant), moon sign, and planetary aspects that influence your personality and life path.
+							</p>
+						</div>
+						<div>
+							<h3 className="text-xl font-semibold mb-2 text-indigo-700">
+								What's the difference between sun sign and moon sign?
+							</h3>
+							<p className="text-gray-700">
+								Your sun sign (zodiac sign) represents your core identity, ego, and conscious self - it's determined by your birth date. Your moon sign represents your emotional nature, inner self, and subconscious - it's determined by the moon's position at your birth. Both are important for understanding your complete astrological profile.
+							</p>
+						</div>
+						<div>
+							<h3 className="text-xl font-semibold mb-2 text-indigo-700">
+								How often should I do a tarot reading?
+							</h3>
+							<p className="text-gray-700">
+								There's no set rule, but many readers recommend daily one-card draws for guidance, weekly three-card spreads for deeper insight, and monthly comprehensive readings for major life questions. Avoid over-reading the same question, as this can create confusion. Trust your intuition and let the cards guide you.
+							</p>
+						</div>
+						<div>
+							<h3 className="text-xl font-semibold mb-2 text-indigo-700">
+								Which zodiac signs are most compatible?
+							</h3>
+							<p className="text-gray-700">
+								Generally, signs of the same element (Fire: Aries, Leo, Sagittarius; Earth: Taurus, Virgo, Capricorn; Air: Gemini, Libra, Aquarius; Water: Cancer, Scorpio, Pisces) are compatible. However, compatibility depends on many factors including moon signs, rising signs, and planetary aspects. Opposites can also attract - like Aries and Libra, or Taurus and Scorpio.
+							</p>
+						</div>
+						<div>
+							<h3 className="text-xl font-semibold mb-2 text-indigo-700">
+								What is a tarot spread and how do I use one?
+							</h3>
+							<p className="text-gray-700">
+								A tarot spread is a specific layout of cards, each position representing a different aspect of your question. Common spreads include the three-card spread (past, present, future), Celtic Cross (comprehensive 10-card reading), and one-card daily draws. Choose a spread that matches the depth of insight you're seeking.
+							</p>
+						</div>
+					</div>
+				</section>
+
 				{/* Additional Resources */}
 				<section className="mb-12 bg-white rounded-lg p-8 shadow-md border border-gray-200">
 					<h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900">
@@ -577,19 +704,19 @@ export default function GrimoirePage() {
 						<div>
 							<h3 className="text-xl font-semibold mb-3 text-indigo-700">Astrology Basics</h3>
 							<ul className="space-y-2 text-gray-700">
-								<li>• Birth Chart Interpretation</li>
+								<li>• <Link href="/grimoire#zodiac-signs" className="text-indigo-600 hover:underline">Birth Chart Interpretation</Link></li>
 								<li>• Planetary Aspects & Transits</li>
 								<li>• Astrology Houses Explained</li>
 								<li>• Moon Phases & Their Meanings</li>
 								<li>• Rising Signs (Ascendant)</li>
-								<li>• Compatibility Analysis</li>
+								<li>• <Link href="/grimoire#zodiac-signs" className="text-indigo-600 hover:underline">Compatibility Analysis</Link></li>
 							</ul>
 						</div>
 						<div>
 							<h3 className="text-xl font-semibold mb-3 text-purple-700">Tarot Reading</h3>
 							<ul className="space-y-2 text-gray-700">
 								<li>• Common Tarot Spreads</li>
-								<li>• How to Read Reversed Cards</li>
+								<li>• <Link href="/grimoire#tarot-cards" className="text-purple-600 hover:underline">How to Read Reversed Cards</Link></li>
 								<li>• Card Combinations</li>
 								<li>• Intuitive Reading Techniques</li>
 								<li>• Daily Card Draws</li>
