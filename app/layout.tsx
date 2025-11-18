@@ -9,11 +9,11 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
 	title: {
-		default: "Lunar - Your Complete Astrology & Horoscope Guide | Tarot Cards, Zodiac Signs & More",
-		template: "%s | Lunar - Astrology & Horoscopes"
+		default: "Lunary - Your Complete Astrology & Horoscope Guide | Tarot Cards, Zodiac Signs & More",
+		template: "%s | Lunary - Astrology & Horoscopes"
 	},
 	description:
-		"Discover comprehensive astrology insights, daily horoscopes, tarot card readings, zodiac sign compatibility, birth chart analysis, and mystical guidance. Lunar is your ultimate source for astrology, horoscopes, tarot cards, and spiritual wisdom.",
+		"Discover comprehensive astrology insights, daily horoscopes, tarot card readings, zodiac sign compatibility, birth chart analysis, and mystical guidance. Lunary is your ultimate source for astrology, horoscopes, tarot cards, and spiritual wisdom.",
 	keywords: [
 		"astrology",
 		"horoscopes",
@@ -48,24 +48,24 @@ export const metadata: Metadata = {
 		"Aquarius",
 		"Pisces"
 	],
-	authors: [{ name: "Lunar" }],
-	creator: "Lunar",
-	publisher: "Lunar",
+	authors: [{ name: "Lunary" }],
+	creator: "Lunary",
+	publisher: "Lunary",
 	formatDetection: {
 		email: false,
 		address: false,
 		telephone: false,
 	},
-	metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://lunar.app"),
+	metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://lunary.app"),
 	alternates: {
 		canonical: "/",
 	},
 	openGraph: {
 		type: "website",
 		locale: "en_US",
-		url: process.env.NEXT_PUBLIC_APP_URL || "https://lunar.app",
-		siteName: "Lunar - Astrology & Horoscopes",
-		title: "Lunar - Your Complete Astrology & Horoscope Guide",
+		url: process.env.NEXT_PUBLIC_APP_URL || "https://lunary.app",
+		siteName: "Lunary - Astrology & Horoscopes",
+		title: "Lunary - Your Complete Astrology & Horoscope Guide",
 		description:
 			"Discover comprehensive astrology insights, daily horoscopes, tarot card readings, zodiac sign compatibility, birth chart analysis, and mystical guidance.",
 		images: [
@@ -73,13 +73,13 @@ export const metadata: Metadata = {
 				url: "/og-image.jpg",
 				width: 1200,
 				height: 630,
-				alt: "Lunar - Astrology & Horoscopes",
+				alt: "Lunary - Astrology & Horoscopes",
 			},
 		],
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "Lunar - Your Complete Astrology & Horoscope Guide",
+		title: "Lunary - Your Complete Astrology & Horoscope Guide",
 		description:
 			"Discover comprehensive astrology insights, daily horoscopes, tarot card readings, zodiac sign compatibility, and mystical guidance.",
 		images: ["/og-image.jpg"],

@@ -5,23 +5,6 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import PromptForm, { type Style } from '@/components/PromptForm'
 import TemplatePreview from '@/components/TemplatePreview'
-import { generateStructuredData } from '@/lib/seo'
-import type { Metadata } from 'next'
-
-export const metadata: Metadata = {
-	title: "Lunar - Daily Horoscopes, Tarot Readings & Astrology Insights",
-	description: "Get your daily horoscope, free tarot card readings, birth chart analysis, and personalized astrology guidance. Discover your zodiac sign compatibility and explore the mystical world of astrology.",
-	keywords: [
-		"daily horoscope",
-		"free horoscope",
-		"tarot reading",
-		"birth chart",
-		"astrology reading",
-		"zodiac signs",
-		"horoscope today",
-		"astrology app",
-	],
-}
 
 function HomeContent() {
   const searchParams = useSearchParams()
@@ -41,7 +24,7 @@ function HomeContent() {
       <div className="container mx-auto px-4 py-8 md:py-12 max-w-7xl">
         <div className="text-center mb-8 md:mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 bg-clip-text text-transparent animate-fade-in">
-            Lunar
+            Lunary
           </h1>
           <p className="text-gray-700 text-lg md:text-xl mb-2 font-semibold">
             Your Complete Astrology & Horoscope Guide

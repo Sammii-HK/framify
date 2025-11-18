@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = generatePageMetadata({
-	title: "The Grimoire - Complete Astrology & Tarot Reference",
+	title: "The Grimoire - Complete Astrology & Tarot Reference | Lunary",
 	description:
-		"Explore the most comprehensive index of astrology knowledge, tarot cards (including reversed meanings), zodiac signs, birth charts, moon phases, and mystical wisdom. Your complete spiritual reference guide.",
+		"Explore the most comprehensive index of astrology knowledge, tarot cards (including reversed meanings), zodiac signs, birth charts, moon phases, and mystical wisdom. Your complete spiritual reference guide on Lunary.",
 	keywords: [
 		"grimoire",
 		"tarot card meanings",

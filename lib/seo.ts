@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://lunar.app";
-const siteName = "Lunar - Astrology & Horoscopes";
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://lunary.app";
+const siteName = "Lunary - Astrology & Horoscopes";
 
 /**
  * Generate comprehensive SEO metadata for pages
@@ -21,7 +21,7 @@ export function generatePageMetadata({
 	image?: string;
 	noindex?: boolean;
 }): Metadata {
-	const fullTitle = title.includes("Lunar") ? title : `${title} | ${siteName}`;
+	const fullTitle = title.includes("Lunary") ? title : `${title} | ${siteName}`;
 	const url = `${siteUrl}${path}`;
 	const defaultImage = image || `${siteUrl}/og-image.jpg`;
 
