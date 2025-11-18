@@ -12,61 +12,21 @@ export default function Navigation() {
 		<nav className="border-b border-framer-border bg-white/80 backdrop-blur-sm sticky top-0 z-50">
 			<div className="container mx-auto px-4 py-4 max-w-7xl">
 				<div className="flex items-center justify-between">
-					<Link
-						href="/"
-						className="text-2xl font-bold bg-gradient-to-r from-sky-400 to-indigo-500 bg-clip-text text-transparent hover:opacity-80 transition-opacity"
-					>
-						Framify
-					</Link>
+				<Link
+					href="/"
+					className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+				>
+					Lunary
+				</Link>
 
 					<div className="flex items-center gap-4">
-						<Link
-							href="/"
-							className={`px-4 py-2 rounded-framer font-medium transition-all ${
-								pathname === "/"
-									? "bg-gradient-to-r from-sky-400 to-indigo-500 text-white"
-									: "text-gray-700 hover:bg-gray-100"
-							}`}
-						>
-							Create
-						</Link>
-						<Link
-							href="/marketplace"
-							className={`px-4 py-2 rounded-framer font-medium transition-all ${
-								pathname === "/marketplace"
-									? "bg-gradient-to-r from-sky-400 to-indigo-500 text-white"
-									: "text-gray-700 hover:bg-gray-100"
-							}`}
-						>
-							Marketplace
-						</Link>
-						<Link
-							href="/components"
-							className={`px-4 py-2 rounded-framer font-medium transition-all ${
-								pathname === "/components" || pathname?.startsWith("/components/")
-									? "bg-gradient-to-r from-sky-400 to-indigo-500 text-white"
-									: "text-gray-700 hover:bg-gray-100"
-							}`}
-						>
-							Components
-						</Link>
-						<Link
-							href="/style-bank"
-							className={`px-4 py-2 rounded-framer font-medium transition-all ${
-								pathname === "/style-bank"
-									? "bg-gradient-to-r from-sky-400 to-indigo-500 text-white"
-									: "text-gray-700 hover:bg-gray-100"
-							}`}
-						>
-							Style Bank
-						</Link>
 						{user && (
 							<>
 								<Link
 									href="/dashboard"
 									className={`px-4 py-2 rounded-framer font-medium transition-all ${
 										pathname === "/dashboard"
-											? "bg-gradient-to-r from-sky-400 to-indigo-500 text-white"
+											? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white"
 											: "text-gray-700 hover:bg-gray-100"
 									}`}
 								>
@@ -76,7 +36,7 @@ export default function Navigation() {
 									href="/admin"
 									className={`px-4 py-2 rounded-framer font-medium transition-all ${
 										pathname === "/admin"
-											? "bg-gradient-to-r from-sky-400 to-indigo-500 text-white"
+											? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white"
 											: "text-gray-700 hover:bg-gray-100"
 									}`}
 								>
@@ -104,7 +64,7 @@ export default function Navigation() {
 								onClick={(e) => {
 									console.log('Login clicked, navigating to:', e.currentTarget.href);
 								}}
-								className="px-4 py-2 bg-gradient-to-r from-sky-400 to-indigo-500 text-white rounded-framer font-medium hover:shadow-md transition-all"
+								className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-framer font-medium hover:shadow-md transition-all"
 							>
 								Login
 							</a>

@@ -7,9 +7,9 @@ import "../styles/globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-	title: "Framify - AI Framer Template Generator",
+	title: "Lunary - Your AI-Powered Cosmic Guide",
 	description:
-		"Generate Framer-ready website templates from natural language prompts",
+		"Personalised daily insights, tarot interpretation, emotional patterns, and birth chart analysis — all based on you.",
 };
 
 export default function RootLayout({
