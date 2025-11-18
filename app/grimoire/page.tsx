@@ -477,28 +477,33 @@ export default function GrimoirePage() {
 							Major Arcana (22 Cards)
 						</h3>
 						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-							{tarotCards.majorArcana.map((card) => (
-								<div
-									key={card.number}
-									className="bg-white rounded-lg p-6 shadow-md border border-gray-200 hover:shadow-lg transition-shadow"
-								>
-									<div className="flex items-center justify-between mb-3">
-										<h4 className="text-xl font-bold text-gray-900">{card.name}</h4>
-										<span className="text-sm text-gray-500">#{card.number}</span>
-									</div>
-									<p className="text-sm text-gray-600 mb-2">
-										<strong>Element:</strong> {card.element}
-									</p>
-									<div className="mb-3">
-										<p className="text-sm font-semibold text-green-700 mb-1">Upright:</p>
-										<p className="text-sm text-gray-700">{card.upright}</p>
-									</div>
-									<div>
-										<p className="text-sm font-semibold text-red-700 mb-1">Reversed:</p>
-										<p className="text-sm text-gray-700">{card.reversed}</p>
-									</div>
-								</div>
-							))}
+							{tarotCards.majorArcana.map((card) => {
+								const cardSlug = card.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+								return (
+									<Link
+										key={card.number}
+										href={`/grimoire/tarot/${cardSlug}`}
+										className="bg-white rounded-lg p-6 shadow-md border border-gray-200 hover:shadow-lg hover:border-indigo-300 transition-all block"
+									>
+										<div className="flex items-center justify-between mb-3">
+											<h4 className="text-xl font-bold text-gray-900">{card.name}</h4>
+											<span className="text-sm text-gray-500">#{card.number}</span>
+										</div>
+										<p className="text-sm text-gray-600 mb-2">
+											<strong>Element:</strong> {card.element}
+										</p>
+										<div className="mb-3">
+											<p className="text-sm font-semibold text-green-700 mb-1">Upright:</p>
+											<p className="text-sm text-gray-700 line-clamp-2">{card.upright}</p>
+										</div>
+										<div className="mb-3">
+											<p className="text-sm font-semibold text-red-700 mb-1">Reversed:</p>
+											<p className="text-sm text-gray-700 line-clamp-2">{card.reversed}</p>
+										</div>
+										<p className="text-xs text-indigo-600 mt-3 font-medium">View full meaning →</p>
+									</Link>
+								);
+							})}
 						</div>
 					</div>
 
@@ -508,22 +513,27 @@ export default function GrimoirePage() {
 							Suit of Wands (14 Cards) - Fire Element
 						</h3>
 						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-							{tarotCards.suits.wands.map((card) => (
-								<div
-									key={card.name}
-									className="bg-white rounded-lg p-6 shadow-md border border-gray-200 hover:shadow-lg transition-shadow"
-								>
-									<h4 className="text-lg font-bold text-gray-900 mb-3">{card.name}</h4>
-									<div className="mb-2">
-										<p className="text-sm font-semibold text-green-700 mb-1">Upright:</p>
-										<p className="text-sm text-gray-700">{card.upright}</p>
-									</div>
-									<div>
-										<p className="text-sm font-semibold text-red-700 mb-1">Reversed:</p>
-										<p className="text-sm text-gray-700">{card.reversed}</p>
-									</div>
-								</div>
-							))}
+							{tarotCards.suits.wands.map((card) => {
+								const cardSlug = card.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+								return (
+									<Link
+										key={card.name}
+										href={`/grimoire/tarot/${cardSlug}`}
+										className="bg-white rounded-lg p-6 shadow-md border border-gray-200 hover:shadow-lg hover:border-orange-300 transition-all block"
+									>
+										<h4 className="text-lg font-bold text-gray-900 mb-3">{card.name}</h4>
+										<div className="mb-2">
+											<p className="text-sm font-semibold text-green-700 mb-1">Upright:</p>
+											<p className="text-sm text-gray-700 line-clamp-2">{card.upright}</p>
+										</div>
+										<div className="mb-3">
+											<p className="text-sm font-semibold text-red-700 mb-1">Reversed:</p>
+											<p className="text-sm text-gray-700 line-clamp-2">{card.reversed}</p>
+										</div>
+										<p className="text-xs text-orange-600 mt-3 font-medium">View full meaning →</p>
+									</Link>
+								);
+							})}
 						</div>
 					</div>
 
@@ -533,22 +543,27 @@ export default function GrimoirePage() {
 							Suit of Cups (14 Cards) - Water Element
 						</h3>
 						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-							{tarotCards.suits.cups.map((card) => (
-								<div
-									key={card.name}
-									className="bg-white rounded-lg p-6 shadow-md border border-gray-200 hover:shadow-lg transition-shadow"
-								>
-									<h4 className="text-lg font-bold text-gray-900 mb-3">{card.name}</h4>
-									<div className="mb-2">
-										<p className="text-sm font-semibold text-green-700 mb-1">Upright:</p>
-										<p className="text-sm text-gray-700">{card.upright}</p>
-									</div>
-									<div>
-										<p className="text-sm font-semibold text-red-700 mb-1">Reversed:</p>
-										<p className="text-sm text-gray-700">{card.reversed}</p>
-									</div>
-								</div>
-							))}
+							{tarotCards.suits.cups.map((card) => {
+								const cardSlug = card.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+								return (
+									<Link
+										key={card.name}
+										href={`/grimoire/tarot/${cardSlug}`}
+										className="bg-white rounded-lg p-6 shadow-md border border-gray-200 hover:shadow-lg hover:border-blue-300 transition-all block"
+									>
+										<h4 className="text-lg font-bold text-gray-900 mb-3">{card.name}</h4>
+										<div className="mb-2">
+											<p className="text-sm font-semibold text-green-700 mb-1">Upright:</p>
+											<p className="text-sm text-gray-700 line-clamp-2">{card.upright}</p>
+										</div>
+										<div className="mb-3">
+											<p className="text-sm font-semibold text-red-700 mb-1">Reversed:</p>
+											<p className="text-sm text-gray-700 line-clamp-2">{card.reversed}</p>
+										</div>
+										<p className="text-xs text-blue-600 mt-3 font-medium">View full meaning →</p>
+									</Link>
+								);
+							})}
 						</div>
 					</div>
 
@@ -558,22 +573,27 @@ export default function GrimoirePage() {
 							Suit of Swords (14 Cards) - Air Element
 						</h3>
 						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-							{tarotCards.suits.swords.map((card) => (
-								<div
-									key={card.name}
-									className="bg-white rounded-lg p-6 shadow-md border border-gray-200 hover:shadow-lg transition-shadow"
-								>
-									<h4 className="text-lg font-bold text-gray-900 mb-3">{card.name}</h4>
-									<div className="mb-2">
-										<p className="text-sm font-semibold text-green-700 mb-1">Upright:</p>
-										<p className="text-sm text-gray-700">{card.upright}</p>
-									</div>
-									<div>
-										<p className="text-sm font-semibold text-red-700 mb-1">Reversed:</p>
-										<p className="text-sm text-gray-700">{card.reversed}</p>
-									</div>
-								</div>
-							))}
+							{tarotCards.suits.swords.map((card) => {
+								const cardSlug = card.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+								return (
+									<Link
+										key={card.name}
+										href={`/grimoire/tarot/${cardSlug}`}
+										className="bg-white rounded-lg p-6 shadow-md border border-gray-200 hover:shadow-lg hover:border-gray-400 transition-all block"
+									>
+										<h4 className="text-lg font-bold text-gray-900 mb-3">{card.name}</h4>
+										<div className="mb-2">
+											<p className="text-sm font-semibold text-green-700 mb-1">Upright:</p>
+											<p className="text-sm text-gray-700 line-clamp-2">{card.upright}</p>
+										</div>
+										<div className="mb-3">
+											<p className="text-sm font-semibold text-red-700 mb-1">Reversed:</p>
+											<p className="text-sm text-gray-700 line-clamp-2">{card.reversed}</p>
+										</div>
+										<p className="text-xs text-gray-600 mt-3 font-medium">View full meaning →</p>
+									</Link>
+								);
+							})}
 						</div>
 					</div>
 
@@ -583,22 +603,27 @@ export default function GrimoirePage() {
 							Suit of Pentacles (14 Cards) - Earth Element
 						</h3>
 						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-							{tarotCards.suits.pentacles.map((card) => (
-								<div
-									key={card.name}
-									className="bg-white rounded-lg p-6 shadow-md border border-gray-200 hover:shadow-lg transition-shadow"
-								>
-									<h4 className="text-lg font-bold text-gray-900 mb-3">{card.name}</h4>
-									<div className="mb-2">
-										<p className="text-sm font-semibold text-green-700 mb-1">Upright:</p>
-										<p className="text-sm text-gray-700">{card.upright}</p>
-									</div>
-									<div>
-										<p className="text-sm font-semibold text-red-700 mb-1">Reversed:</p>
-										<p className="text-sm text-gray-700">{card.reversed}</p>
-									</div>
-								</div>
-							))}
+							{tarotCards.suits.pentacles.map((card) => {
+								const cardSlug = card.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+								return (
+									<Link
+										key={card.name}
+										href={`/grimoire/tarot/${cardSlug}`}
+										className="bg-white rounded-lg p-6 shadow-md border border-gray-200 hover:shadow-lg hover:border-amber-300 transition-all block"
+									>
+										<h4 className="text-lg font-bold text-gray-900 mb-3">{card.name}</h4>
+										<div className="mb-2">
+											<p className="text-sm font-semibold text-green-700 mb-1">Upright:</p>
+											<p className="text-sm text-gray-700 line-clamp-2">{card.upright}</p>
+										</div>
+										<div className="mb-3">
+											<p className="text-sm font-semibold text-red-700 mb-1">Reversed:</p>
+											<p className="text-sm text-gray-700 line-clamp-2">{card.reversed}</p>
+										</div>
+										<p className="text-xs text-amber-600 mt-3 font-medium">View full meaning →</p>
+									</Link>
+								);
+							})}
 						</div>
 					</div>
 				</section>
@@ -612,29 +637,34 @@ export default function GrimoirePage() {
 						Explore all 12 zodiac signs, their elements, ruling planets, and key personality traits. Understand the cosmic influences that shape your character and destiny.
 					</p>
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-						{zodiacSigns.map((sign) => (
-							<div
-								key={sign.name}
-								className="bg-white rounded-lg p-6 shadow-md border border-gray-200 hover:shadow-lg transition-shadow"
-							>
-								<div className="flex items-center justify-between mb-3">
-									<h3 className="text-2xl font-bold text-gray-900">{sign.name}</h3>
-									<span className="text-3xl">{sign.symbol}</span>
-								</div>
-								<p className="text-sm text-gray-600 mb-2">
-									<strong>Dates:</strong> {sign.dates}
-								</p>
-								<p className="text-sm text-gray-600 mb-2">
-									<strong>Element:</strong> {sign.element}
-								</p>
-								<p className="text-sm text-gray-600 mb-3">
-									<strong>Ruling Planet:</strong> {sign.planet}
-								</p>
-								<p className="text-sm text-gray-700">
-									<strong>Traits:</strong> {sign.traits}
-								</p>
-							</div>
-						))}
+						{zodiacSigns.map((sign) => {
+							const signSlug = sign.name.toLowerCase();
+							return (
+								<Link
+									key={sign.name}
+									href={`/grimoire/zodiac/${signSlug}`}
+									className="bg-white rounded-lg p-6 shadow-md border border-gray-200 hover:shadow-lg hover:border-indigo-300 transition-all block"
+								>
+									<div className="flex items-center justify-between mb-3">
+										<h3 className="text-2xl font-bold text-gray-900">{sign.name}</h3>
+										<span className="text-3xl">{sign.symbol}</span>
+									</div>
+									<p className="text-sm text-gray-600 mb-2">
+										<strong>Dates:</strong> {sign.dates}
+									</p>
+									<p className="text-sm text-gray-600 mb-2">
+										<strong>Element:</strong> {sign.element}
+									</p>
+									<p className="text-sm text-gray-600 mb-3">
+										<strong>Ruling Planet:</strong> {sign.planet}
+									</p>
+									<p className="text-sm text-gray-700 mb-3">
+										<strong>Traits:</strong> {sign.traits}
+									</p>
+									<p className="text-xs text-indigo-600 mt-3 font-medium">View full guide →</p>
+								</Link>
+							);
+						})}
 					</div>
 				</section>
 
