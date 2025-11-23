@@ -63,11 +63,11 @@ export default function MarketplacePage() {
     <main className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
       <div className="container mx-auto px-4 py-8 md:py-12 max-w-7xl">
         <div className="mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-sky-400 to-indigo-500 bg-clip-text text-transparent">
-            Template Marketplace
+          <h1 className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 bg-clip-text text-transparent">
+            Astrology Templates Marketplace
           </h1>
-          <p className="text-gray-600">
-            Discover and purchase Framer-ready templates created with AI
+          <p className="text-gray-600 text-lg">
+            Discover astrology templates, horoscope designs, tarot card layouts, and mystical website templates for your spiritual business
           </p>
         </div>
 
