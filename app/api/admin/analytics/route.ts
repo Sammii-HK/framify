@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { auth0 } from '@/lib/auth0'
 
 /**
  * Admin analytics endpoint
@@ -7,6 +8,11 @@ import { prisma } from '@/lib/prisma'
  */
 export async function GET(req: NextRequest) {
   try {
+    const session = await auth0.getSession()
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+
     // Use Promise.allSettled to handle potential errors gracefully
     const results = await Promise.allSettled([
       prisma.template.count(),

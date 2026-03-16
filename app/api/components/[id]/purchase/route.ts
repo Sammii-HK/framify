@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth0 } from '@/lib/auth0'
 import { prisma } from '@/lib/prisma'
+import { createCheckoutSession } from '@/lib/stripe'
 
 /**
  * POST /api/components/[id]/purchase
- * Handle component purchase
- * TODO: Integrate with Stripe for payment processing
+ * Handle component purchase via Stripe Checkout
  */
 export async function POST(
   req: NextRequest,
@@ -21,9 +21,7 @@ export async function POST(
     }
 
     const { id } = await params
-    const userId = session.user.sub
 
-    // Get component
     const component = await prisma.component.findUnique({
       where: { id },
     })
@@ -42,37 +40,37 @@ export async function POST(
       )
     }
 
-    // Check if component is free
+    // Free component — grant access immediately
     if (!component.price || component.price === 0) {
-      // Free component - grant access immediately
       await prisma.component.update({
         where: { id },
-        data: {
-          downloadCount: { increment: 1 },
-        },
+        data: { downloadCount: { increment: 1 } },
       })
 
       return NextResponse.json({
         success: true,
-        component: {
-          id: component.id,
-          code: component.code,
-        },
+        component: { id: component.id, code: component.code },
         message: 'Component downloaded successfully',
       })
     }
 
-    // Paid component - TODO: Integrate Stripe
-    // For now, return payment required
-    return NextResponse.json(
-      {
-        error: 'Payment processing not yet implemented',
-        message: 'Stripe integration required for paid components',
-        componentId: component.id,
-        price: component.price,
-      },
-      { status: 501 }
-    )
+    // Paid component — create Stripe Checkout session
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+
+    const checkoutSession = await createCheckoutSession({
+      productName: component.name || 'CraftMyPage Component',
+      productId: component.id,
+      productType: 'component',
+      priceInCents: Math.round(component.price * 100),
+      customerEmail: session.user.email || undefined,
+      successUrl: `${appUrl}/purchase/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancelUrl: `${appUrl}/marketplace`,
+    })
+
+    return NextResponse.json({
+      url: checkoutSession.url,
+      sessionId: checkoutSession.id,
+    })
   } catch (error) {
     console.error('Error processing purchase:', error)
     return NextResponse.json(

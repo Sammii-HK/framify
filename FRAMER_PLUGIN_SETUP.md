@@ -5,6 +5,7 @@ This guide explains how to set up and use the Framify Framer plugin to browse an
 ## Overview
 
 The Framify Framer plugin allows you to:
+
 - Browse public templates and components from Framify
 - Search and filter items
 - Insert code directly into Framer projects with one click
@@ -15,6 +16,7 @@ The Framify Framer plugin allows you to:
 The plugin consists of two parts:
 
 1. **Backend API Endpoints** (in `/app/api/plugin/`)
+
    - `/api/plugin/templates/[id]` - Returns template WITH code
    - `/api/plugin/components/[id]` - Returns component WITH code
    - These endpoints are plugin-only and include full code (unlike public endpoints)
@@ -29,10 +31,12 @@ The plugin consists of two parts:
 ### 1. API Endpoints
 
 The plugin-specific endpoints are already created:
+
 - ✅ `/app/api/plugin/templates/[id]/route.ts`
 - ✅ `/app/api/plugin/components/[id]/route.ts`
 
 These endpoints:
+
 - Return full code (unlike public endpoints)
 - Only accessible to plugins (CORS configured)
 - Increment view counts
@@ -40,6 +44,7 @@ These endpoints:
 ### 2. Components Support
 
 Components are already supported:
+
 - ✅ Component model in Prisma schema
 - ✅ `/app/api/components/public/route.ts` - List public components
 - ✅ `/app/api/components/route.ts` - CRUD operations
@@ -47,6 +52,7 @@ Components are already supported:
 ### 3. CORS Configuration
 
 CORS is configured in `/lib/cors.ts` to allow:
+
 - `https://framer.com`
 - `https://*.framer.com`
 - Your Framify domain
@@ -62,34 +68,40 @@ CORS is configured in `/lib/cors.ts` to allow:
 ### Setup
 
 1. **Navigate to plugin directory:**
+
 ```bash
 cd framer-plugin
 ```
 
 2. **Install dependencies:**
+
 ```bash
 npm install
 ```
 
 3. **Configure API URL:**
-   
+
    Update the API base URL in:
+
    - `src/utils/api.ts` - For UI components
    - `src/code.tsx` - For plugin code
-   
+
    Default: `https://framify-nine.vercel.app`
-   
+
    For local development:
+
    ```typescript
-   const API_BASE_URL = 'http://localhost:3000';
+   const API_BASE_URL = "http://localhost:3000";
    ```
 
 4. **Build the plugin:**
+
 ```bash
 npm run build
 ```
 
 5. **Development mode:**
+
 ```bash
 npm run dev
 ```
@@ -118,6 +130,7 @@ framer-plugin/
 ### Development
 
 1. Build the plugin:
+
 ```bash
 cd framer-plugin
 npm run build
@@ -133,12 +146,14 @@ npm run build
 ### Production
 
 1. Build for production:
+
 ```bash
 cd framer-plugin
 npm run build
 ```
 
 2. Package the plugin:
+
    - The built files should be in the plugin directory
    - Follow Framer's plugin submission guidelines
 
@@ -148,10 +163,12 @@ npm run build
 ## Usage
 
 1. **Open Plugin:**
+
    - In Framer, go to Plugins menu
    - Select "Framify"
 
 2. **Browse:**
+
    - Switch between Templates and Components tabs
    - Use search to filter items
    - Click on any item to see details
@@ -199,6 +216,7 @@ npm run build
 ### Framer Plugin API
 
 The actual Framer Plugin API may vary. The current implementation includes:
+
 - Fallback methods for code insertion
 - Message passing between UI and plugin code
 - Error handling
@@ -208,16 +226,19 @@ You may need to adjust the code insertion method based on the actual Framer Plug
 ### Testing
 
 1. Test API endpoints directly:
+
 ```bash
 curl http://localhost:3000/api/plugin/templates/[template-id]
 ```
 
 2. Test plugin UI:
+
 - Run `npm run dev` in plugin directory
 - Open plugin in Framer
 - Check browser console for errors
 
 3. Test code insertion:
+
 - Insert a template/component
 - Verify it appears in Framer
 - Check for any errors
@@ -232,7 +253,7 @@ curl http://localhost:3000/api/plugin/templates/[template-id]
 ## Support
 
 For issues or questions:
+
 - Check Framer Plugin documentation
 - Review API endpoint logs
 - Check browser/Framer console for errors
-

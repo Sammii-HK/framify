@@ -1,0 +1,1212 @@
+'use client'
+
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
+
+type PaletteKey = 'dark-celestial' | 'earthy-sage' | 'ethereal-light' | 'crystal-rose' | 'steel-blue' | 'warm-amber'
+
+const palettes: Record<PaletteKey, { name: string; preview: string; description: string }> = {
+  'dark-celestial': { name: 'Dark Celestial', preview: '#0D0B1A', description: 'Deep indigo with golden starlight' },
+  'earthy-sage': { name: 'Earthy Sage', preview: '#1A1F1A', description: 'Forest greens with warm stone' },
+  'ethereal-light': { name: 'Ethereal Light', preview: '#F8F6FC', description: 'Soft lavender with gentle violet' },
+  'crystal-rose': { name: 'Crystal Rose', preview: '#1A1517', description: 'Warm blush with dusty rose' },
+  'steel-blue': { name: 'Steel Blue', preview: '#0F1923', description: 'Dark steel with strong blue' },
+  'warm-amber': { name: 'Warm Amber', preview: '#1F1710', description: 'Dark brown with warm amber gold' },
+}
+
+interface Service {
+  title: string
+  description: string
+  price: string
+  duration: string
+}
+
+interface Testimonial {
+  quote: string
+  name: string
+  role: string
+}
+
+interface Treatment {
+  name: string
+  price: string
+  duration: string
+}
+
+interface TeamMember {
+  name: string
+  role: string
+}
+
+interface MenuItem {
+  name: string
+  description: string
+  price: string
+}
+
+interface MenuCategory {
+  name: string
+  items: MenuItem[]
+}
+
+interface OpeningHour {
+  day: string
+  hours: string
+}
+
+interface Project {
+  title: string
+  description: string
+  imageUrl?: string
+}
+
+interface ProcessStep {
+  title: string
+  description: string
+}
+
+interface SiteContent {
+  templateType: string
+  businessName: string
+  tagline: string
+  description: string
+  palette: PaletteKey
+  services: Service[]
+  testimonials: Testimonial[]
+  contact: {
+    email: string
+    phone: string
+    location: string
+  }
+  social: {
+    instagram: string
+    facebook: string
+    twitter: string
+  }
+  // Template-specific optional fields
+  coverageArea?: string
+  accreditations?: string[]
+  emergencyAvailable?: boolean
+  treatments?: Treatment[]
+  teamMembers?: TeamMember[]
+  bookingUrl?: string
+  menuCategories?: MenuCategory[]
+  openingHours?: OpeningHour[]
+  cuisineType?: string
+  projects?: Project[]
+  specialisms?: string[]
+  processSteps?: ProcessStep[]
+}
+
+const templateTypes = [
+  { id: 'standard', name: 'Standard', description: 'Works for any business' },
+  { id: 'trades', name: 'Trades & Services', description: 'Plumbers, builders, electricians' },
+  { id: 'salon', name: 'Hair & Beauty', description: 'Salons, spas, beauty studios' },
+  { id: 'restaurant', name: 'Food & Drink', description: 'Restaurants, cafes, takeaways' },
+  { id: 'portfolio', name: 'Portfolio', description: 'Photographers, designers, artists' },
+  { id: 'consultant', name: 'Professional', description: 'Consultants, coaches, freelancers' },
+]
+
+function TemplateIcon({ id, className }: { id: string; className?: string }) {
+  const cls = className || 'w-8 h-8'
+  switch (id) {
+    case 'standard':
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="2" y1="12" x2="22" y2="12" />
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+        </svg>
+      )
+    case 'trades':
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+        </svg>
+      )
+    case 'salon':
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="6" cy="6" r="3" />
+          <path d="M8.12 8.12L12 12" />
+          <path d="M20 4L8.12 15.88" />
+          <circle cx="6" cy="18" r="3" />
+          <path d="M14.8 14.8L20 20" />
+        </svg>
+      )
+    case 'restaurant':
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
+          <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
+          <line x1="6" y1="1" x2="6" y2="4" />
+          <line x1="10" y1="1" x2="10" y2="4" />
+          <line x1="14" y1="1" x2="14" y2="4" />
+        </svg>
+      )
+    case 'portfolio':
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+          <circle cx="12" cy="13" r="4" />
+        </svg>
+      )
+    case 'consultant':
+      return (
+        <svg className={cls} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+        </svg>
+      )
+    default:
+      return null
+  }
+}
+
+const defaultDays: OpeningHour[] = [
+  { day: 'Monday', hours: '' },
+  { day: 'Tuesday', hours: '' },
+  { day: 'Wednesday', hours: '' },
+  { day: 'Thursday', hours: '' },
+  { day: 'Friday', hours: '' },
+  { day: 'Saturday', hours: '' },
+  { day: 'Sunday', hours: '' },
+]
+
+const defaultContent: SiteContent = {
+  templateType: '',
+  businessName: '',
+  tagline: '',
+  description: '',
+  palette: 'dark-celestial',
+  services: [
+    { title: '', description: '', price: '', duration: '' },
+    { title: '', description: '', price: '', duration: '' },
+    { title: '', description: '', price: '', duration: '' },
+  ],
+  testimonials: [
+    { quote: '', name: '', role: '' },
+    { quote: '', name: '', role: '' },
+    { quote: '', name: '', role: '' },
+  ],
+  contact: { email: '', phone: '', location: '' },
+  social: { instagram: '', facebook: '', twitter: '' },
+}
+
+function getSteps(templateType: string): string[] {
+  const base = ['Template', 'Business', 'Style']
+  const templateStep = templateType === 'trades' ? 'Trade Details'
+    : templateType === 'salon' ? 'Salon Details'
+    : templateType === 'restaurant' ? 'Menu & Hours'
+    : templateType === 'portfolio' ? 'Projects'
+    : templateType === 'consultant' ? 'Expertise'
+    : 'Services'
+  return [...base, templateStep, 'Testimonials', 'Contact', 'Preview']
+}
+
+export default function GeneratePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-neutral-50 flex items-center justify-center"><div className="w-10 h-10 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" /></div>}>
+      <GeneratePageInner />
+    </Suspense>
+  )
+}
+
+function GeneratePageInner() {
+  const searchParams = useSearchParams()
+  const [content, setContent] = useState<SiteContent>(defaultContent)
+  const [step, setStep] = useState(0)
+  const [generating, setGenerating] = useState(false)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [publishing, setPublishing] = useState(false)
+  const [publishedUrl, setPublishedUrl] = useState<string | null>(null)
+  const [subdomain, setSubdomain] = useState('')
+  const [editingSiteId, setEditingSiteId] = useState<string | null>(null)
+  const [newAccreditation, setNewAccreditation] = useState('')
+  const [newSpecialism, setNewSpecialism] = useState('')
+
+  // Load site data when editing an existing site
+  useEffect(() => {
+    const editId = searchParams.get('edit')
+    if (!editId) return
+
+    try {
+      const raw = localStorage.getItem('craftmypage_edit_site')
+      if (raw) {
+        const site = JSON.parse(raw)
+        if (site.id === editId) {
+          setContent(site.content)
+          setSubdomain(site.subdomain || '')
+          setEditingSiteId(site.id)
+          localStorage.removeItem('craftmypage_edit_site')
+        }
+      }
+    } catch {
+      // ignore malformed data
+    }
+  }, [searchParams])
+
+  const steps = getSteps(content.templateType)
+  const lastStep = steps.length - 1
+
+  function updateService(index: number, field: keyof Service, value: string) {
+    const updated = [...content.services]
+    updated[index] = { ...updated[index], [field]: value }
+    setContent({ ...content, services: updated })
+  }
+
+  function updateTestimonial(index: number, field: keyof Testimonial, value: string) {
+    const updated = [...content.testimonials]
+    updated[index] = { ...updated[index], [field]: value }
+    setContent({ ...content, testimonials: updated })
+  }
+
+  function updateTreatment(index: number, field: keyof Treatment, value: string) {
+    const treatments = [...(content.treatments || [])]
+    treatments[index] = { ...treatments[index], [field]: value }
+    setContent({ ...content, treatments })
+  }
+
+  function addTreatment() {
+    setContent({ ...content, treatments: [...(content.treatments || []), { name: '', price: '', duration: '' }] })
+  }
+
+  function removeTreatment(index: number) {
+    const treatments = [...(content.treatments || [])]
+    treatments.splice(index, 1)
+    setContent({ ...content, treatments })
+  }
+
+  function updateTeamMember(index: number, field: keyof TeamMember, value: string) {
+    const teamMembers = [...(content.teamMembers || [])]
+    teamMembers[index] = { ...teamMembers[index], [field]: value }
+    setContent({ ...content, teamMembers })
+  }
+
+  function addTeamMember() {
+    setContent({ ...content, teamMembers: [...(content.teamMembers || []), { name: '', role: '' }] })
+  }
+
+  function removeTeamMember(index: number) {
+    const teamMembers = [...(content.teamMembers || [])]
+    teamMembers.splice(index, 1)
+    setContent({ ...content, teamMembers })
+  }
+
+  function updateMenuCategory(catIndex: number, field: 'name', value: string) {
+    const cats = [...(content.menuCategories || [])]
+    cats[catIndex] = { ...cats[catIndex], [field]: value }
+    setContent({ ...content, menuCategories: cats })
+  }
+
+  function updateMenuItem(catIndex: number, itemIndex: number, field: keyof MenuItem, value: string) {
+    const cats = [...(content.menuCategories || [])]
+    const items = [...cats[catIndex].items]
+    items[itemIndex] = { ...items[itemIndex], [field]: value }
+    cats[catIndex] = { ...cats[catIndex], items }
+    setContent({ ...content, menuCategories: cats })
+  }
+
+  function addMenuCategory() {
+    setContent({
+      ...content,
+      menuCategories: [...(content.menuCategories || []), { name: '', items: [{ name: '', description: '', price: '' }] }],
+    })
+  }
+
+  function removeMenuCategory(index: number) {
+    const cats = [...(content.menuCategories || [])]
+    cats.splice(index, 1)
+    setContent({ ...content, menuCategories: cats })
+  }
+
+  function addMenuItem(catIndex: number) {
+    const cats = [...(content.menuCategories || [])]
+    cats[catIndex] = { ...cats[catIndex], items: [...cats[catIndex].items, { name: '', description: '', price: '' }] }
+    setContent({ ...content, menuCategories: cats })
+  }
+
+  function removeMenuItem(catIndex: number, itemIndex: number) {
+    const cats = [...(content.menuCategories || [])]
+    const items = [...cats[catIndex].items]
+    items.splice(itemIndex, 1)
+    cats[catIndex] = { ...cats[catIndex], items }
+    setContent({ ...content, menuCategories: cats })
+  }
+
+  function updateOpeningHour(index: number, hours: string) {
+    const oh = [...(content.openingHours || defaultDays)]
+    oh[index] = { ...oh[index], hours }
+    setContent({ ...content, openingHours: oh })
+  }
+
+  function updateProject(index: number, field: keyof Project, value: string) {
+    const projects = [...(content.projects || [])]
+    projects[index] = { ...projects[index], [field]: value }
+    setContent({ ...content, projects })
+  }
+
+  function addProject() {
+    setContent({ ...content, projects: [...(content.projects || []), { title: '', description: '', imageUrl: '' }] })
+  }
+
+  function removeProject(index: number) {
+    const projects = [...(content.projects || [])]
+    projects.splice(index, 1)
+    setContent({ ...content, projects })
+  }
+
+  function updateProcessStep(index: number, field: keyof ProcessStep, value: string) {
+    const processSteps = [...(content.processSteps || [])]
+    processSteps[index] = { ...processSteps[index], [field]: value }
+    setContent({ ...content, processSteps })
+  }
+
+  function addProcessStep() {
+    setContent({ ...content, processSteps: [...(content.processSteps || []), { title: '', description: '' }] })
+  }
+
+  function removeProcessStep(index: number) {
+    const processSteps = [...(content.processSteps || [])]
+    processSteps.splice(index, 1)
+    setContent({ ...content, processSteps })
+  }
+
+  function addAccreditation() {
+    const val = newAccreditation.trim()
+    if (!val) return
+    setContent({ ...content, accreditations: [...(content.accreditations || []), val] })
+    setNewAccreditation('')
+  }
+
+  function removeAccreditation(index: number) {
+    const acc = [...(content.accreditations || [])]
+    acc.splice(index, 1)
+    setContent({ ...content, accreditations: acc })
+  }
+
+  function addSpecialism() {
+    const val = newSpecialism.trim()
+    if (!val) return
+    setContent({ ...content, specialisms: [...(content.specialisms || []), val] })
+    setNewSpecialism('')
+  }
+
+  function removeSpecialism(index: number) {
+    const specs = [...(content.specialisms || [])]
+    specs.splice(index, 1)
+    setContent({ ...content, specialisms: specs })
+  }
+
+  function selectTemplate(id: string) {
+    const updates: Partial<SiteContent> = { templateType: id }
+    // Initialise template-specific defaults
+    if (id === 'trades') {
+      updates.coverageArea = content.coverageArea || ''
+      updates.accreditations = content.accreditations || []
+      updates.emergencyAvailable = content.emergencyAvailable ?? false
+    } else if (id === 'salon') {
+      updates.treatments = content.treatments || [{ name: '', price: '', duration: '' }]
+      updates.teamMembers = content.teamMembers || [{ name: '', role: '' }]
+      updates.bookingUrl = content.bookingUrl || ''
+    } else if (id === 'restaurant') {
+      updates.cuisineType = content.cuisineType || ''
+      updates.menuCategories = content.menuCategories || [{ name: '', items: [{ name: '', description: '', price: '' }] }]
+      updates.openingHours = content.openingHours || [...defaultDays]
+    } else if (id === 'portfolio') {
+      updates.projects = content.projects || [{ title: '', description: '', imageUrl: '' }]
+    } else if (id === 'consultant') {
+      updates.specialisms = content.specialisms || []
+      updates.processSteps = content.processSteps || [{ title: '', description: '' }]
+    }
+    setContent({ ...content, ...updates })
+  }
+
+  async function handleGenerate() {
+    setGenerating(true)
+    try {
+      const res = await fetch('/api/generate-site', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(content),
+      })
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      setPreviewUrl(url)
+    } catch (err) {
+      console.error('Generation failed:', err)
+    } finally {
+      setGenerating(false)
+    }
+  }
+
+  function handleDownload() {
+    if (!previewUrl) return
+    const a = document.createElement('a')
+    a.href = previewUrl
+    a.download = `${content.businessName.toLowerCase().replace(/\s+/g, '-') || 'my-site'}.html`
+    a.click()
+  }
+
+  async function handlePublish() {
+    const slug = subdomain || content.businessName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    if (!slug) return
+    setPublishing(true)
+    try {
+      const res = await fetch('/api/publish-site', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content, subdomain: slug }),
+      })
+      const data = await res.json()
+      if (data.url) {
+        setPublishedUrl(data.url)
+      } else {
+        console.error('Publish failed:', data.error)
+        alert(data.error || 'Failed to publish')
+      }
+    } catch (err) {
+      console.error('Publish failed:', err)
+    } finally {
+      setPublishing(false)
+    }
+  }
+
+  const inputClass = "w-full p-3 rounded-lg border border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+  const labelClass = "block text-sm font-medium text-neutral-700 mb-1"
+  const addBtnClass = "text-sm text-blue-600 hover:text-blue-700 font-medium mt-2"
+  const removeBtnClass = "text-sm text-red-500 hover:text-red-600"
+  const tagClass = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 text-neutral-700 text-sm"
+
+  // Map step index to content type
+  // Steps: 0=Template, 1=Business, 2=Style, 3=Template-specific, 4=Testimonials, 5=Contact, 6=Preview
+  const stepIndex = {
+    template: 0,
+    business: 1,
+    style: 2,
+    templateSpecific: 3,
+    testimonials: 4,
+    contact: 5,
+    preview: 6,
+  }
+
+  return (
+    <div className="min-h-screen bg-neutral-50 py-12 px-4">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-3xl font-bold text-neutral-900 mb-2">Build your website</h1>
+        <p className="text-neutral-500 mb-8">Fill in your details and get a beautiful website in seconds.</p>
+
+        {/* Step indicator */}
+        <div className="flex gap-1 mb-8">
+          {steps.map((s, i) => (
+            <button
+              key={s}
+              onClick={() => i <= step && setStep(i)}
+              className={`flex-1 h-1.5 rounded-full transition-colors ${
+                i <= step ? 'bg-blue-500' : 'bg-neutral-200'
+              }`}
+            />
+          ))}
+        </div>
+        <p className="text-sm text-neutral-500 mb-6">Step {step + 1}: {steps[step]}</p>
+
+        {/* Step 0: Template picker */}
+        {step === stepIndex.template && (
+          <div className="space-y-4">
+            <p className="text-sm text-neutral-600 mb-2">What type of business is this for?</p>
+            <div className="grid grid-cols-2 gap-4">
+              {templateTypes.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => selectTemplate(t.id)}
+                  className={`p-5 rounded-xl border-2 text-left transition-all ${
+                    content.templateType === t.id
+                      ? 'border-blue-500 ring-2 ring-blue-200'
+                      : 'border-neutral-200 hover:border-neutral-300'
+                  }`}
+                >
+                  <div className="text-neutral-600 mb-3">
+                    <TemplateIcon id={t.id} className="w-8 h-8" />
+                  </div>
+                  <p className="font-medium text-neutral-900">{t.name}</p>
+                  <p className="text-sm text-neutral-500">{t.description}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Step 1: Business basics */}
+        {step === stepIndex.business && (
+          <div className="space-y-4">
+            <div>
+              <label className={labelClass}>Business name</label>
+              <input
+                className={inputClass}
+                placeholder="Hartley Plumbing"
+                value={content.businessName}
+                onChange={e => setContent({ ...content, businessName: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Tagline</label>
+              <input
+                className={inputClass}
+                placeholder="Quality work you can trust"
+                value={content.tagline}
+                onChange={e => setContent({ ...content, tagline: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>About your business</label>
+              <textarea
+                className={inputClass}
+                rows={3}
+                placeholder="A brief description of what you do and who you serve..."
+                value={content.description}
+                onChange={e => setContent({ ...content, description: e.target.value })}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Step 2: Palette selection */}
+        {step === stepIndex.style && (
+          <div className="grid grid-cols-2 gap-4">
+            {(Object.entries(palettes) as [PaletteKey, typeof palettes[PaletteKey]][]).map(([key, palette]) => (
+              <button
+                key={key}
+                onClick={() => setContent({ ...content, palette: key })}
+                className={`p-4 rounded-xl border-2 text-left transition-all ${
+                  content.palette === key
+                    ? 'border-blue-500 ring-2 ring-blue-200'
+                    : 'border-neutral-200 hover:border-neutral-300'
+                }`}
+              >
+                <div
+                  className="w-full h-20 rounded-lg mb-3"
+                  style={{ backgroundColor: palette.preview }}
+                />
+                <p className="font-medium text-neutral-900">{palette.name}</p>
+                <p className="text-sm text-neutral-500">{palette.description}</p>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Step 3: Template-specific fields */}
+        {step === stepIndex.templateSpecific && (
+          <div className="space-y-6">
+            {/* Standard — Services (same as before) */}
+            {content.templateType === 'standard' && (
+              <>
+                {content.services.map((service, i) => (
+                  <div key={i} className="p-4 rounded-xl border border-neutral-200 bg-white space-y-3">
+                    <p className="text-sm font-medium text-neutral-500">Service {i + 1}</p>
+                    <input
+                      className={inputClass}
+                      placeholder="Emergency Repairs"
+                      value={service.title}
+                      onChange={e => updateService(i, 'title', e.target.value)}
+                    />
+                    <textarea
+                      className={inputClass}
+                      rows={2}
+                      placeholder="A brief description of this service..."
+                      value={service.description}
+                      onChange={e => updateService(i, 'description', e.target.value)}
+                    />
+                    <div className="grid grid-cols-2 gap-3">
+                      <input
+                        className={inputClass}
+                        placeholder="From £75"
+                        value={service.price}
+                        onChange={e => updateService(i, 'price', e.target.value)}
+                      />
+                      <input
+                        className={inputClass}
+                        placeholder="60 minutes"
+                        value={service.duration}
+                        onChange={e => updateService(i, 'duration', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
+
+            {/* Trades */}
+            {content.templateType === 'trades' && (
+              <>
+                <div>
+                  <label className={labelClass}>Coverage area</label>
+                  <input
+                    className={inputClass}
+                    placeholder="Greater London, Surrey, Kent"
+                    value={content.coverageArea || ''}
+                    onChange={e => setContent({ ...content, coverageArea: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <label className={labelClass}>Accreditations</label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {(content.accreditations || []).map((acc, i) => (
+                      <span key={i} className={tagClass}>
+                        {acc}
+                        <button onClick={() => removeAccreditation(i)} className="text-neutral-400 hover:text-red-500">&times;</button>
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      className={inputClass}
+                      placeholder="Gas Safe, NICEIC, NAPIT..."
+                      value={newAccreditation}
+                      onChange={e => setNewAccreditation(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addAccreditation() } }}
+                    />
+                    <button
+                      onClick={addAccreditation}
+                      className="px-4 py-2 text-sm bg-neutral-100 text-neutral-700 rounded-lg hover:bg-neutral-200 whitespace-nowrap"
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={content.emergencyAvailable ?? false}
+                      onChange={e => setContent({ ...content, emergencyAvailable: e.target.checked })}
+                    />
+                    <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                  </label>
+                  <span className="text-sm font-medium text-neutral-700">Emergency callout available</span>
+                </div>
+
+                <hr className="border-neutral-200" />
+                <p className="text-sm font-medium text-neutral-700">Services</p>
+                {content.services.map((service, i) => (
+                  <div key={i} className="p-4 rounded-xl border border-neutral-200 bg-white space-y-3">
+                    <p className="text-sm font-medium text-neutral-500">Service {i + 1}</p>
+                    <input
+                      className={inputClass}
+                      placeholder="Boiler installation"
+                      value={service.title}
+                      onChange={e => updateService(i, 'title', e.target.value)}
+                    />
+                    <textarea
+                      className={inputClass}
+                      rows={2}
+                      placeholder="A brief description of this service..."
+                      value={service.description}
+                      onChange={e => updateService(i, 'description', e.target.value)}
+                    />
+                    <div className="grid grid-cols-2 gap-3">
+                      <input
+                        className={inputClass}
+                        placeholder="From £75"
+                        value={service.price}
+                        onChange={e => updateService(i, 'price', e.target.value)}
+                      />
+                      <input
+                        className={inputClass}
+                        placeholder="2 hours"
+                        value={service.duration}
+                        onChange={e => updateService(i, 'duration', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
+
+            {/* Salon */}
+            {content.templateType === 'salon' && (
+              <>
+                <div>
+                  <label className={labelClass}>Booking URL (optional)</label>
+                  <input
+                    className={inputClass}
+                    placeholder="https://booksy.com/your-salon"
+                    value={content.bookingUrl || ''}
+                    onChange={e => setContent({ ...content, bookingUrl: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium text-neutral-700 mb-3">Treatments</p>
+                  {(content.treatments || []).map((treatment, i) => (
+                    <div key={i} className="p-4 rounded-xl border border-neutral-200 bg-white space-y-3 mb-3">
+                      <div className="flex justify-between items-center">
+                        <p className="text-sm font-medium text-neutral-500">Treatment {i + 1}</p>
+                        {(content.treatments || []).length > 1 && (
+                          <button onClick={() => removeTreatment(i)} className={removeBtnClass}>Remove</button>
+                        )}
+                      </div>
+                      <input
+                        className={inputClass}
+                        placeholder="Cut and blow dry"
+                        value={treatment.name}
+                        onChange={e => updateTreatment(i, 'name', e.target.value)}
+                      />
+                      <div className="grid grid-cols-2 gap-3">
+                        <input
+                          className={inputClass}
+                          placeholder="£45"
+                          value={treatment.price}
+                          onChange={e => updateTreatment(i, 'price', e.target.value)}
+                        />
+                        <input
+                          className={inputClass}
+                          placeholder="45 minutes"
+                          value={treatment.duration}
+                          onChange={e => updateTreatment(i, 'duration', e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  <button onClick={addTreatment} className={addBtnClass}>+ Add another treatment</button>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium text-neutral-700 mb-3">Team members</p>
+                  {(content.teamMembers || []).map((member, i) => (
+                    <div key={i} className="p-4 rounded-xl border border-neutral-200 bg-white space-y-3 mb-3">
+                      <div className="flex justify-between items-center">
+                        <p className="text-sm font-medium text-neutral-500">Team member {i + 1}</p>
+                        {(content.teamMembers || []).length > 1 && (
+                          <button onClick={() => removeTeamMember(i)} className={removeBtnClass}>Remove</button>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <input
+                          className={inputClass}
+                          placeholder="Sarah"
+                          value={member.name}
+                          onChange={e => updateTeamMember(i, 'name', e.target.value)}
+                        />
+                        <input
+                          className={inputClass}
+                          placeholder="Senior stylist"
+                          value={member.role}
+                          onChange={e => updateTeamMember(i, 'role', e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  <button onClick={addTeamMember} className={addBtnClass}>+ Add another team member</button>
+                </div>
+              </>
+            )}
+
+            {/* Restaurant */}
+            {content.templateType === 'restaurant' && (
+              <>
+                <div>
+                  <label className={labelClass}>Cuisine type</label>
+                  <input
+                    className={inputClass}
+                    placeholder="Italian, Indian, Modern British..."
+                    value={content.cuisineType || ''}
+                    onChange={e => setContent({ ...content, cuisineType: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium text-neutral-700 mb-3">Menu</p>
+                  {(content.menuCategories || []).map((cat, ci) => (
+                    <div key={ci} className="p-4 rounded-xl border border-neutral-200 bg-white space-y-3 mb-4">
+                      <div className="flex justify-between items-center">
+                        <input
+                          className={`${inputClass} font-medium`}
+                          placeholder="Starters, Mains, Desserts..."
+                          value={cat.name}
+                          onChange={e => updateMenuCategory(ci, 'name', e.target.value)}
+                        />
+                        {(content.menuCategories || []).length > 1 && (
+                          <button onClick={() => removeMenuCategory(ci)} className={`${removeBtnClass} ml-2 whitespace-nowrap`}>Remove category</button>
+                        )}
+                      </div>
+                      {cat.items.map((item, ii) => (
+                        <div key={ii} className="pl-3 border-l-2 border-neutral-100 space-y-2">
+                          <div className="flex justify-between items-center">
+                            <p className="text-xs text-neutral-400">Item {ii + 1}</p>
+                            {cat.items.length > 1 && (
+                              <button onClick={() => removeMenuItem(ci, ii)} className={removeBtnClass}>Remove</button>
+                            )}
+                          </div>
+                          <div className="grid grid-cols-3 gap-2">
+                            <input
+                              className={inputClass}
+                              placeholder="Dish name"
+                              value={item.name}
+                              onChange={e => updateMenuItem(ci, ii, 'name', e.target.value)}
+                            />
+                            <input
+                              className={inputClass}
+                              placeholder="Description"
+                              value={item.description}
+                              onChange={e => updateMenuItem(ci, ii, 'description', e.target.value)}
+                            />
+                            <input
+                              className={inputClass}
+                              placeholder="£12.50"
+                              value={item.price}
+                              onChange={e => updateMenuItem(ci, ii, 'price', e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                      <button onClick={() => addMenuItem(ci)} className={addBtnClass}>+ Add another item</button>
+                    </div>
+                  ))}
+                  <button onClick={addMenuCategory} className={addBtnClass}>+ Add another category</button>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium text-neutral-700 mb-3">Opening hours</p>
+                  <div className="space-y-2">
+                    {(content.openingHours || defaultDays).map((oh, i) => (
+                      <div key={oh.day} className="grid grid-cols-3 gap-3 items-center">
+                        <span className="text-sm text-neutral-600">{oh.day}</span>
+                        <input
+                          className={`${inputClass} col-span-2`}
+                          placeholder="9:00 - 22:00 or Closed"
+                          value={oh.hours}
+                          onChange={e => updateOpeningHour(i, e.target.value)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Portfolio */}
+            {content.templateType === 'portfolio' && (
+              <>
+                <p className="text-sm font-medium text-neutral-700 mb-3">Projects</p>
+                {(content.projects || []).map((project, i) => (
+                  <div key={i} className="p-4 rounded-xl border border-neutral-200 bg-white space-y-3 mb-3">
+                    <div className="flex justify-between items-center">
+                      <p className="text-sm font-medium text-neutral-500">Project {i + 1}</p>
+                      {(content.projects || []).length > 1 && (
+                        <button onClick={() => removeProject(i)} className={removeBtnClass}>Remove</button>
+                      )}
+                    </div>
+                    <input
+                      className={inputClass}
+                      placeholder="Project title"
+                      value={project.title}
+                      onChange={e => updateProject(i, 'title', e.target.value)}
+                    />
+                    <textarea
+                      className={inputClass}
+                      rows={2}
+                      placeholder="Brief description of the project..."
+                      value={project.description}
+                      onChange={e => updateProject(i, 'description', e.target.value)}
+                    />
+                    <input
+                      className={inputClass}
+                      placeholder="Image URL (optional)"
+                      value={project.imageUrl || ''}
+                      onChange={e => updateProject(i, 'imageUrl', e.target.value)}
+                    />
+                  </div>
+                ))}
+                <button onClick={addProject} className={addBtnClass}>+ Add another project</button>
+              </>
+            )}
+
+            {/* Consultant */}
+            {content.templateType === 'consultant' && (
+              <>
+                <div>
+                  <label className={labelClass}>Specialisms</label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {(content.specialisms || []).map((spec, i) => (
+                      <span key={i} className={tagClass}>
+                        {spec}
+                        <button onClick={() => removeSpecialism(i)} className="text-neutral-400 hover:text-red-500">&times;</button>
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      className={inputClass}
+                      placeholder="Strategy, leadership, marketing..."
+                      value={newSpecialism}
+                      onChange={e => setNewSpecialism(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSpecialism() } }}
+                    />
+                    <button
+                      onClick={addSpecialism}
+                      className="px-4 py-2 text-sm bg-neutral-100 text-neutral-700 rounded-lg hover:bg-neutral-200 whitespace-nowrap"
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium text-neutral-700 mb-3">Process steps</p>
+                  {(content.processSteps || []).map((ps, i) => (
+                    <div key={i} className="p-4 rounded-xl border border-neutral-200 bg-white space-y-3 mb-3">
+                      <div className="flex justify-between items-center">
+                        <p className="text-sm font-medium text-neutral-500">Step {i + 1}</p>
+                        {(content.processSteps || []).length > 1 && (
+                          <button onClick={() => removeProcessStep(i)} className={removeBtnClass}>Remove</button>
+                        )}
+                      </div>
+                      <input
+                        className={inputClass}
+                        placeholder="Discovery call"
+                        value={ps.title}
+                        onChange={e => updateProcessStep(i, 'title', e.target.value)}
+                      />
+                      <textarea
+                        className={inputClass}
+                        rows={2}
+                        placeholder="What happens in this step..."
+                        value={ps.description}
+                        onChange={e => updateProcessStep(i, 'description', e.target.value)}
+                      />
+                    </div>
+                  ))}
+                  <button onClick={addProcessStep} className={addBtnClass}>+ Add another step</button>
+                </div>
+
+                <hr className="border-neutral-200" />
+                <p className="text-sm font-medium text-neutral-700">Services</p>
+                {content.services.map((service, i) => (
+                  <div key={i} className="p-4 rounded-xl border border-neutral-200 bg-white space-y-3">
+                    <p className="text-sm font-medium text-neutral-500">Service {i + 1}</p>
+                    <input
+                      className={inputClass}
+                      placeholder="1:1 coaching"
+                      value={service.title}
+                      onChange={e => updateService(i, 'title', e.target.value)}
+                    />
+                    <textarea
+                      className={inputClass}
+                      rows={2}
+                      placeholder="A brief description of this service..."
+                      value={service.description}
+                      onChange={e => updateService(i, 'description', e.target.value)}
+                    />
+                    <div className="grid grid-cols-2 gap-3">
+                      <input
+                        className={inputClass}
+                        placeholder="From £150"
+                        value={service.price}
+                        onChange={e => updateService(i, 'price', e.target.value)}
+                      />
+                      <input
+                        className={inputClass}
+                        placeholder="60 minutes"
+                        value={service.duration}
+                        onChange={e => updateService(i, 'duration', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Step 4: Testimonials */}
+        {step === stepIndex.testimonials && (
+          <div className="space-y-6">
+            {content.testimonials.map((testimonial, i) => (
+              <div key={i} className="p-4 rounded-xl border border-neutral-200 bg-white space-y-3">
+                <p className="text-sm font-medium text-neutral-500">Testimonial {i + 1}</p>
+                <textarea
+                  className={inputClass}
+                  rows={2}
+                  placeholder="Brilliant service, would recommend to anyone..."
+                  value={testimonial.quote}
+                  onChange={e => updateTestimonial(i, 'quote', e.target.value)}
+                />
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    className={inputClass}
+                    placeholder="James T."
+                    value={testimonial.name}
+                    onChange={e => updateTestimonial(i, 'name', e.target.value)}
+                  />
+                  <input
+                    className={inputClass}
+                    placeholder="Homeowner"
+                    value={testimonial.role}
+                    onChange={e => updateTestimonial(i, 'role', e.target.value)}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Step 5: Contact */}
+        {step === stepIndex.contact && (
+          <div className="space-y-4">
+            <div>
+              <label className={labelClass}>Email</label>
+              <input
+                className={inputClass}
+                type="email"
+                placeholder="hello@your-business.com"
+                value={content.contact.email}
+                onChange={e => setContent({ ...content, contact: { ...content.contact, email: e.target.value } })}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Phone</label>
+              <input
+                className={inputClass}
+                placeholder="+44 123 456 789"
+                value={content.contact.phone}
+                onChange={e => setContent({ ...content, contact: { ...content.contact, phone: e.target.value } })}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Location</label>
+              <input
+                className={inputClass}
+                placeholder="London, UK"
+                value={content.contact.location}
+                onChange={e => setContent({ ...content, contact: { ...content.contact, location: e.target.value } })}
+              />
+            </div>
+            <hr className="my-4 border-neutral-200" />
+            <p className="text-sm font-medium text-neutral-700">Social links (optional)</p>
+            <input
+              className={inputClass}
+              placeholder="Instagram URL"
+              value={content.social.instagram}
+              onChange={e => setContent({ ...content, social: { ...content.social, instagram: e.target.value } })}
+            />
+            <input
+              className={inputClass}
+              placeholder="Facebook URL"
+              value={content.social.facebook}
+              onChange={e => setContent({ ...content, social: { ...content.social, facebook: e.target.value } })}
+            />
+          </div>
+        )}
+
+        {/* Step 6: Preview & Download */}
+        {step === stepIndex.preview && (
+          <div className="space-y-6">
+            {!previewUrl && !generating && (
+              <div className="text-center py-12">
+                <h2 className="text-xl font-semibold text-neutral-900 mb-2">Ready to generate</h2>
+                <p className="text-neutral-500 mb-6">
+                  {content.businessName || 'Your site'} with {palettes[content.palette].name} palette
+                </p>
+                <button
+                  onClick={handleGenerate}
+                  className="px-8 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
+                >
+                  Generate my website
+                </button>
+              </div>
+            )}
+
+            {generating && (
+              <div className="text-center py-12">
+                <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                <p className="text-neutral-500">Generating your website...</p>
+              </div>
+            )}
+
+            {previewUrl && (
+              <div className="space-y-4">
+                <iframe
+                  src={previewUrl}
+                  className="w-full h-[600px] rounded-xl border border-neutral-200"
+                  title="Site preview"
+                />
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleDownload}
+                    className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
+                  >
+                    Download HTML
+                  </button>
+                  <button
+                    onClick={() => { setPreviewUrl(null); handleGenerate() }}
+                    className="px-6 py-3 border border-neutral-300 text-neutral-700 rounded-lg font-medium hover:bg-neutral-100"
+                  >
+                    Regenerate
+                  </button>
+                </div>
+
+                {/* Publish section */}
+                {!publishedUrl ? (
+                  <div className="p-4 rounded-xl border border-neutral-200 bg-white space-y-3">
+                    <p className="text-sm font-medium text-neutral-700">Publish to the web</p>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        className={inputClass}
+                        placeholder={content.businessName.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'my-site'}
+                        value={subdomain}
+                        onChange={e => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                      />
+                      <span className="text-sm text-neutral-400 whitespace-nowrap">.craftmypage.com</span>
+                    </div>
+                    <button
+                      onClick={handlePublish}
+                      disabled={publishing}
+                      className="w-full px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50"
+                    >
+                      {publishing ? 'Publishing...' : 'Publish live'}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-xl border border-green-200 bg-green-50 space-y-2">
+                    <p className="text-sm font-medium text-green-800">Your site is live!</p>
+                    <a
+                      href={publishedUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-green-700 underline text-sm break-all"
+                    >
+                      {publishedUrl}
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Navigation */}
+        <div className="flex justify-between mt-8">
+          <button
+            onClick={() => setStep(Math.max(0, step - 1))}
+            disabled={step === 0}
+            className="px-6 py-2 text-neutral-600 rounded-lg hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            Back
+          </button>
+          {step < lastStep && (
+            <button
+              onClick={() => setStep(step + 1)}
+              disabled={step === 0 && !content.templateType}
+              className="px-6 py-2 bg-neutral-900 text-white rounded-lg font-medium hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

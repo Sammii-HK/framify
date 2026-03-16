@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateTemplateCode, type Style } from '@/lib/openai'
 import { prisma } from '@/lib/prisma'
+import { auth0 } from '@/lib/auth0'
 
 /**
  * Generate a style variation of an existing template
@@ -8,6 +9,11 @@ import { prisma } from '@/lib/prisma'
  */
 export async function POST(req: NextRequest) {
   try {
+    const session = await auth0.getSession()
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+
     const body = await req.json()
     const { templateId, newStyle } = body
 
@@ -28,7 +34,13 @@ export async function POST(req: NextRequest) {
       'Luxury / Premium Brand',
       'Retro / Y2K',
       'Pastel / Playful',
-      'Single-Page App / Startup Landing'
+      'Single-Page App / Startup Landing',
+      'Spiritual / Dark Celestial',
+      'Spiritual / Earthy Sage',
+      'Spiritual / Ethereal Light',
+      'Spiritual / Crystal Rose',
+      'Wellness / Yoga Studio',
+      'Crystal / Metaphysical Shop',
     ];
     
     if (!newStyle || !validStyles.includes(newStyle)) {

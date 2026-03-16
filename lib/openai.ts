@@ -1,7 +1,27 @@
-import { openai } from '@ai-sdk/openai'
+import { createOpenAI, openai } from '@ai-sdk/openai'
 import { generateText } from 'ai'
 
-export type Style = 
+// DeepInfra provider — OpenAI-compatible API, 80x cheaper than GPT-4o
+const deepinfra = createOpenAI({
+  apiKey: process.env.DEEPINFRA_API_KEY,
+  baseURL: 'https://api.deepinfra.com/v1/openai',
+})
+
+// Template generation model — falls back to GPT-4o if no DeepInfra key
+const templateModel = process.env.DEEPINFRA_API_KEY
+  ? deepinfra('Qwen/Qwen2.5-Coder-32B-Instruct')
+  : openai('gpt-4o')
+
+import {
+  getDesignSystemPrompt,
+  getDarkLightModePrompt,
+  PALETTES,
+  LIGHT_PALETTES,
+  type PaletteKey,
+} from './design-system'
+import { getCMSPromptBlock } from './cms-templates'
+
+export type Style =
   | 'Minimal Corporate'
   | 'Dark Tech / SaaS'
   | 'E-commerce Product Showcase'
@@ -12,6 +32,12 @@ export type Style =
   | 'Retro / Y2K'
   | 'Pastel / Playful'
   | 'Single-Page App / Startup Landing'
+  | 'Spiritual / Dark Celestial'
+  | 'Spiritual / Earthy Sage'
+  | 'Spiritual / Ethereal Light'
+  | 'Spiritual / Crystal Rose'
+  | 'Wellness / Yoga Studio'
+  | 'Crystal / Metaphysical Shop'
 
 const stylePrompts: Record<Style, string> = {
   'Minimal Corporate': `Research and draw inspiration from corporate minimalism:
@@ -158,6 +184,115 @@ Create an original pastel/playful design. Use:
 - Comfortable, spacious layouts
 - Human, friendly personality`,
 
+  'Spiritual / Dark Celestial': `Design a mystical, enchanting website with dark celestial aesthetics.
+Draw inspiration from:
+- High-end tarot/astrology brands (not cheap fortune-telling sites)
+- Luxury dark UI (Linear, Vercel) but with warm gold/amber accents
+- Celestial art (star maps, constellation patterns, moon phases)
+- Occult bookshops and mystical apothecaries
+
+Create an original dark celestial design. Use:
+- Deep indigo/navy backgrounds (#0D0B1A, #161331) — NOT pure black
+- Warm gold accents (#C4A265) for CTAs, highlights, and decorative elements
+- Soft purple secondary (#8B6FC0) for hover states and secondary actions
+- Cream/warm white text (#F5F0E8) — NOT pure white
+- Star-field or gradient hero backgrounds
+- Serif fonts for headings (mystical feel), sans-serif for body
+- Subtle glow effects on accent elements
+- Smooth, slow animations (mystical = unhurried, 500-700ms entrances)
+- Moon phase or celestial decorative elements
+- Sections: hero, services/offerings, about/origin story, testimonials, booking CTA, blog/resources, footer`,
+
+  'Spiritual / Earthy Sage': `Design a grounded, natural website with earthy sage aesthetics.
+Draw inspiration from:
+- Premium wellness brands (Goop, Moon Juice)
+- Organic skincare packaging (Aesop, Herbivore)
+- Botanical illustration styles
+- High-end yoga retreats and herbalism practices
+
+Create an original earthy sage design. Use:
+- Dark forest greens (#1A1F1A, #242B24) for backgrounds
+- Sage green accents (#8B9E7C) for highlights and CTAs
+- Warm gold (#C4A265) for premium touches
+- Warm cream text (#F0EDE5) — organic, not clinical
+- Botanical line art or leaf motifs as decorative elements
+- Natural textures (paper, linen, wood grain) suggested through subtle patterns
+- Rounded corners (16px+) for an organic, soft feel
+- Gentle, flowing animations (ease-in-out, 400-500ms)
+- Sections: hero, services/class schedule, instructors/team, pricing, testimonials, blog/tips, contact, footer`,
+
+  'Spiritual / Ethereal Light': `Design an airy, transcendent website with ethereal light aesthetics.
+Draw inspiration from:
+- Meditation apps (Calm, Headspace) but more elevated
+- High-end spa and wellness retreat websites
+- Soft gradient art and abstract light photography
+- Premium spiritual coaching brands
+
+Create an original ethereal light design. Use:
+- Soft lavender/moonstone backgrounds (#F8F6FC, #F0EDF8) — NOT stark white
+- Gentle violet accents (#9B72CF) for CTAs and highlights
+- Deep plum text (#1A1528) for headings, softer purple (#4A4358) for body
+- Soft gradients from white to lavender
+- Lots of whitespace (60%+ negative space)
+- Light, airy typography with generous line-height
+- Gentle entrance animations (fade + slight y movement, 500ms)
+- Floating or breathing decorative elements
+- Sections: hero, philosophy/approach, services, testimonials, booking, blog, footer`,
+
+  'Spiritual / Crystal Rose': `Design a warm, heart-centred website with crystal rose aesthetics.
+Draw inspiration from:
+- Crystal and gemstone shop brands
+- Feminine wellness brands (rituals, self-care)
+- Rose quartz and pink tourmaline colour palettes
+- High-end beauty and skincare aesthetics
+
+Create an original crystal rose design. Use:
+- Dark warm backgrounds (#1A1517, #211C1E) — intimate, not cold
+- Dusty rose accents (#C4868B) for CTAs and highlights
+- Soft pink highlight (#E8C4C4) for badges and decorative elements
+- Warm cream text (#F5EDE8) — soft, nurturing
+- Soft glow effects on accent elements
+- Rounded, organic shapes and generous border-radius
+- Warm, embracing animations (ease-in-out, gentle scale)
+- Sections: hero, featured products/collections, about story, crystal guides, testimonials, newsletter signup, footer`,
+
+  'Wellness / Yoga Studio': `Design a calm, professional website for a yoga or wellness studio.
+Draw inspiration from:
+- Premium yoga studios (Alo Yoga, Y7 Studio)
+- Wellness retreat websites
+- Fitness class booking platforms (ClassPass, Mindbody)
+- Clean health and fitness brands
+
+Create an original wellness studio design. Use:
+- Choose ONE colour base and commit to it (dark or light, not mixed)
+- Calm, muted colour palette — no harsh colours
+- Clear typography hierarchy for class names, schedules, and pricing
+- Image-forward hero (yoga poses, studio spaces)
+- Schedule/timetable section with clean grid
+- Instructor profiles with photos and credentials
+- Pricing cards with clear tier differentiation
+- Trust signals (certifications, years of experience, client count)
+- Smooth, calming animations (nothing jarring or fast)
+- Sections: hero, class schedule, instructors, pricing/membership, testimonials, location/contact, blog, footer`,
+
+  'Crystal / Metaphysical Shop': `Design a premium e-commerce website for a crystal or metaphysical shop.
+Draw inspiration from:
+- Modern DTC brands (Glossier, Mejuri) but mystical
+- Crystal and gemstone photography aesthetics
+- Witchy stationery and apothecary brands
+- High-end marketplace templates
+
+Create an original metaphysical shop design. Use:
+- Dark or warm neutral backgrounds that make crystals pop
+- Product grid with hover zoom effects
+- Collection/category navigation
+- Trust signals (ethically sourced, hand-selected, authenticity guaranteed)
+- Educational content section (crystal guides, how-to articles)
+- Newsletter signup with incentive ("Get your birth crystal guide free")
+- Shopping-focused layout with clear CTAs
+- Subtle sparkle or shimmer animations on product cards
+- Sections: hero, featured collections, product grid, about story, crystal guides, testimonials, newsletter, footer`,
+
   'Single-Page App / Startup Landing': `Research and draw inspiration from modern startup landing pages:
 - Stripe's clean landing pages
 - Linear's focused single-page design
@@ -179,367 +314,110 @@ export async function generateTemplateCode(
   prompt: string,
   style: Style
 ): Promise<{ code: string; title: string }> {
-  const systemPrompt = `You are an expert React developer and UI/UX designer specializing in Framer Motion animations and Tailwind CSS.
-Your task is to generate a complete, production-ready, SELLABLE React component that can be used as a Framer template.
+  // Determine palette for spiritual styles
+  const paletteMap: Partial<Record<Style, PaletteKey>> = {
+    'Spiritual / Dark Celestial': 'dark-celestial',
+    'Spiritual / Earthy Sage': 'earthy-sage',
+    'Spiritual / Ethereal Light': 'ethereal-light',
+    'Spiritual / Crystal Rose': 'crystal-rose',
+  }
+  const palette = paletteMap[style]
+  const designSystemBlock = getDesignSystemPrompt(palette)
 
-⚠️ CRITICAL: Your code will be AUTOMATICALLY REJECTED if it doesn't meet these exact requirements. Read carefully! ⚠️
+  // Add dark/light mode toggle for spiritual palettes
+  const darkLightBlock = palette
+    ? getDarkLightModePrompt(PALETTES[palette], LIGHT_PALETTES[palette])
+    : ''
 
-CRITICAL DESIGN PHILOSOPHY:
-- Draw inspiration from real design systems and trends, but create ORIGINAL work
-- Never copy directly - synthesize multiple influences into something new
-- Research current design trends and apply them thoughtfully
-- Create designs that feel authentic and intentional, not generic
-- Balance familiarity (users understand it) with uniqueness (it stands out)
+  // Determine category for CMS collections
+  const categoryForCMS = style.includes('Spiritual')
+    ? 'spiritual'
+    : style.includes('Wellness')
+      ? 'wellness'
+      : style.includes('Crystal') || style.includes('Metaphysical')
+        ? 'metaphysical-shop'
+        : style.includes('E-commerce')
+          ? 'e-commerce'
+          : style.includes('Agency')
+            ? 'agency'
+            : 'general'
+  const cmsBlock = getCMSPromptBlock(categoryForCMS)
 
-MANDATORY QUALITY REQUIREMENTS FOR SELLABLE TEMPLATES:
+  const systemPrompt = `You generate production-ready, sellable React + Tailwind + Framer Motion templates.
+Output ONLY the TSX code — no markdown fences, no explanation.
 
-    1. RESPONSIVE DESIGN (CRITICAL - MANDATORY - VALIDATED - MINIMUM 3 BREAKPOINT USES):
-       - MUST use Tailwind responsive breakpoints: sm: (640px+), md: (768px+), lg: (1024px+), xl: (1280px+)
-       - MINIMUM REQUIREMENT: Use sm:, md:, or lg: at least 3 TIMES in your component
-       - REQUIRED PATTERNS (use these exact patterns):
-         * Layout: className="flex flex-col md:flex-row lg:flex-row"
-         * Typography: className="text-2xl md:text-4xl lg:text-5xl"
-         * Spacing: className="px-4 md:px-8 lg:px-12"
-         * Grid: className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-         * Width: className="w-full md:w-1/2 lg:w-1/3"
-       - Mobile-first: Base styles for mobile (320px-639px), then sm:, md:, lg: for larger screens
-       - NO fixed widths without responsive alternatives
-       - Touch-friendly: Interactive elements min 44x44px on mobile
-       - COUNT YOUR BREAKPOINTS: Make sure you use sm:, md:, or lg: at least 3 times total
+${designSystemBlock}
+${darkLightBlock}
+${cmsBlock}
 
-    2. TYPOGRAPHY & HIERARCHY (MANDATORY - VALIDATED - MINIMUM 3 TEXT SIZES, 2 FONT WEIGHTS):
-       - MUST use Tailwind typography classes for ALL text
-       - MINIMUM REQUIREMENT: Use at least 3 DIFFERENT text sizes AND at least 2 DIFFERENT font weights
-       - REQUIRED PATTERNS (use these exact patterns):
-         * h1: className="text-3xl md:text-4xl lg:text-5xl font-bold"
-         * h2: className="text-2xl md:text-3xl lg:text-4xl font-semibold"
-         * h3: className="text-xl md:text-2xl lg:text-3xl font-semibold"
-         * body: className="text-base md:text-lg font-normal"
-         * small: className="text-sm font-medium"
-       - COUNT YOUR TYPOGRAPHY: Make sure you use at least 3 different text-* sizes and 2 different font-* weights
-       - Line height: leading-tight, leading-normal, leading-relaxed
-       - NO inline styles for typography - use Tailwind classes only
-       - System fonts: font-sans (Inter, system-ui) or font-serif for headings
+STYLE: ${stylePrompts[style]}
 
-3. COLOR PALETTE PER STYLE:
-   ${stylePrompts[style]}
-   - Define 3-5 primary colors max (background, text, accent, secondary)
-   - Use Tailwind color classes consistently throughout
-   - Ensure sufficient contrast ratios for accessibility
-   - Document color usage in comments
+REQUIRED SECTIONS (in order): Nav, Hero, Services/Features (3+ cards), Testimonials (3 cards), Contact form, Footer.
 
-4. CUSTOMIZABLE CONTENT PLACEHOLDERS:
-   - Replace all hardcoded images with placeholder variables or props
-   - Use descriptive placeholder text: "Your headline here", "Add your description"
-   - Make text content easily editable via props or constants
-   - Include example data structure in comments showing how to customize
-   - Use placeholder images: "https://via.placeholder.com/800x600" or similar
-   - All user-facing text should be easily replaceable
-   - CRITICAL: All variables MUST be defined before use - NO undefined references
-   - CRITICAL: If using arrays/objects, provide default empty arrays/objects: const items = [] or const data = {}
-   - CRITICAL: Use optional chaining (?.) or null checks when accessing nested properties
-   - CRITICAL: Provide default values for all props: interface Props { items?: Item[] } then const { items = [] } = props
+RULES — your code is auto-validated, violations cause rejection:
 
-    5. PERFORMANCE OPTIMIZATION (CRITICAL - VALIDATED):
-       - ANIMATION RULES (MANDATORY):
-         * ✅ DO animate: transform, opacity, scale, rotate
-         * ❌ NEVER animate: width, height, left, top, margin, padding (causes layout thrashing)
-       - REQUIRED: Use Framer Motion variants with transform/opacity:
-         * Example: initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-         * NOT: initial={{ top: -100 }} animate={{ top: 0 }}
-       - Use will-change CSS property for animated elements: will-change="transform, opacity"
-       - Optimize with useMemo/useCallback for expensive computations
-       - Lazy load images: Use loading="lazy" attribute
-       - Use Framer Motion's spring/easeInOut transitions (not linear)
-       - Example: transition={{ type: "spring", stiffness: 100 }} NOT transition={{ duration: 1 }}
+1. DARK/LIGHT TOGGLE (MANDATORY):
+   - const [isDark, setIsDark] = useState(true)
+   - Define a themes object with dark + light colour sets:
+     const themes = {
+       dark: { bg: "#0D0B1A", surface: "#161331", text: "#F5F0E8", muted: "#C4B89C", accent: "#C4A265", border: "#2A2550" },
+       light: { bg: "#FAF7F2", surface: "#FFFFFF", text: "#1A1528", muted: "#3D3650", accent: "#8B6FC0", border: "#E5E0D8" }
+     }
+   - const t = isDark ? themes.dark : themes.light
+   - Root div: style={{ backgroundColor: t.bg, color: t.text }}
+   - Cards: style={{ backgroundColor: t.surface, borderColor: t.border }}
+   - Muted text: style={{ color: t.muted }}
+   - Accents/buttons: style={{ backgroundColor: t.accent, color: isDark ? "#0D0B1A" : "#FFFFFF" }}
+   - Nav toggle button: onClick={() => setIsDark(!isDark)}
+   - CRITICAL: EVERY background, text, and border colour MUST come from the t object
+   - CRITICAL: NO hardcoded colour values outside the themes object — not in className, not in style
+   - CRITICAL: The hero section MUST also use t.bg/t.text — do NOT use a fixed gradient. Use style={{ background: isDark ? "linear-gradient(...dark...)" : "linear-gradient(...light...)" }}
+   - ACCESSIBILITY: Ensure minimum 4.5:1 contrast ratio in both modes. Dark mode = light text on dark bg. Light mode = dark text on light bg. Test every text/bg combination mentally.
 
-6. CMS & DYNAMIC CONTENT SUPPORT:
-   - Structure component to accept props for dynamic content
-   - Include TypeScript interfaces for content structure
-   - Support arrays for repeatable sections (features, testimonials, products)
-   - Make it easy to integrate with headless CMS (Contentful, Sanity, etc.)
-   - Include example data structure in comments
+2. ICONS (MANDATORY):
+   - Import icons from lucide-react: import { Sun, Moon, Star, Sparkles, Diamond, Heart, Mail, Phone, MapPin, Clock, ArrowRight } from 'lucide-react'
+   - Use <Sun /> and <Moon /> for the dark/light toggle
+   - Use Lucide icons for service cards, nav, CTA buttons, and decorative elements
+   - NEVER use emoji characters (no ✦ ☽ ◇ ☀ ✧ or any other emoji)
+   - Size icons with className="w-5 h-5" or "w-6 h-6"
 
-7. DOCUMENTATION (Include in code comments):
-   - Component purpose and use case
-   - Props interface with descriptions
-   - How to customize colors, fonts, spacing
-   - Section breakdown (what each section does)
-   - Customization guide: "To change colors, edit Tailwind classes..."
-   - Example usage with sample data
+3. RESPONSIVE: Use md: and lg: breakpoints on spacing, grids, and typography (≥10 uses).
+   Pattern: className="px-4 md:px-8 lg:px-12" / "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
 
-8. LICENSING & ASSETS:
-   - Use only open-source, commercially-safe fonts (Google Fonts, system fonts)
-   - Use placeholder images or clearly marked free-to-use sources
-   - Icons: Use Heroicons, Lucide, or similar open-source icon libraries
-   - NO copyrighted images, fonts, or assets
-   - Include license info in comments if using specific libraries
+4. TYPOGRAPHY: ≥4 different text-* sizes, ≥2 font-* weights.
+   Pattern: "text-3xl md:text-5xl font-bold" / "text-sm font-medium"
 
-9. METADATA & SEARCH OPTIMIZATION:
-   - Generate SEO-friendly component structure
-   - Use semantic HTML (header, nav, main, section, footer)
-   - Include proper alt text placeholders for images
-   - Structure content for search engines
+5. SAFETY: All props optional with defaults. Use ?. on all property access in JSX.
+   Pattern: {item?.title || "Default"}
 
-TECHNICAL REQUIREMENTS:
-1. The component must use Framer Motion (import motion from 'framer-motion')
-2. Use Tailwind CSS classes for all styling
-3. Include smooth animations using Framer Motion variants and transitions
-4. Follow the specified design style principles: ${stylePrompts[style]}
-5. The component should be a complete, self-contained React component
-6. Export the component as default export
-7. Use TypeScript for type safety with proper interfaces
-8. Make it responsive using Tailwind's responsive utilities (sm:, md:, lg:, xl: breakpoints)
+6. ANIMATION: Only animate opacity/transform. Use motion.section with initial/animate.
+   Pattern: initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
 
-CODE STRUCTURE (FOLLOW THIS EXACT ORDER):
-1. Import statements at the top
-2. TypeScript interfaces for props with default values
-3. Define ALL data structures BEFORE the component:
-   * const features = [{ title: "Feature 1", description: "..." }, { title: "Feature 2", description: "..." }]
-   * const hero = { title: "Your Title", subtitle: "Your Subtitle" }
-   * const testimonials = [{ name: "John", quote: "..." }]
-4. Component definition with proper TypeScript types
-5. Use Framer Motion's motion.div, motion.section, etc. for animated elements
-6. Apply Tailwind utility classes for styling (with responsive breakpoints!)
-7. Include variants for animations (fade in, slide up, scale, etc.)
-8. Comprehensive comments explaining customization
-9. Example data structure in comments
+7. STRUCTURE:
+   - Imports at top (React, useState, motion from framer-motion, Lucide icons)
+   - TypeScript interfaces
+   - Default data arrays BEFORE component (use the CMS sample data above)
+   - export default function ComponentName({ ...props with defaults })
+   - Semantic HTML: nav, section, footer
 
-CRITICAL SAFETY RULES:
-- ALL arrays MUST be defined: const items = [] or const { items = [] } = props
-- ALL property access MUST use optional chaining: feature?.title NOT feature.title
-- ALL variables MUST be defined before use
-- NEVER access properties on potentially undefined objects without checks
+8. CTA BUTTONS: All "Get Started" / "Book Now" / hero CTA buttons MUST scroll to the contact section.
+   Pattern: onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+   Add id="contact" to the contact/booking section.
 
-BEFORE OUTPUTTING YOUR CODE, VALIDATE IT MEETS THESE REQUIREMENTS:
-
-STEP 1: COUNT RESPONSIVE BREAKPOINTS
-- Search your code for "sm:", "md:", "lg:"
-- Count how many times they appear
-- REQUIREMENT: At least 3 total uses
-- If less than 3, ADD MORE responsive classes
-
-STEP 2: COUNT TYPOGRAPHY CLASSES
-- Search for "text-" classes (text-xl, text-2xl, text-3xl, etc.)
-- Count how many DIFFERENT text sizes you use
-- REQUIREMENT: At least 3 different text sizes
-- Search for "font-" classes (font-normal, font-bold, etc.)
-- Count how many DIFFERENT font weights you use
-- REQUIREMENT: At least 2 different font weights
-- If missing, ADD MORE typography variety
-
-STEP 3: CHECK RUNTIME SAFETY
-- Find all arrays: .map(, .filter(, .forEach(
-- Verify each has: const items = [] or const { items = [] } = props
-- Find all property access: {feature.title}
-- Replace with: {feature?.title || "Default"}
-- Verify all variables are defined before use
-
-STEP 4: VERIFY REQUIREMENTS MET
-✅ At least 3 responsive breakpoints (sm:, md:, lg:) - COUNTED: ___
-✅ At least 3 different text sizes (text-*) - COUNTED: ___
-✅ At least 2 different font weights (font-*) - COUNTED: ___
-✅ All arrays have default values
-✅ All property access uses optional chaining (?.)
-✅ All variables defined before use
-
-YOUR CODE WILL BE REJECTED IF:
-- Score < 75/100
-- Missing responsive breakpoints (need at least 3 uses of sm:/md:/lg:)
-- Missing typography hierarchy (need at least 3 text sizes, 2 font weights)
-- Any undefined property access
-- Array methods without default empty arrays
-
-Generate a production-ready, sellable component that meets ALL these requirements. The template should be immediately usable and customizable by buyers.`
-
-  // Example template structure that passes all validations
-  const exampleTemplate = `import { motion } from 'framer-motion'
-
-interface Props {
-  title?: string
-  subtitle?: string
-  features?: Array<{ title: string; description: string }>
-}
-
-export default function ExampleTemplate({ 
-  title = "Your Headline Here",
-  subtitle = "Your subtitle here",
-  features = [
-    { title: "Feature 1", description: "Description here" },
-    { title: "Feature 2", description: "Description here" }
-  ]
-}: Props) {
-  return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="px-4 md:px-8 lg:px-12 py-12 md:py-16 lg:py-20"
-      >
-        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-          {title}
-        </h1>
-        <p className="text-base md:text-lg font-normal text-gray-600">
-          {subtitle}
-        </p>
-      </motion.section>
-
-      {/* Features Section */}
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="px-4 md:px-8 lg:px-12 py-8 md:py-12"
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {features?.map((feature, index) => (
-            <div key={index} className="p-6 bg-gray-50 rounded-lg">
-              <h3 className="text-xl md:text-2xl font-semibold text-gray-900 mb-2">
-                {feature?.title || "Feature Title"}
-              </h3>
-              <p className="text-sm md:text-base font-normal text-gray-600">
-                {feature?.description || ""}
-              </p>
-            </div>
-          ))}
-        </div>
-      </motion.section>
-    </div>
-  )
-}`
+9. NO external images, no copyrighted assets, no emoji characters.`
 
   try {
     const result = await generateText({
-      model: openai('gpt-4-turbo'),
+      model: templateModel,
       system: systemPrompt,
-      prompt: `Create a production-ready, sellable React component with Framer Motion and Tailwind CSS for: ${prompt}
+      prompt: `Create: ${prompt}
 
-⚠️ YOUR CODE WILL BE AUTOMATICALLY REJECTED IF IT DOESN'T MEET THESE REQUIREMENTS ⚠️
-
-EXAMPLE TEMPLATE STRUCTURE (Follow this pattern exactly):
-\`\`\`tsx
-${exampleTemplate}
-\`\`\`
-
-KEY PATTERNS FROM EXAMPLE (Copy these patterns EXACTLY):
-
-RESPONSIVE BREAKPOINTS (MUST HAVE ≥3):
-- "px-4 md:px-8 lg:px-12" = 2 breakpoints (md:, lg:)
-- "py-12 md:py-16 lg:py-20" = 2 more breakpoints (md:, lg:)
-- "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" = 2 more breakpoints (md:, lg:)
-- "gap-6 md:gap-8" = 1 more breakpoint (md:)
-- TOTAL: 7 breakpoints ✅ (need ≥3)
-
-TYPOGRAPHY (MUST HAVE ≥3 SIZES, ≥2 WEIGHTS):
-- "text-3xl md:text-4xl lg:text-5xl font-bold" = 3 sizes (text-3xl, text-4xl, text-5xl), 1 weight (font-bold)
-- "text-base md:text-lg font-normal" = 2 sizes (text-base, text-lg), 1 weight (font-normal)
-- "text-xl md:text-2xl font-semibold" = 2 sizes (text-xl, text-2xl), 1 weight (font-semibold)
-- "text-sm md:text-base font-normal" = 2 sizes (text-sm, text-base), 1 weight (font-normal)
-- TOTAL: 7+ sizes ✅ (need ≥3), 3 weights ✅ (need ≥2)
-
-ARRAYS & SAFETY:
-- features = [{...}, {...}] defined BEFORE component
-- features?.map() uses optional chaining
-- feature?.title || "Default" safe property access
-
-MANDATORY REQUIREMENTS (Code will be rejected if missing):
-
-1. RESPONSIVE DESIGN (MANDATORY - MUST HAVE AT LEAST 3 BREAKPOINT USES):
-   - Use Tailwind breakpoints: sm:, md:, lg: in MULTIPLE className attributes
-   - MINIMUM: Use sm:, md:, lg: at least 3 times total across your component
-   - Example: className="flex flex-col md:flex-row lg:flex-row"
-   - Example: className="text-2xl md:text-4xl lg:text-5xl"
-   - Example: className="px-4 md:px-8 lg:px-12"
-   - Example: className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-   - NO fixed layouts without responsive alternatives
-
-2. TYPOGRAPHY HIERARCHY (MANDATORY - MUST HAVE AT LEAST 3 TEXT SIZES, 2 FONT WEIGHTS):
-   - Use Tailwind text-* classes for ALL text elements
-   - MINIMUM: Use at least 3 different text sizes (e.g., text-xl, text-2xl, text-3xl)
-   - MINIMUM: Use at least 2 different font weights (e.g., font-normal, font-bold)
-   - Example: className="text-3xl md:text-4xl font-bold"
-   - Example: className="text-base md:text-lg font-normal"
-   - Example: className="text-sm font-medium"
-   - NO inline styles or CSS for typography
-
-3. RUNTIME SAFETY (MANDATORY - CODE WILL CRASH IF MISSING):
-   - ALL variables MUST be defined before use
-   - ALL arrays MUST have default values: const features = [] or const { items = [] } = props
-   - ALL property access MUST use optional chaining: feature?.title NOT feature.title
-   - Example safe pattern:
-     const features = [
-       { title: "Feature 1", description: "..." },
-       { title: "Feature 2", description: "..." }
-     ]
-     return (
-       <div>
-         {features.map((feature, index) => (
-           <div key={index}>
-             <h3>{feature?.title || "Default Title"}</h3>
-             <p>{feature?.description || ""}</p>
-           </div>
-         ))}
-       </div>
-     )
-
-4. PERFORMANCE (MANDATORY):
-   - Animate ONLY: transform, opacity, scale, rotate
-   - NEVER animate: width, height, left, top, margin, padding
-   - Example: initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-   - Use will-change="transform, opacity" for animated elements
-
-5. COLOR PALETTE:
-   - Use Tailwind color classes: bg-*, text-*, border-*
-   - Well-defined color palette for ${style} style
-
-6. CUSTOMIZABLE CONTENT:
-   - Props interface with TypeScript types and default values
-   - Placeholder text: "Your headline here", "Add description"
-   - Example data structure in comments
-
-7. DOCUMENTATION:
-   - Comments explaining customization
-   - Section breakdowns
-   - Props interface descriptions
-
-CRITICAL: BEFORE OUTPUTTING CODE, VERIFY:
-
-1. COUNT RESPONSIVE BREAKPOINTS:
-   - Search for "md:" and "lg:" in your className attributes
-   - You MUST have at least 3 total uses (e.g., "md:px-8", "lg:px-12", "md:flex-row", "lg:text-5xl")
-   - If you have less than 3, ADD MORE responsive classes
-
-2. COUNT TYPOGRAPHY:
-   - Count DIFFERENT text-* classes: text-xl, text-2xl, text-3xl, text-base, text-sm (need ≥3 different ones)
-   - Count DIFFERENT font-* classes: font-bold, font-semibold, font-normal, font-medium (need ≥2 different ones)
-   - If missing, ADD MORE typography variety
-
-3. CHECK ARRAYS:
-   - Every .map(, .filter(, .forEach( MUST have: const items = [...] or const { items = [] } = props
-   - Example: const features = [{...}, {...}] BEFORE using features.map
-
-4. CHECK PROPERTY ACCESS:
-   - Every {item.property} MUST be {item?.property || "Default"}
-   - Example: {feature?.title || "Title"} NOT {feature.title}
-
-5. VERIFY STRUCTURE:
-   - Imports at top
-   - Interface with default values
-   - Data arrays defined BEFORE component
-   - Component uses all the data
-
-VALIDATION CHECKLIST - Verify your code has:
-✅ At least 3 uses of responsive breakpoints (md:, lg:) - COUNT THEM!
-✅ At least 3 different text size classes (text-*) - COUNT THEM!
-✅ At least 2 different font weight classes (font-*) - COUNT THEM!
-✅ All arrays have default values (const items = [] or || [])
-✅ All property access uses optional chaining (?.)
-✅ All variables defined before use
-✅ Framer Motion animations use only transform/opacity
-
-The code MUST run without errors. Every property access must be safe.`,
+Output the complete TSX component. Key reminders:
+- Dark/light toggle: define themes object, const t = isDark ? themes.dark : themes.light, apply t.bg/t.text/t.surface/t.accent to EVERY element including the hero
+- Icons: import from lucide-react, NEVER use emoji characters
+- Accessibility: ensure all text is readable in both modes (4.5:1 contrast ratio)`,
       temperature: 0.3, // Very low temperature for strict rule-following
-      maxTokens: 4000,
+      maxTokens: 8000, // gpt-4o supports up to 16k output tokens
     })
 
     const generatedText = result.text
@@ -583,6 +461,30 @@ The code MUST run without errors. Every property access must be safe.`,
     if (uniqueFontWeights < 2) {
       console.warn(`⚠️ Post-processing: Only ${uniqueFontWeights} unique font weights found`)
     }
+
+    // Post-process: Fix unsafe property access in JSX expressions
+    // Pattern: {item.prop} → {item?.prop}  (inside JSX curly braces)
+    code = code.replace(
+      /\{(\w+)\.(\w+)\}/g,
+      (match, obj, prop) => {
+        // Skip known safe objects (React, motion, Math, JSON, console, document, window, Object, Array)
+        const safeObjects = ['React', 'motion', 'Math', 'JSON', 'console', 'document', 'window', 'Object', 'Array', 'Date', 'Number', 'String', 'Boolean', 'Promise']
+        if (safeObjects.includes(obj)) return match
+        // Skip if already using optional chaining
+        if (match.includes('?.')) return match
+        return `{${obj}?.${prop}}`
+      }
+    )
+
+    // Also fix chained access like {item.nested.prop}
+    code = code.replace(
+      /\{(\w+)\.(\w+)\.(\w+)\}/g,
+      (match, obj, mid, prop) => {
+        const safeObjects = ['React', 'motion', 'Math', 'JSON', 'console', 'document', 'window']
+        if (safeObjects.includes(obj)) return match
+        return `{${obj}?.${mid}?.${prop}}`
+      }
+    )
 
     // Extract title from the prompt or generate a simple one
     const title = extractTitle(prompt)
@@ -629,6 +531,12 @@ export function extractMetadata(
     category = 'blog'
   } else if (lowerPrompt.includes('corporate') || lowerPrompt.includes('business') || lowerPrompt.includes('b2b')) {
     category = 'corporate'
+  } else if (lowerPrompt.includes('spiritual') || lowerPrompt.includes('astrology') || lowerPrompt.includes('tarot') || lowerPrompt.includes('mystical') || lowerPrompt.includes('witchy') || lowerPrompt.includes('occult')) {
+    category = 'spiritual'
+  } else if (lowerPrompt.includes('wellness') || lowerPrompt.includes('yoga') || lowerPrompt.includes('meditation') || lowerPrompt.includes('healing') || lowerPrompt.includes('reiki')) {
+    category = 'wellness'
+  } else if (lowerPrompt.includes('crystal') || lowerPrompt.includes('metaphysical') || lowerPrompt.includes('apothecary') || lowerPrompt.includes('herbal')) {
+    category = 'metaphysical-shop'
   }
 
   // Extract tags from prompt
@@ -644,6 +552,9 @@ export function extractMetadata(
     'portfolio': ['portfolio', 'gallery', 'showcase', 'work'],
     'landing': ['landing', 'hero', 'cta', 'conversion'],
     'saas': ['saas', 'software', 'app', 'tool'],
+    'spiritual': ['spiritual', 'astrology', 'tarot', 'mystical', 'witchy', 'occult', 'celestial'],
+    'wellness': ['wellness', 'yoga', 'meditation', 'healing', 'reiki', 'holistic', 'mindfulness'],
+    'crystal': ['crystal', 'gemstone', 'metaphysical', 'apothecary', 'herbal'],
   }
 
   for (const [tag, keywords] of Object.entries(tagKeywords)) {
@@ -663,6 +574,13 @@ export function extractMetadata(
   if (style.includes('Retro')) tags.push('retro', 'y2k', 'nostalgic')
   if (style.includes('Playful')) tags.push('playful', 'friendly', 'startup')
   if (style.includes('Startup')) tags.push('startup', 'landing', 'saas')
+  if (style.includes('Spiritual')) tags.push('spiritual', 'astrology', 'mystical', 'wellness', 'tarot')
+  if (style.includes('Celestial')) tags.push('dark', 'celestial', 'witchy', 'occult')
+  if (style.includes('Sage')) tags.push('earthy', 'natural', 'herbal', 'yoga')
+  if (style.includes('Ethereal')) tags.push('light', 'meditation', 'reiki', 'healing')
+  if (style.includes('Crystal Rose')) tags.push('crystal', 'feminine', 'self-care', 'rose')
+  if (style.includes('Wellness')) tags.push('wellness', 'yoga', 'fitness', 'health', 'studio')
+  if (style.includes('Metaphysical')) tags.push('crystal', 'shop', 'metaphysical', 'e-commerce')
 
   // Remove duplicates
   const uniqueTags = Array.from(new Set(tags))

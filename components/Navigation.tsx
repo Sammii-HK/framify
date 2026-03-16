@@ -9,80 +9,38 @@ export default function Navigation() {
 	const { user, isLoading } = useUser();
 
 	return (
-		<nav className="border-b border-framer-border bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+		<nav className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
 			<div className="container mx-auto px-4 py-4 max-w-7xl">
 				<div className="flex items-center justify-between">
 					<Link
 						href="/"
-						className="text-2xl font-bold bg-gradient-to-r from-sky-400 to-indigo-500 bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+						className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors"
 					>
-						Framify
+						CraftMyPage
 					</Link>
 
 					<div className="flex items-center gap-4">
 						<Link
-							href="/"
-							className={`px-4 py-2 rounded-framer font-medium transition-all ${
-								pathname === "/"
-									? "bg-gradient-to-r from-sky-400 to-indigo-500 text-white"
+							href="/generate"
+							className={`px-4 py-2 rounded-lg font-medium transition-all ${
+								pathname === "/generate"
+									? "bg-blue-600 text-white"
 									: "text-gray-700 hover:bg-gray-100"
 							}`}
 						>
-							Create
-						</Link>
-						<Link
-							href="/marketplace"
-							className={`px-4 py-2 rounded-framer font-medium transition-all ${
-								pathname === "/marketplace"
-									? "bg-gradient-to-r from-sky-400 to-indigo-500 text-white"
-									: "text-gray-700 hover:bg-gray-100"
-							}`}
-						>
-							Marketplace
-						</Link>
-						<Link
-							href="/components"
-							className={`px-4 py-2 rounded-framer font-medium transition-all ${
-								pathname === "/components" || pathname?.startsWith("/components/")
-									? "bg-gradient-to-r from-sky-400 to-indigo-500 text-white"
-									: "text-gray-700 hover:bg-gray-100"
-							}`}
-						>
-							Components
-						</Link>
-						<Link
-							href="/style-bank"
-							className={`px-4 py-2 rounded-framer font-medium transition-all ${
-								pathname === "/style-bank"
-									? "bg-gradient-to-r from-sky-400 to-indigo-500 text-white"
-									: "text-gray-700 hover:bg-gray-100"
-							}`}
-						>
-							Style Bank
+							Build Your Site
 						</Link>
 						{user && (
-							<>
-								<Link
-									href="/dashboard"
-									className={`px-4 py-2 rounded-framer font-medium transition-all ${
-										pathname === "/dashboard"
-											? "bg-gradient-to-r from-sky-400 to-indigo-500 text-white"
-											: "text-gray-700 hover:bg-gray-100"
-									}`}
-								>
-									Dashboard
-								</Link>
-								<Link
-									href="/admin"
-									className={`px-4 py-2 rounded-framer font-medium transition-all ${
-										pathname === "/admin"
-											? "bg-gradient-to-r from-sky-400 to-indigo-500 text-white"
-											: "text-gray-700 hover:bg-gray-100"
-									}`}
-								>
-									Admin
-								</Link>
-							</>
+							<Link
+								href="/dashboard"
+								className={`px-4 py-2 rounded-lg font-medium transition-all ${
+									pathname === "/dashboard"
+										? "bg-blue-600 text-white"
+										: "text-gray-700 hover:bg-gray-100"
+								}`}
+							>
+								Dashboard
+							</Link>
 						)}
 						{isLoading ? (
 							<div className="px-4 py-2 text-gray-400">Loading...</div>
@@ -93,7 +51,7 @@ export default function Navigation() {
 								</span>
 								<a
 									href="/auth/logout"
-									className="px-4 py-2 bg-gray-100 text-gray-700 rounded-framer font-medium hover:bg-gray-200 transition-all"
+									className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-all"
 								>
 									Logout
 								</a>
@@ -101,10 +59,7 @@ export default function Navigation() {
 						) : (
 							<a
 								href="/auth/login"
-								onClick={(e) => {
-									console.log('Login clicked, navigating to:', e.currentTarget.href);
-								}}
-								className="px-4 py-2 bg-gradient-to-r from-sky-400 to-indigo-500 text-white rounded-framer font-medium hover:shadow-md transition-all"
+								className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all"
 							>
 								Login
 							</a>

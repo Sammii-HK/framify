@@ -39,7 +39,13 @@ export async function POST(req: NextRequest) {
 			"Luxury / Premium Brand",
 			"Retro / Y2K",
 			"Pastel / Playful",
-			"Single-Page App / Startup Landing"
+			"Single-Page App / Startup Landing",
+			"Spiritual / Dark Celestial",
+			"Spiritual / Earthy Sage",
+			"Spiritual / Ethereal Light",
+			"Spiritual / Crystal Rose",
+			"Wellness / Yoga Studio",
+			"Crystal / Metaphysical Shop",
 		];
 		
 		if (!style || !validStyles.includes(style)) {

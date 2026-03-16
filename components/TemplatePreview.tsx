@@ -266,6 +266,7 @@ export default function TemplatePreview({
               className="h-full w-full relative"
             >
               <div style={{ height: '100%', width: '100%' }} className="relative">
+                {/* @ts-expect-error - Sandpack type mismatch with React 19 */}
                 <Sandpack
                   template="react-ts"
                   files={{
@@ -292,7 +293,7 @@ export default function TemplatePreview({
                     resizablePanels: true,
                   }}
                 >
-                  <SandpackErrorCapture onError={(error) => setRuntimeError(error)} />
+                  <SandpackErrorCapture onError={(error: string) => setRuntimeError(error)} />
                 </Sandpack>
                 {runtimeError && runtimeError.trim() && (
                   <motion.div

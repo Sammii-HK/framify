@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createFramerProject } from '@/lib/framer'
 import { prisma } from '@/lib/prisma'
+import { auth0 } from '@/lib/auth0'
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await auth0.getSession()
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+
     const body = await req.json()
     const { title, code, templateId } = body
 

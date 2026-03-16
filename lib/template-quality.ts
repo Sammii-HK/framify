@@ -99,11 +99,12 @@ export function validateTemplateQuality(code: string): TemplateQualityCheck {
     score -= 15 // Increased penalty
   }
 
-  // Check for color palette usage
-  const hasColorPalette =
-    /bg-(slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)/.test(
-      code
-    )
+  // Check for color palette usage (Tailwind classes OR hex/arbitrary values)
+  const hasTailwindColors =
+    /bg-(slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)/.test(code)
+  const hasHexColors = /bg-\[#[0-9a-fA-F]{3,8}\]|backgroundColor.*#[0-9a-fA-F]{3,8}|style=\{.*background/.test(code)
+  const hasDesignSystemColors = /#0D0B1A|#1A1F1A|#F8F6FC|#1A1517|#C4A265|#8B9E7C|#9B8EC4|#C4767A/.test(code)
+  const hasColorPalette = hasTailwindColors || hasHexColors || hasDesignSystemColors
   if (!hasColorPalette) {
     issues.push('Missing color palette (bg-*, text-* color classes)')
     score -= 10
@@ -145,9 +146,7 @@ export function validateTemplateQuality(code: string): TemplateQualityCheck {
   // Check for safe assets (no copyrighted content)
   const usesSafeAssets =
     !/copyright|©|all rights reserved/i.test(code.toLowerCase()) &&
-    /placeholder|via\.placeholder|heroicons|lucide|system font/i.test(
-      code.toLowerCase()
-    )
+    !/getty|shutterstock|istock|adobe stock/i.test(code.toLowerCase())
   if (!usesSafeAssets) {
     issues.push('May contain copyrighted assets - verify licensing')
     score -= 20

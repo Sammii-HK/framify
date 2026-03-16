@@ -34,11 +34,11 @@ export async function generateMetadata({ params }: TemplatePageProps) {
     })
 
     return {
-      title: template ? `${template.title} - Framify` : 'Template - Framify',
+      title: template ? `${template.title} - CraftMyPage` : 'Template - CraftMyPage',
     }
   } catch {
     return {
-      title: 'Template - Framify',
+      title: 'Template - CraftMyPage',
     }
   }
 }

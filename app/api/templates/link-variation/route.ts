@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { auth0 } from '@/lib/auth0'
 
 /**
  * Link a template as a variation of a base template
@@ -7,6 +8,11 @@ import { prisma } from '@/lib/prisma'
  */
 export async function POST(req: NextRequest) {
   try {
+    const session = await auth0.getSession()
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+
     const body = await req.json()
     const { templateId, baseTemplateId } = body
 

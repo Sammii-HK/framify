@@ -46,6 +46,7 @@ export function determinePricingTier(
     'E-commerce Product Showcase',
     'Luxury / Premium Brand',
     'Agency / Studio Bold',
+    'Crystal / Metaphysical Shop',
   ]
 
   // Complex templates or premium niches → Premium
@@ -59,6 +60,11 @@ export function determinePricingTier(
     'Dark Tech / SaaS',
     'Single-Page App / Startup Landing',
     'Creative Portfolio / Designer',
+    'Spiritual / Dark Celestial',
+    'Spiritual / Earthy Sage',
+    'Spiritual / Ethereal Light',
+    'Spiritual / Crystal Rose',
+    'Wellness / Yoga Studio',
   ]
 
   if (standardNiches.includes(style) || complexity === 'medium') {

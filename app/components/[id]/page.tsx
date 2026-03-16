@@ -43,11 +43,11 @@ export async function generateMetadata({ params }: ComponentPageProps) {
     })
 
     return {
-      title: component ? `${component.name} - Framify Components` : 'Component - Framify',
+      title: component ? `${component.name} - CraftMyPage Components` : 'Component - CraftMyPage',
     }
   } catch {
     return {
-      title: 'Component - Framify',
+      title: 'Component - CraftMyPage',
     }
   }
 }

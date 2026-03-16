@@ -7,6 +7,8 @@ import { NextResponse } from "next/server";
 
 const ALLOWED_ORIGINS = [
 	"https://framify-nine.vercel.app",
+	"https://craftmypage.com",
+	"https://www.craftmypage.com",
 	"http://localhost:3000",
 	"https://studio.sammii.dev",
 	"https://framer.com",
