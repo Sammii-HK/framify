@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 
@@ -459,6 +460,8 @@ export default function TemplatePage() {
   const params = useParams()
   const type = params.type as string
   const template = templates[type]
+  const [activePaletteIndex, setActivePaletteIndex] = useState(0)
+  const [viewport, setViewport] = useState<'desktop' | 'mobile'>('desktop')
 
   if (!template) {
     return (
@@ -476,6 +479,8 @@ export default function TemplatePage() {
       </main>
     )
   }
+
+  const activePalette = palettes[activePaletteIndex]
 
   return (
     <main className="bg-neutral-50 min-h-screen">
@@ -511,61 +516,117 @@ export default function TemplatePage() {
               <span className="font-medium text-neutral-500">Best for:</span> {template.bestFor}
             </p>
             <Link
-              href={`/generate?template=${type}`}
+              href={`/generate?template=${type}&palette=${activePalette.id}`}
               className="mt-8 inline-flex items-center justify-center rounded-lg bg-blue-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors"
             >
-              Build your site with this template
+              Use this template
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Palette previews */}
+      {/* Full-page preview with controls */}
       <section className="mx-auto max-w-6xl px-6 py-14 md:py-20">
         <h2 className="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight text-center mb-3">
-          Six colour palettes, one template
+          Live preview
         </h2>
-        <p className="text-neutral-500 text-center max-w-xl mx-auto mb-12">
-          Each palette completely transforms the feel of the site. Pick the one that matches your brand, or try them all.
+        <p className="text-neutral-500 text-center max-w-xl mx-auto mb-8">
+          Switch palettes and viewports to see how this template looks with different styles.
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {palettes.map((palette) => (
-            <div key={palette.id} className="bg-white rounded-xl border border-neutral-200 p-5">
-              <div className="flex items-center gap-3 mb-4">
-                <div
-                  className="w-6 h-6 rounded-full border border-neutral-200"
+        {/* Controls bar */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 bg-white rounded-xl border border-neutral-200 p-4">
+          {/* Palette swatches */}
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-neutral-500">Palette:</span>
+            <div className="flex items-center gap-2">
+              {palettes.map((palette, index) => (
+                <button
+                  key={palette.id}
+                  onClick={() => setActivePaletteIndex(index)}
+                  className={`w-7 h-7 rounded-full border-2 transition-all ${
+                    index === activePaletteIndex
+                      ? 'border-blue-600 scale-110 shadow-sm'
+                      : 'border-neutral-300 hover:border-neutral-400'
+                  }`}
                   style={{ backgroundColor: palette.bg }}
+                  title={palette.name}
                 />
-                <div>
-                  <h3 className="text-base font-semibold text-neutral-900">{palette.name}</h3>
-                  <p className="text-xs text-neutral-400">{palette.description}</p>
-                </div>
-              </div>
+              ))}
+            </div>
+            <span className="text-sm text-neutral-400 hidden sm:inline">{activePalette.name}</span>
+          </div>
 
-              <FullMockup palette={palette} templateType={type} />
+          {/* Viewport toggle */}
+          <div className="flex items-center gap-1 bg-neutral-100 rounded-lg p-1">
+            <button
+              onClick={() => setViewport('desktop')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                viewport === 'desktop'
+                  ? 'bg-white text-neutral-900 shadow-sm'
+                  : 'text-neutral-500 hover:text-neutral-700'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25A2.25 2.25 0 015.25 3h13.5A2.25 2.25 0 0121 5.25z" />
+              </svg>
+              Desktop
+            </button>
+            <button
+              onClick={() => setViewport('mobile')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                viewport === 'mobile'
+                  ? 'bg-white text-neutral-900 shadow-sm'
+                  : 'text-neutral-500 hover:text-neutral-700'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
+              </svg>
+              Mobile
+            </button>
+          </div>
+        </div>
 
-              {/* Colour chips */}
-              <div className="mt-4 flex items-center gap-3">
-                {[
-                  { label: 'Background', colour: palette.bg },
-                  { label: 'Accent', colour: palette.accent },
-                  { label: 'Text', colour: palette.text },
-                ].map((chip) => (
-                  <div key={chip.label} className="flex items-center gap-1.5">
-                    <div
-                      className="w-4 h-4 rounded border border-neutral-200"
-                      style={{ backgroundColor: chip.colour }}
-                    />
-                    <div>
-                      <span className="text-xs text-neutral-400 block leading-none">{chip.label}</span>
-                      <span className="text-xs text-neutral-500 font-mono">{chip.colour}</span>
-                    </div>
-                  </div>
-                ))}
+        {/* Preview container */}
+        <div className="flex justify-center">
+          <div
+            className={`transition-all duration-300 ${
+              viewport === 'mobile' ? 'w-[375px]' : 'w-full'
+            }`}
+          >
+            <FullMockup palette={activePalette} templateType={type} />
+          </div>
+        </div>
+
+        {/* Colour chips */}
+        <div className="mt-6 flex items-center justify-center gap-6">
+          {[
+            { label: 'Background', colour: activePalette.bg },
+            { label: 'Accent', colour: activePalette.accent },
+            { label: 'Text', colour: activePalette.text },
+          ].map((chip) => (
+            <div key={chip.label} className="flex items-center gap-2">
+              <div
+                className="w-5 h-5 rounded border border-neutral-200"
+                style={{ backgroundColor: chip.colour }}
+              />
+              <div>
+                <span className="text-xs text-neutral-400 block leading-none">{chip.label}</span>
+                <span className="text-xs text-neutral-500 font-mono">{chip.colour}</span>
               </div>
             </div>
           ))}
+        </div>
+
+        {/* CTA below preview */}
+        <div className="mt-8 text-center">
+          <Link
+            href={`/generate?template=${type}&palette=${activePalette.id}`}
+            className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors"
+          >
+            Use this template
+          </Link>
         </div>
       </section>
 
@@ -603,10 +664,10 @@ export default function TemplatePage() {
             Fill in your details and have a live site using the {template.name} template in under five minutes.
           </p>
           <Link
-            href={`/generate?template=${type}`}
+            href={`/generate?template=${type}&palette=${activePalette.id}`}
             className="mt-8 inline-flex items-center justify-center rounded-lg bg-blue-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors"
           >
-            Build your site with this template
+            Use this template
           </Link>
         </div>
       </section>

@@ -3,6 +3,7 @@ import Stripe from 'stripe'
 import { prisma } from '@/lib/prisma'
 import { constructWebhookEvent } from '@/lib/stripe'
 import { provisionDomain } from '@/lib/domain-automation'
+import { flipAutoRenew } from '@/lib/domain-renewal'
 
 /**
  * POST /api/webhooks/stripe
@@ -27,62 +28,107 @@ export async function POST(req: NextRequest) {
         const session = event.data.object as Stripe.Checkout.Session
         const metadata = session.metadata || {}
 
-        // ── Hosting tier payment ──
-        if (metadata.tier) {
-          const { tier, subdomain, siteId, customDomain } = metadata
+        // ── Subscription checkout ──
+        if (session.mode === 'subscription' && metadata.type === 'subscription') {
+          const { tier, subdomain, siteId } = metadata
+          const subscriptionId = typeof session.subscription === 'string'
+            ? session.subscription
+            : (session.subscription as Stripe.Subscription)?.id ?? null
+          const customerId = typeof session.customer === 'string'
+            ? session.customer
+            : (session.customer as Stripe.Customer)?.id ?? null
+
           console.log(
-            `[Hosting] Payment completed: tier=${tier}, subdomain=${subdomain}, siteId=${siteId || 'n/a'}, ` +
-            `amount=${session.amount_total}, currency=${session.currency}, ` +
-            `customer=${session.customer_email || session.customer}, ` +
-            `session=${session.id}, mode=${session.mode}`
+            `[Subscription] Checkout completed: tier=${tier}, subdomain=${subdomain}, ` +
+            `subscription=${subscriptionId}, customer=${customerId}`
           )
 
-          if (tier === 'domain' && customDomain && subdomain && siteId) {
-            // Domain purchase: register on Cloudflare, wire up DNS, update DB
-            const result = await provisionDomain(subdomain, customDomain, siteId)
-            console.log(
-              `[Hosting] Domain provisioning ${result.success ? 'succeeded' : 'failed'}: ${result.domain}`,
-              JSON.stringify(result.steps)
-            )
-          } else if (tier === 'launch' && siteId) {
-            // One-time launch payment: mark site as published, upgrade site tier
-            const site = await prisma.site.update({
-              where: { id: siteId },
-              data: { status: 'PUBLISHED', tier: 'launch' },
-            })
-            // Only upgrade user plan if currently free (don't downgrade from pro)
-            const currentUser = await prisma.user.findUnique({
-              where: { id: site.userId },
-              select: { plan: true },
-            })
-            if (currentUser?.plan === 'free') {
-              await prisma.user.update({
-                where: { id: site.userId },
-                data: { plan: 'launch' },
-              })
-            }
-            console.log(`[Hosting] Launch tier activated for site ${siteId}`)
-          } else if (tier === 'pro' && siteId) {
-            // Pro subscription: mark site as published, store subscription, upgrade user
-            const subscriptionId = typeof session.subscription === 'string'
-              ? session.subscription
-              : session.subscription?.id ?? null
-
-            const site = await prisma.site.update({
-              where: { id: siteId },
-              data: { status: 'PUBLISHED', tier: 'pro' },
-            })
-            await prisma.user.update({
-              where: { id: site.userId },
-              data: {
-                plan: 'pro',
-                stripeSubscriptionId: subscriptionId,
-                subscriptionStatus: 'active',
-              },
-            })
-            console.log(`[Hosting] Pro tier activated for site ${siteId}, subscription=${subscriptionId}`)
+          if (!customerId || !subscriptionId) {
+            console.error('[Subscription] Missing customer or subscription ID')
+            break
           }
 
+          // Find user by email from checkout session
+          const customerEmail = session.customer_email || session.customer_details?.email
+          if (!customerEmail) {
+            console.error('[Subscription] No customer email in session')
+            break
+          }
+
+          const user = await prisma.user.findFirst({
+            where: { email: customerEmail },
+          })
+
+          if (!user) {
+            console.error(`[Subscription] No user found for email ${customerEmail}`)
+            break
+          }
+
+          // Update user with subscription info
+          await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              plan: tier || 'starter',
+              stripeCustomerId: customerId,
+              stripeSubscriptionId: subscriptionId,
+              subscriptionStatus: 'active',
+            },
+          })
+
+          // Update site tier and publish
+          if (siteId) {
+            await prisma.site.update({
+              where: { id: siteId },
+              data: {
+                tier: tier || 'starter',
+                status: 'PUBLISHED',
+              },
+            })
+          } else if (subdomain) {
+            // Update by subdomain if no siteId
+            const site = await prisma.site.findUnique({ where: { subdomain } })
+            if (site && site.userId === user.id) {
+              await prisma.site.update({
+                where: { id: site.id },
+                data: {
+                  tier: tier || 'starter',
+                  status: 'PUBLISHED',
+                },
+              })
+            }
+          }
+
+          console.log(`[Subscription] Activated ${tier} for user ${user.id}`)
+          break
+        }
+
+        // ── Domain purchase ──
+        if (metadata.tier === 'domain' && metadata.customDomain && metadata.subdomain && metadata.siteId) {
+          const result = await provisionDomain(metadata.subdomain, metadata.customDomain, metadata.siteId)
+          console.log(
+            `[Hosting] Domain provisioning ${result.success ? 'succeeded' : 'failed'}: ${result.domain}`,
+            JSON.stringify(result.steps)
+          )
+          break
+        }
+
+        // ── Legacy: one-time launch payment (grandfathered) ──
+        if (metadata.tier === 'launch' && metadata.siteId) {
+          const site = await prisma.site.update({
+            where: { id: metadata.siteId },
+            data: { status: 'PUBLISHED', tier: 'starter' }, // Map launch → starter
+          })
+          const currentUser = await prisma.user.findUnique({
+            where: { id: site.userId },
+            select: { plan: true },
+          })
+          if (currentUser?.plan === 'free') {
+            await prisma.user.update({
+              where: { id: site.userId },
+              data: { plan: 'starter' },
+            })
+          }
+          console.log(`[Hosting] Legacy launch tier activated (as starter) for site ${metadata.siteId}`)
           break
         }
 
@@ -118,7 +164,7 @@ export async function POST(req: NextRequest) {
         break
       }
 
-      // ── Subscription renewal payment succeeded ──
+      // ── Invoice payment succeeded ──
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object as Stripe.Invoice
         const customerId = typeof invoice.customer === 'string'
@@ -130,6 +176,45 @@ export async function POST(req: NextRequest) {
           break
         }
 
+        // ── Domain renewal invoice ──
+        if (invoice.metadata?.type === 'domain_renewal') {
+          const siteId = invoice.metadata.siteId
+          if (siteId) {
+            const site = await prisma.site.findUnique({
+              where: { id: siteId },
+              select: { id: true, customDomain: true, domainAutoRenew: true },
+            })
+
+            if (site) {
+              // Reset renewal status for next year
+              await prisma.site.update({
+                where: { id: siteId },
+                data: {
+                  domainRenewalStatus: null,
+                  domainRenewalInvoiceId: null,
+                },
+              })
+
+              // Ensure auto_renew is on
+              if (!site.domainAutoRenew && site.customDomain) {
+                await flipAutoRenew(site.customDomain, true, siteId)
+              }
+
+              await prisma.domainRenewalLog.create({
+                data: {
+                  siteId,
+                  action: 'payment_succeeded',
+                  details: `Invoice ${invoice.id} paid — renewal status reset`,
+                },
+              })
+
+              console.log(`[Webhook] Domain renewal paid for site ${siteId}`)
+            }
+          }
+          break
+        }
+
+        // ── Subscription invoice ──
         const user = await prisma.user.findFirst({
           where: { stripeCustomerId: customerId },
         })
@@ -151,13 +236,18 @@ export async function POST(req: NextRequest) {
           },
         })
 
-        // Create an Order record for the renewal if user has a pro site
-        const proSite = await prisma.site.findFirst({
-          where: { userId: user.id, tier: 'pro' },
+        // Unsuspend any suspended sites
+        await prisma.site.updateMany({
+          where: { userId: user.id, status: 'SUSPENDED' },
+          data: { status: 'PUBLISHED' },
         })
 
-        if (proSite) {
-          // In Stripe v20, payment_intent lives on the payments sub-resource
+        // Create an Order record for the renewal
+        const subscriptionSite = await prisma.site.findFirst({
+          where: { userId: user.id, tier: { in: ['starter', 'pro'] } },
+        })
+
+        if (subscriptionSite) {
           const defaultPayment = invoice.payments?.data?.find(p => p.is_default)
           const piRef = defaultPayment?.payment?.payment_intent
           const paymentIntentId = typeof piRef === 'string'
@@ -167,7 +257,7 @@ export async function POST(req: NextRequest) {
           await prisma.order.create({
             data: {
               userId: user.id,
-              siteId: proSite.id,
+              siteId: subscriptionSite.id,
               type: 'subscription',
               amount: invoice.amount_paid ?? 0,
               currency: invoice.currency ?? 'gbp',
@@ -182,7 +272,7 @@ export async function POST(req: NextRequest) {
         break
       }
 
-      // ── Subscription payment failed ──
+      // ── Invoice payment failed ──
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice
         const customerId = typeof invoice.customer === 'string'
@@ -194,6 +284,29 @@ export async function POST(req: NextRequest) {
           break
         }
 
+        // ── Domain renewal invoice failed ──
+        if (invoice.metadata?.type === 'domain_renewal') {
+          const siteId = invoice.metadata.siteId
+          if (siteId) {
+            await prisma.site.update({
+              where: { id: siteId },
+              data: { domainRenewalStatus: 'retry_pending' },
+            })
+
+            await prisma.domainRenewalLog.create({
+              data: {
+                siteId,
+                action: 'payment_failed',
+                details: `Invoice ${invoice.id} payment failed — retry pending`,
+              },
+            })
+
+            console.error(`[Webhook] Domain renewal payment failed for site ${siteId}`)
+          }
+          break
+        }
+
+        // ── Subscription invoice failed ──
         const user = await prisma.user.findFirst({
           where: { stripeCustomerId: customerId },
         })
@@ -203,21 +316,20 @@ export async function POST(req: NextRequest) {
           break
         }
 
-        // Mark user as past_due
         await prisma.user.update({
           where: { id: user.id },
           data: { subscriptionStatus: 'past_due' },
         })
 
-        // Suspend all pro sites
+        // Suspend subscription-based sites
         await prisma.site.updateMany({
-          where: { userId: user.id, tier: 'pro' },
+          where: { userId: user.id, tier: { in: ['starter', 'pro'] } },
           data: { status: 'SUSPENDED' },
         })
 
         console.error(
           `[Webhook] invoice.payment_failed: user ${user.id}, customer ${customerId}, ` +
-          `invoice ${invoice.id} — pro sites suspended`
+          `invoice ${invoice.id} — subscription sites suspended`
         )
         break
       }
@@ -253,10 +365,10 @@ export async function POST(req: NextRequest) {
           },
         })
 
-        // Downgrade all pro sites to free (keep them published)
+        // Suspend all subscription sites
         await prisma.site.updateMany({
-          where: { userId: user.id, tier: 'pro' },
-          data: { tier: 'free' },
+          where: { userId: user.id, tier: { in: ['starter', 'pro'] } },
+          data: { status: 'SUSPENDED', tier: 'free' },
         })
 
         console.log(`[Webhook] customer.subscription.deleted: user ${user.id} downgraded to free`)
@@ -285,33 +397,55 @@ export async function POST(req: NextRequest) {
         }
 
         // Sync subscription status and period end
-        // In Stripe v20, current_period_end is no longer on the Subscription object.
-        // Extract it from the latest invoice's period_end if expanded, otherwise skip.
         const latestInvoice = subscription.latest_invoice
         const periodEndTs = typeof latestInvoice === 'object' && latestInvoice
           ? (latestInvoice as Stripe.Invoice).period_end
           : null
 
+        // Detect tier changes from the subscription items
+        const subItems = subscription.items?.data
+        let newTier: string | null = null
+        if (subItems?.length) {
+          const priceId = subItems[0].price?.id
+          if (priceId) {
+            if (priceId === process.env.STRIPE_PRICE_PRO_MONTHLY || priceId === process.env.STRIPE_PRICE_PRO_YEARLY) {
+              newTier = 'pro'
+            } else if (priceId === process.env.STRIPE_PRICE_STARTER_MONTHLY || priceId === process.env.STRIPE_PRICE_STARTER_YEARLY) {
+              newTier = 'starter'
+            }
+          }
+        }
+
         await prisma.user.update({
           where: { id: user.id },
           data: {
             subscriptionStatus: subscription.status,
+            ...(newTier ? { plan: newTier } : {}),
             ...(periodEndTs
               ? { subscriptionCurrentPeriodEnd: new Date(periodEndTs * 1000) }
               : {}),
           },
         })
 
-        // If subscription is back to active, unsuspend any suspended pro sites
+        // If tier changed, update sites
+        if (newTier) {
+          await prisma.site.updateMany({
+            where: { userId: user.id, tier: { in: ['starter', 'pro'] } },
+            data: { tier: newTier },
+          })
+        }
+
+        // If subscription is back to active, unsuspend suspended sites
         if (subscription.status === 'active') {
           await prisma.site.updateMany({
-            where: { userId: user.id, tier: 'pro', status: 'SUSPENDED' },
+            where: { userId: user.id, status: 'SUSPENDED' },
             data: { status: 'PUBLISHED' },
           })
         }
 
         console.log(
-          `[Webhook] customer.subscription.updated: user ${user.id}, status=${subscription.status}`
+          `[Webhook] customer.subscription.updated: user ${user.id}, status=${subscription.status}` +
+          (newTier ? `, tier=${newTier}` : '')
         )
         break
       }

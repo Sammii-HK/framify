@@ -1,15 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth0 } from '@/lib/auth0'
 import { prisma } from '@/lib/prisma'
-import { createCheckoutSession, createHostingCheckoutSession } from '@/lib/stripe'
-import type { HostingTier } from '@/lib/stripe'
+import { findOrCreateUser } from '@/lib/users'
+import {
+  createCheckoutSession,
+  createSubscriptionCheckoutSession,
+  createDomainCheckoutSession,
+} from '@/lib/stripe'
+import type { SubscriptionTier, SubscriptionInterval } from '@/lib/stripe'
 
-const VALID_HOSTING_TIERS: HostingTier[] = ['launch', 'pro', 'domain']
+const VALID_SUBSCRIPTION_TIERS: SubscriptionTier[] = ['starter', 'pro']
+const VALID_INTERVALS: SubscriptionInterval[] = ['monthly', 'yearly']
 
 /**
  * POST /api/checkout
  * Create a Stripe Checkout session for:
- * - Hosting tiers (launch, pro, domain) — pass { tier, subdomain, siteId?, domainPrice? }
+ * - Subscriptions (starter, pro) — pass { tier, interval, subdomain, siteId? }
+ * - Domain purchase — pass { tier: 'domain', subdomain, siteId, domainPrice, customDomain }
  * - Marketplace products (template, component) — pass { productId, productType }
  */
 export async function POST(req: NextRequest) {
@@ -22,16 +29,16 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    const user = await findOrCreateUser(session.user)
     const body = await req.json()
 
-    // ── Hosting tier checkout ──
-    if (body.tier && VALID_HOSTING_TIERS.includes(body.tier)) {
-      const { tier, subdomain, siteId, domainPrice, customDomain } = body as {
-        tier: HostingTier
+    // ── Subscription checkout ──
+    if (body.tier && VALID_SUBSCRIPTION_TIERS.includes(body.tier)) {
+      const { tier, interval, subdomain, siteId } = body as {
+        tier: SubscriptionTier
+        interval: SubscriptionInterval
         subdomain: string
         siteId?: string
-        domainPrice?: number
-        customDomain?: string
       }
 
       if (!subdomain) {
@@ -41,28 +48,65 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      if (tier === 'domain') {
-        if (!domainPrice || domainPrice <= 0) {
-          return NextResponse.json(
-            { error: 'domainPrice (in pence) is required for domain tier' },
-            { status: 400 }
-          )
-        }
-        if (!customDomain) {
-          return NextResponse.json(
-            { error: 'customDomain is required for domain tier' },
-            { status: 400 }
-          )
-        }
+      if (!interval || !VALID_INTERVALS.includes(interval)) {
+        return NextResponse.json(
+          { error: 'interval must be "monthly" or "yearly"' },
+          { status: 400 }
+        )
       }
 
-      const checkoutSession = await createHostingCheckoutSession({
+      const checkoutSession = await createSubscriptionCheckoutSession({
         tier,
+        interval,
+        siteId,
+        subdomain,
+        customerEmail: session.user.email || undefined,
+        customerId: user.stripeCustomerId || undefined,
+      })
+
+      return NextResponse.json({
+        url: checkoutSession.url,
+        sessionId: checkoutSession.id,
+      })
+    }
+
+    // ── Domain purchase checkout (one-off) ──
+    if (body.tier === 'domain') {
+      const { subdomain, siteId, domainPrice, customDomain } = body as {
+        subdomain: string
+        siteId: string
+        domainPrice: number
+        customDomain: string
+      }
+
+      if (!subdomain || !siteId) {
+        return NextResponse.json(
+          { error: 'subdomain and siteId are required' },
+          { status: 400 }
+        )
+      }
+
+      if (!domainPrice || domainPrice <= 0) {
+        return NextResponse.json(
+          { error: 'domainPrice (in pence) is required for domain purchase' },
+          { status: 400 }
+        )
+      }
+
+      if (!customDomain) {
+        return NextResponse.json(
+          { error: 'customDomain is required' },
+          { status: 400 }
+        )
+      }
+
+      const checkoutSession = await createDomainCheckoutSession({
         subdomain,
         siteId,
         domainPrice,
         customDomain,
         customerEmail: session.user.email || undefined,
+        customerId: user.stripeCustomerId || undefined,
       })
 
       return NextResponse.json({

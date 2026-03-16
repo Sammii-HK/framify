@@ -1,6 +1,11 @@
 {
   "buildCommand": "prisma generate && next build",
   "framework": "nextjs",
-  "installCommand": "npm install"
+  "installCommand": "npm install",
+  "crons": [
+    {
+      "path": "/api/cron/domain-renewal",
+      "schedule": "0 6 * * *"
+    }
+  ]
 }
-

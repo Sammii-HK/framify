@@ -36,6 +36,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'This subdomain is already taken.' }, { status: 409 })
     }
 
+    // Subscription gate: require active subscription to publish
+    // Grandfathered users (starter/launch with no stripeSubscriptionId) are allowed
+    const isGrandfathered = (user.plan === 'starter' || user.plan === 'launch') && !user.stripeSubscriptionId
+    if (!isGrandfathered) {
+      if (user.plan === 'free' || !user.plan) {
+        return NextResponse.json(
+          { error: 'subscription_required', message: 'A subscription is required to publish your site.' },
+          { status: 403 }
+        )
+      }
+      if (user.subscriptionStatus === 'past_due' || user.subscriptionStatus === 'canceled') {
+        return NextResponse.json(
+          { error: 'subscription_inactive', message: 'Your subscription is inactive. Please update your payment method.' },
+          { status: 403 }
+        )
+      }
+    }
+
     if (!VALID_PALETTES.includes(content.palette)) {
       content.palette = 'dark-celestial'
     }

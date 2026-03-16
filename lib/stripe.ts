@@ -61,105 +61,193 @@ export async function createCheckoutSession({
 }
 
 /**
- * Hosting tier definitions
+ * Subscription tier definitions
  */
-export type HostingTier = 'launch' | 'pro' | 'domain'
+export type SubscriptionTier = 'starter' | 'pro'
+export type SubscriptionInterval = 'monthly' | 'yearly'
 
-export const HOSTING_TIERS: Record<'launch' | 'pro', {
+export const SUBSCRIPTION_TIERS: Record<SubscriptionTier, {
   name: string
-  unitAmount: number
-  mode: 'payment' | 'subscription'
-  recurring?: { interval: 'year' }
+  prices: Record<SubscriptionInterval, string | undefined>
 }> = {
-  launch: {
-    name: 'CraftMyPage Launch - Website hosting',
-    unitAmount: 14900,
-    mode: 'payment',
+  starter: {
+    name: 'CraftMyPage Starter',
+    prices: {
+      monthly: process.env.STRIPE_PRICE_STARTER_MONTHLY,
+      yearly: process.env.STRIPE_PRICE_STARTER_YEARLY,
+    },
   },
   pro: {
-    name: 'CraftMyPage Pro - Custom domain + unlimited edits',
-    unitAmount: 2900,
-    mode: 'subscription',
-    recurring: { interval: 'year' },
+    name: 'CraftMyPage Pro',
+    prices: {
+      monthly: process.env.STRIPE_PRICE_PRO_MONTHLY,
+      yearly: process.env.STRIPE_PRICE_PRO_YEARLY,
+    },
   },
 }
 
 /**
- * Create a Stripe Checkout session for a hosting tier or domain purchase
+ * Create a Stripe Checkout session for a subscription (Starter or Pro)
  */
-export async function createHostingCheckoutSession({
+export async function createSubscriptionCheckoutSession({
   tier,
+  interval,
+  siteId,
+  subdomain,
+  customerEmail,
+  customerId,
+}: {
+  tier: SubscriptionTier
+  interval: SubscriptionInterval
+  siteId?: string
+  subdomain: string
+  customerEmail?: string
+  customerId?: string
+}): Promise<Stripe.Checkout.Session> {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const tierConfig = SUBSCRIPTION_TIERS[tier]
+  const priceId = tierConfig.prices[interval]
+
+  if (!priceId) {
+    throw new Error(`No Stripe price configured for ${tier} ${interval}. Set STRIPE_PRICE_${tier.toUpperCase()}_${interval.toUpperCase()} env var.`)
+  }
+
+  const sessionParams: Stripe.Checkout.SessionCreateParams = {
+    mode: 'subscription',
+    payment_method_types: ['card'],
+    line_items: [{ price: priceId, quantity: 1 }],
+    metadata: {
+      type: 'subscription',
+      tier,
+      interval,
+      subdomain,
+      ...(siteId ? { siteId } : {}),
+    },
+    success_url: `${appUrl}/dashboard?payment=success`,
+    cancel_url: `${appUrl}/dashboard?payment=cancelled`,
+  }
+
+  // Attach to existing customer if we have one, otherwise pass email for new customer creation
+  if (customerId) {
+    sessionParams.customer = customerId
+  } else if (customerEmail) {
+    sessionParams.customer_email = customerEmail
+  }
+
+  const session = await stripe.checkout.sessions.create(sessionParams)
+  return session
+}
+
+/**
+ * Create a Stripe Checkout session for a domain-only purchase (one-off payment)
+ */
+export async function createDomainCheckoutSession({
   subdomain,
   siteId,
   domainPrice,
   customDomain,
   customerEmail,
+  customerId,
 }: {
-  tier: HostingTier
   subdomain: string
-  siteId?: string
-  domainPrice?: number
-  customDomain?: string
+  siteId: string
+  domainPrice: number
+  customDomain: string
   customerEmail?: string
+  customerId?: string
 }): Promise<Stripe.Checkout.Session> {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
-  let mode: 'payment' | 'subscription'
-  let lineItems: Stripe.Checkout.SessionCreateParams.LineItem[]
+  if (!domainPrice || domainPrice <= 0) {
+    throw new Error('domainPrice is required for domain purchase')
+  }
 
-  if (tier === 'domain') {
-    if (!domainPrice || domainPrice <= 0) {
-      throw new Error('domainPrice is required for domain tier')
-    }
-    mode = 'payment'
-    lineItems = [
+  const sessionParams: Stripe.Checkout.SessionCreateParams = {
+    mode: 'payment',
+    payment_method_types: ['card'],
+    line_items: [
       {
         price_data: {
           currency: 'gbp',
           product_data: {
             name: 'Custom domain registration',
-            metadata: { tier, subdomain },
+            metadata: { subdomain, siteId },
           },
           unit_amount: domainPrice,
         },
         quantity: 1,
       },
-    ]
-  } else {
-    const tierConfig = HOSTING_TIERS[tier]
-    mode = tierConfig.mode
-    lineItems = [
-      {
-        price_data: {
-          currency: 'gbp',
-          product_data: {
-            name: tierConfig.name,
-            metadata: { tier, subdomain },
-          },
-          unit_amount: tierConfig.unitAmount,
-          ...(tierConfig.recurring ? { recurring: tierConfig.recurring } : {}),
-        },
-        quantity: 1,
-      },
-    ]
-  }
-
-  const session = await stripe.checkout.sessions.create({
-    mode,
-    payment_method_types: ['card'],
-    customer_email: customerEmail,
-    line_items: lineItems,
+    ],
     metadata: {
-      tier,
+      type: 'domain',
+      tier: 'domain',
       subdomain,
-      ...(siteId ? { siteId } : {}),
-      ...(customDomain ? { customDomain } : {}),
+      siteId,
+      customDomain,
     },
     success_url: `${appUrl}/dashboard?payment=success`,
     cancel_url: `${appUrl}/dashboard?payment=cancelled`,
+  }
+
+  if (customerId) {
+    sessionParams.customer = customerId
+  } else if (customerEmail) {
+    sessionParams.customer_email = customerEmail
+  }
+
+  const session = await stripe.checkout.sessions.create(sessionParams)
+  return session
+}
+
+/**
+ * Create and finalise a one-off invoice for domain renewal
+ */
+export async function createDomainRenewalInvoice({
+  customerId,
+  siteId,
+  domain,
+  amountInPence,
+}: {
+  customerId: string
+  siteId: string
+  domain: string
+  amountInPence: number
+}): Promise<Stripe.Invoice> {
+  // Create an invoice item
+  await stripe.invoiceItems.create({
+    customer: customerId,
+    amount: amountInPence,
+    currency: 'gbp',
+    description: `Domain renewal: ${domain}`,
+    metadata: {
+      type: 'domain_renewal',
+      siteId,
+      domain,
+    },
   })
 
-  return session
+  // Create and finalise the invoice
+  const invoice = await stripe.invoices.create({
+    customer: customerId,
+    collection_method: 'charge_automatically',
+    auto_advance: true,
+    metadata: {
+      type: 'domain_renewal',
+      siteId,
+      domain,
+    },
+  })
+
+  // Finalise it so Stripe attempts payment
+  const finalised = await stripe.invoices.finalizeInvoice(invoice.id)
+  return finalised
+}
+
+/**
+ * Retry payment on an existing invoice
+ */
+export async function retryInvoicePayment(invoiceId: string): Promise<Stripe.Invoice> {
+  return stripe.invoices.pay(invoiceId)
 }
 
 /**

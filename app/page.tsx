@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { PricingSection } from '@/components/PricingSection'
 
 const palettes = [
   {
@@ -171,121 +172,7 @@ export default function Home() {
       </section>
 
       {/* Pricing */}
-      <section className="bg-white">
-        <div className="mx-auto max-w-5xl px-6 py-20 md:py-24">
-          <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 text-center tracking-tight">
-            Simple, honest pricing
-          </h2>
-          <p className="mt-4 text-neutral-500 text-center text-lg max-w-xl mx-auto">
-            Start free. Upgrade when you are ready.
-          </p>
-          <div className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Free tier */}
-            <div className="rounded-xl border border-neutral-200 p-8">
-              <h3 className="text-lg font-semibold text-neutral-900">Free</h3>
-              <p className="mt-1 text-sm text-neutral-500">Get started without spending a penny</p>
-              <p className="mt-6">
-                <span className="text-4xl font-bold text-neutral-900">£0</span>
-              </p>
-              <ul className="mt-8 space-y-3 text-sm text-neutral-600">
-                <li className="flex items-start gap-2">
-                  <span className="text-blue-600 mt-0.5 font-bold">&#10003;</span>
-                  Hosted on craftmypage.com subdomain
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-blue-600 mt-0.5 font-bold">&#10003;</span>
-                  All templates and colour palettes
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-blue-600 mt-0.5 font-bold">&#10003;</span>
-                  Contact form included
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-blue-600 mt-0.5 font-bold">&#10003;</span>
-                  Mobile responsive
-                </li>
-              </ul>
-              <Link
-                href="/generate"
-                className="mt-8 block w-full rounded-lg border border-neutral-300 py-2.5 text-center text-sm font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors"
-              >
-                Get started free
-              </Link>
-            </div>
-
-            {/* Launch tier */}
-            <div className="rounded-xl border-2 border-blue-600 p-8 relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-full">
-                Most popular
-              </div>
-              <h3 className="text-lg font-semibold text-neutral-900">Launch</h3>
-              <p className="mt-1 text-sm text-neutral-500">Everything you need to look professional</p>
-              <p className="mt-6">
-                <span className="text-4xl font-bold text-neutral-900">£149</span>
-                <span className="text-neutral-500 text-sm ml-1">one-off</span>
-              </p>
-              <ul className="mt-8 space-y-3 text-sm text-neutral-600">
-                <li className="flex items-start gap-2">
-                  <span className="text-blue-600 mt-0.5 font-bold">&#10003;</span>
-                  Custom domain setup
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-blue-600 mt-0.5 font-bold">&#10003;</span>
-                  All Free features included
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-blue-600 mt-0.5 font-bold">&#10003;</span>
-                  Priority support
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-blue-600 mt-0.5 font-bold">&#10003;</span>
-                  SEO boost pack
-                </li>
-              </ul>
-              <Link
-                href="/generate"
-                className="mt-8 block w-full rounded-lg bg-blue-600 py-2.5 text-center text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
-              >
-                Get started
-              </Link>
-            </div>
-
-            {/* Pro tier */}
-            <div className="rounded-xl border border-neutral-200 p-8">
-              <h3 className="text-lg font-semibold text-neutral-900">Pro</h3>
-              <p className="mt-1 text-sm text-neutral-500">For businesses that want ongoing support</p>
-              <p className="mt-6">
-                <span className="text-4xl font-bold text-neutral-900">£29</span>
-                <span className="text-neutral-500 text-sm ml-1">/year</span>
-              </p>
-              <ul className="mt-8 space-y-3 text-sm text-neutral-600">
-                <li className="flex items-start gap-2">
-                  <span className="text-blue-600 mt-0.5 font-bold">&#10003;</span>
-                  Custom domain + annual renewal
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-blue-600 mt-0.5 font-bold">&#10003;</span>
-                  Site analytics dashboard
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-blue-600 mt-0.5 font-bold">&#10003;</span>
-                  Priority support
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-blue-600 mt-0.5 font-bold">&#10003;</span>
-                  All templates and updates
-                </li>
-              </ul>
-              <Link
-                href="/generate"
-                className="mt-8 block w-full rounded-lg border border-neutral-300 py-2.5 text-center text-sm font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors"
-              >
-                Get started
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      <PricingSection />
 
       {/* SEO section */}
       <section className="bg-neutral-50">

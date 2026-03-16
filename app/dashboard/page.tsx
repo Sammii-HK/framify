@@ -9,6 +9,13 @@ interface BillingInfo {
   plan: string
   subscriptionStatus: string | null
   subscriptionCurrentPeriodEnd: string | null
+  domainRenewals: {
+    siteId: string
+    domain: string
+    expiresAt: string | null
+    renewalStatus: string | null
+    autoRenew: boolean
+  }[]
 }
 
 interface SiteRecord {
@@ -51,6 +58,14 @@ const paletteGradients: Record<string, string> = {
   'warm-amber': 'linear-gradient(135deg, #1F1710 0%, #2A2018 50%, #D4943A 100%)',
 }
 
+const renewalStatusConfig: Record<string, { label: string; colour: string }> = {
+  reminder_sent: { label: 'Reminder sent', colour: 'text-blue-700 bg-blue-50' },
+  invoice_created: { label: 'Invoice pending', colour: 'text-amber-700 bg-amber-50' },
+  paid: { label: 'Renewed', colour: 'text-green-700 bg-green-50' },
+  retry_pending: { label: 'Payment retry pending', colour: 'text-orange-700 bg-orange-50' },
+  auto_renew_off: { label: 'Renewal paused', colour: 'text-red-700 bg-red-50' },
+}
+
 function formatDate(iso: string): string {
   const d = new Date(iso)
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -69,6 +84,30 @@ function formatRelativeDate(iso: string): string {
   if (diffHours < 24) return `${diffHours}h ago`
   if (diffDays < 7) return `${diffDays}d ago`
   return formatDate(iso)
+}
+
+function getPlanBadge(plan: string) {
+  switch (plan) {
+    case 'pro':
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold text-purple-700 bg-purple-100">
+          Pro
+        </span>
+      )
+    case 'starter':
+    case 'launch':
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold text-blue-700 bg-blue-100">
+          Starter
+        </span>
+      )
+    default:
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold text-neutral-600 bg-neutral-200">
+          Free
+        </span>
+      )
+  }
 }
 
 export default function DashboardPage() {
@@ -134,7 +173,7 @@ export default function DashboardPage() {
 
   async function handleCancelPlan() {
     const confirmed = window.confirm(
-      'Are you sure you want to cancel your plan? You will lose access to paid features at the end of your current billing period.'
+      'Are you sure you want to cancel your plan? Your sites will be suspended at the end of your current billing period.'
     )
     if (!confirmed) return
     setBillingLoading(true)
@@ -166,6 +205,11 @@ export default function DashboardPage() {
     : null
   const customerDomain = process.env.NEXT_PUBLIC_CUSTOMER_DOMAIN || 'craftmypage.com'
 
+  // Domain renewal info keyed by siteId
+  const renewalsBySite = new Map(
+    (billing?.domainRenewals || []).map(r => [r.siteId, r])
+  )
+
   // Loading state
   if (!loaded) {
     return (
@@ -191,21 +235,7 @@ export default function DashboardPage() {
               <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">
                 Welcome back
               </h1>
-              {billing && (
-                billing.plan === 'pro' ? (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600">
-                    Pro
-                  </span>
-                ) : billing.plan === 'launch' ? (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold text-blue-700 bg-blue-100">
-                    Launch
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold text-neutral-600 bg-neutral-200">
-                    Free
-                  </span>
-                )
-              )}
+              {billing && getPlanBadge(billing.plan)}
             </div>
             <p className="text-neutral-500 mt-1">
               Manage your CraftMyPage sites
@@ -229,7 +259,7 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Stats row — only if sites exist */}
+        {/* Stats row */}
         {sites.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
             <div className="bg-white rounded-xl border border-neutral-200 p-5">
@@ -256,7 +286,7 @@ export default function DashboardPage() {
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <p className="text-sm font-medium text-neutral-900">
-                    Your Plan: <span className="font-semibold capitalize">{billing.plan}</span>
+                    Your plan: <span className="font-semibold capitalize">{billing.plan === 'launch' ? 'Starter' : billing.plan}</span>
                     {billing.subscriptionStatus && (
                       <span className={`ml-2 text-xs font-medium ${
                         billing.subscriptionStatus === 'active' ? 'text-green-600' :
@@ -274,7 +304,7 @@ export default function DashboardPage() {
                 </div>
                 {billing.subscriptionStatus === 'past_due' && (
                   <p className="text-sm text-amber-600 font-medium">
-                    Payment failed — please update your payment method
+                    Payment failed. Please update your payment method.
                   </p>
                 )}
                 {billing.subscriptionStatus === 'canceled' && renewalDate && (
@@ -294,7 +324,7 @@ export default function DashboardPage() {
                   disabled={billingLoading}
                   className="px-4 py-2 text-sm font-medium text-neutral-700 bg-neutral-50 border border-neutral-200 rounded-lg hover:bg-neutral-100 transition-colors disabled:opacity-50"
                 >
-                  Manage Billing
+                  Manage billing
                 </button>
                 {billing.subscriptionStatus !== 'canceled' && (
                   <button
@@ -302,7 +332,7 @@ export default function DashboardPage() {
                     disabled={billingLoading}
                     className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
                   >
-                    Cancel Plan
+                    Cancel plan
                   </button>
                 )}
               </div>
@@ -310,16 +340,51 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Upgrade prompt — free users with sites */}
+        {/* Analytics link — Starter/Pro users */}
+        {billing && (billing.plan === 'pro' || billing.plan === 'starter' || billing.plan === 'launch') && sites.length > 0 && (
+          <div className="bg-white rounded-xl border border-neutral-200 p-5 mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium text-neutral-900">Site analytics</p>
+                <p className="text-sm text-neutral-500">View page views and form submissions for your sites.</p>
+              </div>
+              <Link
+                href="/dashboard/analytics"
+                className="inline-flex items-center justify-center px-5 py-2 bg-neutral-50 border border-neutral-200 text-neutral-700 text-sm font-medium rounded-lg hover:bg-neutral-100 transition-colors whitespace-nowrap"
+              >
+                View analytics
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Upgrade prompts — free users */}
         {billing && billing.plan === 'free' && sites.length > 0 && (
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-5 mb-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <p className="text-sm text-neutral-700">
-                Upgrade to Pro for custom domains, analytics, and priority support — <span className="font-semibold">£29/year</span>
+                Subscribe to publish your site. Plans start at <span className="font-semibold">£9/mo</span>.
               </p>
               <Link
-                href="/api/checkout?tier=pro"
+                href="/#pricing"
                 className="inline-flex items-center justify-center px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap"
+              >
+                View plans
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Upgrade to Pro prompt — Starter users */}
+        {billing && (billing.plan === 'starter' || billing.plan === 'launch') && billing.subscriptionStatus === 'active' && (
+          <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200 p-5 mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <p className="text-sm text-neutral-700">
+                Upgrade to Pro for a custom domain, analytics, and no branding.
+              </p>
+              <Link
+                href="/#pricing"
+                className="inline-flex items-center justify-center px-5 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors shadow-sm whitespace-nowrap"
               >
                 Upgrade to Pro
               </Link>
@@ -358,8 +423,10 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {sites.map(site => {
               const isPublished = site.status === 'PUBLISHED'
+              const isSuspended = site.status === 'SUSPENDED'
               const siteUrl = `${site.subdomain}.${customerDomain}`
               const gradient = paletteGradients[site.palette] || 'linear-gradient(135deg, #6B7280 0%, #9CA3AF 100%)'
+              const renewal = renewalsBySite.get(site.id)
 
               return (
                 <div
@@ -382,27 +449,29 @@ export default function DashboardPage() {
                         className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium shrink-0 ${
                           isPublished
                             ? 'bg-green-50 text-green-700'
+                            : isSuspended
+                            ? 'bg-red-50 text-red-700'
                             : 'bg-amber-50 text-amber-700'
                         }`}
                       >
                         <span
                           className={`w-1.5 h-1.5 rounded-full ${
-                            isPublished ? 'bg-green-500' : 'bg-amber-500'
+                            isPublished ? 'bg-green-500' : isSuspended ? 'bg-red-500' : 'bg-amber-500'
                           }`}
                         />
-                        {isPublished ? 'Live' : 'Draft'}
+                        {isPublished ? 'Live' : isSuspended ? 'Suspended' : 'Draft'}
                       </span>
                     </div>
 
                     {/* URL */}
                     {isPublished ? (
                       <a
-                        href={`https://${siteUrl}`}
+                        href={`https://${site.customDomain || siteUrl}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-sm text-blue-600 hover:text-blue-700 hover:underline truncate block mb-3"
                       >
-                        {siteUrl}
+                        {site.customDomain || siteUrl}
                       </a>
                     ) : (
                       <p className="text-sm text-neutral-400 truncate mb-3">
@@ -431,6 +500,27 @@ export default function DashboardPage() {
                       </div>
                     )}
 
+                    {/* Domain renewal status */}
+                    {renewal && renewal.renewalStatus && (
+                      <div className={`flex items-center justify-between gap-2 mb-4 text-xs px-2.5 py-1.5 rounded-lg ${renewalStatusConfig[renewal.renewalStatus]?.colour || 'text-neutral-600 bg-neutral-50'}`}>
+                        <span className="font-medium">
+                          {renewalStatusConfig[renewal.renewalStatus]?.label || renewal.renewalStatus}
+                        </span>
+                        {renewal.expiresAt && (
+                          <span className="text-xs opacity-75">
+                            Expires {formatDate(renewal.expiresAt)}
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Suspended notice */}
+                    {isSuspended && (
+                      <div className="mb-4 text-xs text-red-700 bg-red-50 px-2.5 py-1.5 rounded-lg">
+                        Site suspended. Subscribe or update payment to restore.
+                      </div>
+                    )}
+
                     {/* Actions */}
                     <div className="flex gap-2">
                       <button
@@ -439,13 +529,21 @@ export default function DashboardPage() {
                       >
                         Edit
                       </button>
-                      {!site.customDomain && (
+                      {!site.customDomain && billing?.plan === 'pro' && (
                         <button
                           onClick={() => setDomainSetupSiteId(domainSetupSiteId === site.id ? null : site.id)}
                           className="flex-1 px-4 py-2 text-sm font-medium text-neutral-700 bg-neutral-50 border border-neutral-200 rounded-lg hover:bg-neutral-100 transition-colors"
                         >
                           Add domain
                         </button>
+                      )}
+                      {billing && (billing.plan === 'pro' || billing.plan === 'starter' || billing.plan === 'launch') && isPublished && (
+                        <Link
+                          href={`/dashboard/analytics?site=${site.id}`}
+                          className="flex-1 px-4 py-2 text-sm font-medium text-center text-neutral-700 bg-neutral-50 border border-neutral-200 rounded-lg hover:bg-neutral-100 transition-colors"
+                        >
+                          Analytics
+                        </Link>
                       )}
                       {site.cfDeploymentUrl && (
                         <a
