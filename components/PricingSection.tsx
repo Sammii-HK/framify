@@ -169,7 +169,14 @@ export function PricingSection() {
           </div>
         </div>
 
-        <p className="mt-8 text-center text-sm text-neutral-400">
+        <div className="mt-10 text-center">
+          <p className="text-sm font-medium text-neutral-700">30-day money-back guarantee</p>
+          <p className="text-xs text-neutral-400 mt-1">
+            Not happy? Request a full refund within 30 days, no questions asked.
+          </p>
+        </div>
+
+        <p className="mt-6 text-center text-sm text-neutral-400">
           Want to see the templates first?{' '}
           <Link href="/templates" className="text-brand-600 hover:text-brand-700 font-medium">
             Browse the gallery

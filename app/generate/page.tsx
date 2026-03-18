@@ -2,6 +2,9 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
+import { palettes as galleryPalettes, templates as galleryTemplates } from '@/lib/template-data'
+import TemplateMockup from '@/components/TemplateMockup'
 
 type PaletteKey = 'dark-celestial' | 'earthy-sage' | 'ethereal-light' | 'crystal-rose' | 'steel-blue' | 'warm-amber'
 
@@ -106,6 +109,18 @@ const templateTypes = [
   { id: 'portfolio', name: 'Portfolio', description: 'Photographers, designers, artists' },
   { id: 'consultant', name: 'Professional', description: 'Consultants, coaches, freelancers' },
 ]
+
+// Map generate page template IDs to gallery template types for previews
+const templateToGalleryType: Record<string, string> = {
+  standard: 'standard',
+  trades: 'trades',
+  salon: 'hair-beauty',
+  restaurant: 'food-drink',
+  portfolio: 'portfolio',
+  consultant: 'professional',
+}
+
+const defaultGalleryPalette = galleryPalettes[0] // dark-celestial
 
 function TemplateIcon({ id, className }: { id: string; className?: string }) {
   const cls = className || 'w-8 h-8'
@@ -220,29 +235,67 @@ function GeneratePageInner() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [publishing, setPublishing] = useState(false)
   const [publishedUrl, setPublishedUrl] = useState<string | null>(null)
+  const [publishError, setPublishError] = useState('')
   const [subdomain, setSubdomain] = useState('')
   const [editingSiteId, setEditingSiteId] = useState<string | null>(null)
   const [newAccreditation, setNewAccreditation] = useState('')
   const [newSpecialism, setNewSpecialism] = useState('')
 
-  // Load site data when editing an existing site
+  // Load site data when editing an existing site, or restore a draft after login redirect
   useEffect(() => {
     const editId = searchParams.get('edit')
-    if (!editId) return
+    const templateParam = searchParams.get('template')
 
+    if (editId) {
+      try {
+        const raw = localStorage.getItem('craftmypage_edit_site')
+        if (raw) {
+          const site = JSON.parse(raw)
+          if (site.id === editId) {
+            setContent(site.content)
+            setSubdomain(site.subdomain || '')
+            setEditingSiteId(site.id)
+            localStorage.removeItem('craftmypage_edit_site')
+          }
+        }
+      } catch {
+        // ignore malformed data
+      }
+      return
+    }
+
+    // Restore draft saved before auth redirect
     try {
-      const raw = localStorage.getItem('craftmypage_edit_site')
-      if (raw) {
-        const site = JSON.parse(raw)
-        if (site.id === editId) {
-          setContent(site.content)
-          setSubdomain(site.subdomain || '')
-          setEditingSiteId(site.id)
-          localStorage.removeItem('craftmypage_edit_site')
+      const draftRaw = localStorage.getItem('craftmypage_draft')
+      if (draftRaw) {
+        const draft = JSON.parse(draftRaw)
+        if (draft.content) {
+          setContent(draft.content)
+          if (draft.subdomain) setSubdomain(draft.subdomain)
+          if (draft.step) setStep(draft.step)
+          localStorage.removeItem('craftmypage_draft')
+          return
         }
       }
     } catch {
-      // ignore malformed data
+      // ignore
+    }
+
+    // Handle ?template= from gallery page
+    if (templateParam) {
+      const galleryToGenerate: Record<string, string> = {
+        standard: 'standard',
+        trades: 'trades',
+        'hair-beauty': 'salon',
+        'food-drink': 'restaurant',
+        portfolio: 'portfolio',
+        professional: 'consultant',
+      }
+      const genType = galleryToGenerate[templateParam] || templateParam
+      if (templateTypes.some(t => t.id === genType)) {
+        selectTemplate(genType)
+        setStep(1)
+      }
     }
   }, [searchParams])
 
@@ -459,14 +512,31 @@ function GeneratePageInner() {
         body: JSON.stringify({ content, subdomain: slug }),
       })
       const data = await res.json()
+
+      if (res.status === 401) {
+        // Save draft so they don't lose work after login
+        localStorage.setItem('craftmypage_draft', JSON.stringify({ content, subdomain: slug, step }))
+        window.location.href = '/auth/login?returnTo=/generate'
+        return
+      }
+
+      if (data.error === 'subscription_required' || data.error === 'subscription_inactive') {
+        // Save draft and redirect to pricing
+        localStorage.setItem('craftmypage_draft', JSON.stringify({ content, subdomain: slug, step }))
+        setPublishError(data.message || 'A subscription is required to publish.')
+        return
+      }
+
       if (data.url) {
         setPublishedUrl(data.url)
+        localStorage.removeItem('craftmypage_draft')
       } else {
         console.error('Publish failed:', data.error)
-        alert(data.error || 'Failed to publish')
+        setPublishError(data.error || 'Failed to publish. Please try again.')
       }
     } catch (err) {
       console.error('Publish failed:', err)
+      setPublishError('Something went wrong. Please try again.')
     } finally {
       setPublishing(false)
     }
@@ -515,24 +585,38 @@ function GeneratePageInner() {
           <div className="space-y-4">
             <p className="text-sm text-neutral-600 mb-2">What type of business is this for?</p>
             <div className="grid grid-cols-2 gap-4">
-              {templateTypes.map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => selectTemplate(t.id)}
-                  className={`p-5 rounded-xl border-2 text-left transition-all ${
-                    content.templateType === t.id
-                      ? 'border-brand-500 ring-2 ring-brand-200'
-                      : 'border-neutral-200 hover:border-neutral-300'
-                  }`}
-                >
-                  <div className="text-neutral-600 mb-3">
-                    <TemplateIcon id={t.id} className="w-8 h-8" />
-                  </div>
-                  <p className="font-medium text-neutral-900">{t.name}</p>
-                  <p className="text-sm text-neutral-500">{t.description}</p>
-                </button>
-              ))}
+              {templateTypes.map((t) => {
+                const galleryType = templateToGalleryType[t.id]
+                const galleryTemplate = galleryTemplates.find(gt => gt.type === galleryType)
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => selectTemplate(t.id)}
+                    className={`p-4 rounded-xl border-2 text-left transition-all ${
+                      content.templateType === t.id
+                        ? 'border-brand-500 ring-2 ring-brand-200'
+                        : 'border-neutral-200 hover:border-neutral-300'
+                    }`}
+                  >
+                    {galleryTemplate && (
+                      <div className="mb-3 pointer-events-none">
+                        <TemplateMockup palette={defaultGalleryPalette} template={galleryTemplate} isDark={true} />
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 mb-1">
+                      <TemplateIcon id={t.id} className="w-5 h-5" />
+                      <p className="font-medium text-neutral-900">{t.name}</p>
+                    </div>
+                    <p className="text-sm text-neutral-500">{t.description}</p>
+                  </button>
+                )
+              })}
             </div>
+            <p className="text-center text-sm text-neutral-400 mt-2">
+              <Link href="/templates" className="text-brand-600 hover:text-brand-700 font-medium">
+                Browse all 21 templates
+              </Link>
+            </p>
           </div>
         )}
 
@@ -622,6 +706,7 @@ function GeneratePageInner() {
         {/* Step 3: Template-specific fields */}
         {step === stepIndex.templateSpecific && (
           <div className="space-y-6">
+            <p className="text-sm text-neutral-400">These fields are optional. Skip this step if you do not have this information yet.</p>
             {/* Standard — Services (same as before) */}
             {content.templateType === 'standard' && (
               <>
@@ -1049,6 +1134,7 @@ function GeneratePageInner() {
         {/* Step 4: Testimonials */}
         {step === stepIndex.testimonials && (
           <div className="space-y-6">
+            <p className="text-sm text-neutral-400">No testimonials yet? Skip this step — the section will not appear on your site.</p>
             {content.testimonials.map((testimonial, i) => (
               <div key={i} className="p-4 rounded-xl border border-neutral-200 bg-white space-y-3">
                 <p className="text-sm font-medium text-neutral-500">Testimonial {i + 1}</p>
@@ -1193,6 +1279,14 @@ function GeneratePageInner() {
                     >
                       {publishing ? 'Publishing...' : 'Publish live'}
                     </button>
+                    {publishError && (
+                      <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
+                        <p className="text-sm text-amber-800">{publishError}</p>
+                        <Link href="/#pricing" className="text-sm text-brand-600 hover:text-brand-700 font-medium mt-1 inline-block">
+                          View plans
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -1262,7 +1356,7 @@ function GeneratePageInner() {
         )}
 
         {/* Navigation */}
-        <div className="flex justify-between mt-8">
+        <div className="flex justify-between items-center mt-8">
           <button
             onClick={() => setStep(Math.max(0, step - 1))}
             disabled={step === 0}
@@ -1270,15 +1364,25 @@ function GeneratePageInner() {
           >
             Back
           </button>
-          {step < lastStep && (
-            <button
-              onClick={() => setStep(step + 1)}
-              disabled={step === 0 && !content.templateType}
-              className="px-6 py-2 bg-neutral-900 text-white rounded-lg font-medium hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              Next
-            </button>
-          )}
+          <div className="flex items-center gap-3">
+            {(step === stepIndex.templateSpecific || step === stepIndex.testimonials) && step < lastStep && (
+              <button
+                onClick={() => setStep(step + 1)}
+                className="px-4 py-2 text-sm text-neutral-400 hover:text-neutral-600 transition-colors"
+              >
+                Skip this step
+              </button>
+            )}
+            {step < lastStep && (
+              <button
+                onClick={() => setStep(step + 1)}
+                disabled={step === 0 && !content.templateType}
+                className="px-6 py-2 bg-neutral-900 text-white rounded-lg font-medium hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
