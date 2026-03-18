@@ -69,8 +69,8 @@ export async function POST(request: NextRequest) {
     const deployDir = join('/tmp', `framify-deploy-${subdomain}-${Date.now()}`)
     mkdirSync(deployDir, { recursive: true })
 
-    // Branding is shown by default — hidden if user has a custom domain or paid for removal
-    const showBranding = !(existingSite?.customDomain || existingSite?.hideBranding)
+    // Branding is shown by default — only hidden if user paid for removal
+    const showBranding = !existingSite?.hideBranding
 
     // Multi-page: generate all HTML files; single-page: just index.html
     if (content.pages && content.pages.length > 0) {
