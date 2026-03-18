@@ -38,4 +38,12 @@ next-env.d.ts
 
 # prisma
 /prisma/migrations
+prisma/dev.db
+
+# test/preview scripts
+preview-*.ts
+test-*.ts
+
+# yarn
+yarn.lock
 
