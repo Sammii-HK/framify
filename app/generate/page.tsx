@@ -5,13 +5,13 @@ import { useSearchParams } from 'next/navigation'
 
 type PaletteKey = 'dark-celestial' | 'earthy-sage' | 'ethereal-light' | 'crystal-rose' | 'steel-blue' | 'warm-amber'
 
-const palettes: Record<PaletteKey, { name: string; preview: string; description: string }> = {
-  'dark-celestial': { name: 'Dark Celestial', preview: '#0D0B1A', description: 'Deep indigo with golden starlight' },
-  'earthy-sage': { name: 'Earthy Sage', preview: '#1A1F1A', description: 'Forest greens with warm stone' },
-  'ethereal-light': { name: 'Ethereal Light', preview: '#F8F6FC', description: 'Soft lavender with gentle violet' },
-  'crystal-rose': { name: 'Crystal Rose', preview: '#1A1517', description: 'Warm blush with dusty rose' },
-  'steel-blue': { name: 'Steel Blue', preview: '#0F1923', description: 'Dark steel with strong blue' },
-  'warm-amber': { name: 'Warm Amber', preview: '#1F1710', description: 'Dark brown with warm amber gold' },
+const palettes: Record<PaletteKey, { name: string; bg: string; accent: string; text: string; description: string }> = {
+  'dark-celestial': { name: 'Dark Celestial', bg: '#0D0B1A', accent: '#C9A84C', text: '#F5F0E8', description: 'Deep indigo with golden starlight' },
+  'earthy-sage': { name: 'Earthy Sage', bg: '#1A1F1A', accent: '#8B9A6B', text: '#E8E0D4', description: 'Forest greens with warm stone' },
+  'ethereal-light': { name: 'Ethereal Light', bg: '#F8F6FC', accent: '#9B8EC4', text: '#2D2B3D', description: 'Soft lavender with gentle violet' },
+  'crystal-rose': { name: 'Crystal Rose', bg: '#1A1517', accent: '#D4A0A0', text: '#F0E6E8', description: 'Warm blush with dusty rose' },
+  'steel-blue': { name: 'Steel Blue', bg: '#0F1923', accent: '#4A90D9', text: '#E8EDF2', description: 'Dark steel with strong blue' },
+  'warm-amber': { name: 'Warm Amber', bg: '#1F1710', accent: '#D4943A', text: '#F0E8DC', description: 'Dark brown with warm amber gold' },
 }
 
 interface Service {
@@ -583,10 +583,35 @@ function GeneratePageInner() {
                     : 'border-neutral-200 hover:border-neutral-300'
                 }`}
               >
+                {/* Mini site mockup */}
                 <div
-                  className="w-full h-20 rounded-lg mb-3"
-                  style={{ backgroundColor: palette.preview }}
-                />
+                  className="w-full rounded-lg mb-3 overflow-hidden"
+                  style={{ backgroundColor: palette.bg }}
+                >
+                  {/* Nav bar */}
+                  <div className="flex items-center justify-between px-3 py-2" style={{ borderBottom: `1px solid ${palette.accent}25` }}>
+                    <div className="w-8 h-1.5 rounded-full" style={{ backgroundColor: palette.accent }} />
+                    <div className="flex gap-1">
+                      <div className="w-5 h-1 rounded-full" style={{ backgroundColor: palette.text, opacity: 0.3 }} />
+                      <div className="w-5 h-1 rounded-full" style={{ backgroundColor: palette.text, opacity: 0.3 }} />
+                    </div>
+                  </div>
+                  {/* Hero */}
+                  <div className="px-3 py-3">
+                    <div className="w-3/4 h-1.5 rounded-full mb-1" style={{ backgroundColor: palette.text, opacity: 0.9 }} />
+                    <div className="w-1/2 h-1.5 rounded-full mb-2" style={{ backgroundColor: palette.text, opacity: 0.4 }} />
+                    <div className="w-12 h-4 rounded" style={{ backgroundColor: palette.accent }} />
+                  </div>
+                  {/* Cards */}
+                  <div className="px-3 pb-2 grid grid-cols-3 gap-1">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="rounded p-1.5" style={{ backgroundColor: `${palette.text}10` }}>
+                        <div className="w-full h-1 rounded-full mb-0.5" style={{ backgroundColor: palette.accent, opacity: 0.4 }} />
+                        <div className="w-3/4 h-1 rounded-full" style={{ backgroundColor: palette.text, opacity: 0.2 }} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
                 <p className="font-medium text-neutral-900">{palette.name}</p>
                 <p className="text-sm text-neutral-500">{palette.description}</p>
               </button>

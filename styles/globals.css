@@ -8,6 +8,14 @@
   --framer-text: #1a1a1a;
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --framer-bg: #0a0a0a;
+    --framer-border: #262626;
+    --framer-text: #ededed;
+  }
+}
+
 * {
   box-sizing: border-box;
   padding: 0;

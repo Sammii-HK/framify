@@ -9,7 +9,7 @@ export default function Navigation() {
 	const { user, isLoading } = useUser();
 
 	return (
-		<nav className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+		<nav className="border-b border-gray-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-sm sticky top-0 z-50">
 			<div className="container mx-auto px-4 py-4 max-w-7xl">
 				<div className="flex items-center justify-between">
 					<Link
@@ -21,11 +21,21 @@ export default function Navigation() {
 
 					<div className="flex items-center gap-4">
 						<Link
+							href="/templates"
+							className={`px-4 py-2 rounded-lg font-medium transition-all ${
+								pathname?.startsWith("/templates")
+									? "bg-blue-600 text-white"
+									: "text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800"
+							}`}
+						>
+							Templates
+						</Link>
+						<Link
 							href="/generate"
 							className={`px-4 py-2 rounded-lg font-medium transition-all ${
 								pathname === "/generate"
 									? "bg-blue-600 text-white"
-									: "text-gray-700 hover:bg-gray-100"
+									: "text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800"
 							}`}
 						>
 							Build Your Site
@@ -36,7 +46,7 @@ export default function Navigation() {
 								className={`px-4 py-2 rounded-lg font-medium transition-all ${
 									pathname === "/dashboard"
 										? "bg-blue-600 text-white"
-										: "text-gray-700 hover:bg-gray-100"
+										: "text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800"
 								}`}
 							>
 								Dashboard

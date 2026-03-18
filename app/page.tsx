@@ -67,12 +67,12 @@ export default function Home() {
             >
               Build your site now
             </Link>
-            <a
-              href="#how-it-works"
-              className="inline-flex items-center justify-center text-base font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
+            <Link
+              href="/templates"
+              className="inline-flex items-center justify-center rounded-lg border border-neutral-300 bg-white px-8 py-3.5 text-base font-semibold text-neutral-700 shadow-sm hover:bg-neutral-50 transition-colors"
             >
-              See how it works
-            </a>
+              Browse templates
+            </Link>
           </div>
         </div>
       </section>
