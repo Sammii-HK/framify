@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth0 } from '@/lib/auth0'
 import { prisma } from '@/lib/prisma'
+import { getWebAnalytics } from '@/lib/cloudflare'
 
 /**
  * GET /api/sites/[id]/analytics
@@ -42,7 +43,7 @@ export async function GET(
     // Verify ownership
     const site = await prisma.site.findFirst({
       where: { id: siteId, userId: user.id },
-      select: { id: true, subdomain: true },
+      select: { id: true, subdomain: true, cfAnalyticsToken: true },
     })
 
     if (!site) {
@@ -54,14 +55,20 @@ export async function GET(
       where: { siteId },
     })
 
-    // Page views: placeholder until Cloudflare Analytics API is wired up.
-    // For now, return 0. In production this would query CF Analytics.
-    const pageViews = 0
+    // Query real page views from Cloudflare Web Analytics
+    let pageViews = 0
+    let visitors = 0
+    if (site.cfAnalyticsToken) {
+      const analytics = await getWebAnalytics(site.cfAnalyticsToken)
+      pageViews = analytics.pageViews
+      visitors = analytics.visitors
+    }
 
     return NextResponse.json({
       siteId,
       subdomain: site.subdomain,
       pageViews,
+      visitors,
       formSubmissions,
     })
   } catch (error) {

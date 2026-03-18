@@ -73,7 +73,7 @@ function escapeHtml(str: string): string {
     .replace(/'/g, '&#39;')
 }
 
-export function generateStaticSite(content: SiteContent, subdomain?: string): string {
+export function generateStaticSite(content: SiteContent, subdomain?: string, analyticsToken?: string): string {
   const dark = PALETTES[content.palette]
   const light = LIGHT_PALETTES[content.palette]
 
@@ -866,6 +866,7 @@ ${canonicalUrl ? `  <meta property="og:url" content="${canonicalUrl}" />\n` : ''
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(React.createElement(GeneratedTemplate));
   <\/script>
+${analyticsToken ? `<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "${analyticsToken}"}'></script>` : ''}
 </body>
 </html>`
 }
@@ -876,7 +877,7 @@ ${canonicalUrl ? `  <meta property="og:url" content="${canonicalUrl}" />\n` : ''
  * The homepage is the existing single-page output with nav links to sub-pages.
  * Each sub-page shares the same nav, footer, palette, and CDN setup.
  */
-export function generateMultiPageSite(content: SiteContent, subdomain?: string): Map<string, string> {
+export function generateMultiPageSite(content: SiteContent, subdomain?: string, analyticsToken?: string): Map<string, string> {
   const files = new Map<string, string>()
 
   const dark = PALETTES[content.palette]
@@ -898,7 +899,7 @@ export function generateMultiPageSite(content: SiteContent, subdomain?: string):
   })))
 
   // Generate the homepage (index.html) with the full single-page layout + multi-page nav
-  files.set('index.html', generateHomePage(content, subdomain, navLinksJson))
+  files.set('index.html', generateHomePage(content, subdomain, navLinksJson, analyticsToken))
 
   // Generate each sub-page
   for (const page of pages) {
@@ -910,6 +911,7 @@ export function generateMultiPageSite(content: SiteContent, subdomain?: string):
       navLinksJson,
       dark,
       light,
+      analyticsToken,
     })
     files.set(`${page.slug}.html`, pageHtml)
   }
@@ -925,8 +927,9 @@ function generateHomePage(
   content: SiteContent,
   subdomain: string | undefined,
   navLinksJson: string,
+  analyticsToken?: string,
 ): string {
-  let html = generateStaticSite(content, subdomain)
+  let html = generateStaticSite(content, subdomain, analyticsToken)
 
   // Inject multi-page nav links into the SITE object
   html = html.replace(
@@ -954,6 +957,7 @@ interface SubPageParams {
   navLinksJson: string
   dark: (typeof PALETTES)[PaletteKey]
   light: (typeof LIGHT_PALETTES)[PaletteKey]
+  analyticsToken?: string
 }
 
 /**
@@ -962,7 +966,7 @@ interface SubPageParams {
  * React's dangerouslySetInnerHTML on the static site the owner controls.
  */
 function generateSubPage(params: SubPageParams): string {
-  const { page, businessName, description, canonicalUrl, navLinksJson, dark, light } = params
+  const { page, businessName, description, canonicalUrl, navLinksJson, dark, light, analyticsToken } = params
 
   const pageTitle = `${escapeHtml(page.title)} — ${businessName}`
   const pageDescription = escapeHtml((page.content || '').replace(/<[^>]*>/g, '').slice(0, 160))
@@ -1132,6 +1136,7 @@ ${pageCanonical ? `  <meta property="og:url" content="${pageCanonical}" />\n` : 
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(React.createElement(SubPage));
   <\/script>
+${analyticsToken ? `<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "${analyticsToken}"}'></script>` : ''}
 </body>
 </html>`
 }

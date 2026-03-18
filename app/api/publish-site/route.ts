@@ -3,6 +3,7 @@ import { generateStaticSite, generateMultiPageSite, VALID_PALETTES, type SiteCon
 import { auth0 } from '@/lib/auth0'
 import { prisma } from '@/lib/prisma'
 import { findOrCreateUser } from '@/lib/users'
+import { createWebAnalyticsSite } from '@/lib/cloudflare'
 import { writeFileSync, mkdirSync, rmSync } from 'fs'
 import { execFileSync } from 'child_process'
 import { join } from 'path'
@@ -58,18 +59,24 @@ export async function POST(request: NextRequest) {
       content.palette = 'dark-celestial'
     }
 
+    // Get or create Cloudflare Web Analytics token
+    let analyticsToken = existingSite?.cfAnalyticsToken ?? null
+    if (!analyticsToken) {
+      analyticsToken = await createWebAnalyticsSite(subdomain)
+    }
+
     // Write to temp directory and deploy via Wrangler
     const deployDir = join('/tmp', `framify-deploy-${subdomain}-${Date.now()}`)
     mkdirSync(deployDir, { recursive: true })
 
     // Multi-page: generate all HTML files; single-page: just index.html
     if (content.pages && content.pages.length > 0) {
-      const files = generateMultiPageSite(content, subdomain)
+      const files = generateMultiPageSite(content, subdomain, analyticsToken ?? undefined)
       for (const [filename, html] of files) {
         writeFileSync(join(deployDir, filename), html)
       }
     } else {
-      const html = generateStaticSite(content, subdomain)
+      const html = generateStaticSite(content, subdomain, analyticsToken ?? undefined)
       writeFileSync(join(deployDir, 'index.html'), html)
     }
 
@@ -100,6 +107,7 @@ export async function POST(request: NextRequest) {
           content: content as any,
           palette: content.palette,
           cfDeploymentUrl: deploymentUrl,
+          cfAnalyticsToken: analyticsToken,
           status: 'PUBLISHED',
           publishedAt: new Date(),
         },
@@ -109,6 +117,7 @@ export async function POST(request: NextRequest) {
           content: content as any,
           palette: content.palette,
           cfDeploymentUrl: deploymentUrl,
+          cfAnalyticsToken: analyticsToken,
           status: 'PUBLISHED',
           publishedAt: new Date(),
         },

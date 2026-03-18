@@ -2,6 +2,90 @@ const ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID!
 const API_TOKEN = process.env.CLOUDFLARE_API_TOKEN!
 const PROJECT_NAME = process.env.CLOUDFLARE_PAGES_PROJECT || 'framify-sites'
 
+/**
+ * Create a Cloudflare Web Analytics site and return the site tag (token).
+ * Returns null on failure so callers can gracefully degrade.
+ */
+export async function createWebAnalyticsSite(siteName: string): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/rum/site_info`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${API_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          host: `${siteName}.craftmypage.com`,
+          auto_install: false,
+        }),
+      }
+    )
+    const data = await res.json()
+    if (data.success && data.result?.site_tag) {
+      return data.result.site_tag
+    }
+    console.error('CF Web Analytics site creation failed:', data.errors)
+    return null
+  } catch (err) {
+    console.error('CF Web Analytics site creation error:', err)
+    return null
+  }
+}
+
+/**
+ * Query Cloudflare Web Analytics (RUM) for page views and unique visitors.
+ * Falls back to zeroes on any error.
+ */
+export async function getWebAnalytics(
+  siteTag: string,
+  days: number = 30
+): Promise<{ pageViews: number; visitors: number }> {
+  const since = new Date()
+  since.setDate(since.getDate() - days)
+
+  try {
+    const res = await fetch('https://api.cloudflare.com/client/v4/graphql', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${API_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: `query {
+          viewer {
+            accounts(filter: { accountTag: "${ACCOUNT_ID}" }) {
+              rumPageloadEventsAdaptiveGroups(
+                filter: {
+                  AND: [
+                    { siteTag: "${siteTag}" },
+                    { datetime_geq: "${since.toISOString()}" },
+                    { datetime_leq: "${new Date().toISOString()}" }
+                  ]
+                }
+                limit: 1
+              ) {
+                count
+                sum { visits }
+              }
+            }
+          }
+        }`,
+      }),
+    })
+    const data = await res.json()
+    const groups =
+      data?.data?.viewer?.accounts?.[0]?.rumPageloadEventsAdaptiveGroups?.[0]
+    return {
+      pageViews: groups?.count ?? 0,
+      visitors: groups?.sum?.visits ?? 0,
+    }
+  } catch {
+    return { pageViews: 0, visitors: 0 }
+  }
+}
+
 interface DeployResult {
   url: string
   deploymentId: string
