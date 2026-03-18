@@ -14,8 +14,11 @@ import UnsplashImage from '@/components/UnsplashImage'
 function sizedUrl(url: string, width: number, quality = 80): string {
   try {
     const u = new URL(url)
+    u.searchParams.delete('w')
+    u.searchParams.delete('q')
     u.searchParams.set('w', String(width))
     u.searchParams.set('q', String(quality))
+    u.searchParams.set('fit', 'crop')
     return u.toString()
   } catch {
     return url
@@ -74,14 +77,13 @@ function FullMockup({ palette, templateType, isDark, images, imagesLoading, page
 
       {/* Page tabs (multi-page templates) */}
       {pages && pages.length > 1 && (
-        <div className="flex items-center gap-1 px-5 py-2 overflow-x-auto" style={{ borderBottom: `1px solid ${accent}15` }}>
+        <div className="flex items-center gap-1 px-5 py-2 overflow-x-auto" style={{ borderBottom: `1px solid ${text}10` }}>
           {pages.map((page, i) => (
             <button key={page.name} onClick={() => onPageChange?.(i)}
               className="px-3 py-1.5 text-[10px] font-medium rounded-md whitespace-nowrap transition-all"
               style={{
-                backgroundColor: i === activePage ? `${accent}20` : 'transparent',
-                color: i === activePage ? accent : `${text}60`,
-                borderBottom: i === activePage ? `2px solid ${accent}` : '2px solid transparent'
+                backgroundColor: i === activePage ? `${accent}15` : 'transparent',
+                color: i === activePage ? accent : `${text}40`,
               }}>
               {page.name}
             </button>
@@ -105,23 +107,25 @@ function FullMockup({ palette, templateType, isDark, images, imagesLoading, page
       )}
 
       {/* Hero */}
-      <div className={`relative px-5 ${sections.includes('hero-fullwidth') ? 'py-10' : 'py-6'} overflow-hidden`}>
+      <div className={`relative mx-5 mt-4 rounded-lg ${sections.includes('hero-fullwidth') ? 'py-12' : 'py-8'} px-5 overflow-hidden`}>
         {/* Real hero image background */}
         {images && images[0] ? (
-          <div className="absolute inset-0">
+          <div className="absolute inset-0 rounded-lg overflow-hidden">
             <UnsplashImage
-              src={sizedUrl(images[0].url, 800)}
+              src={sizedUrl(images[0].url, 1200)}
               alt={images[0].alt}
               photographerName={images[0].photographerName}
               photographerUrl={images[0].photographerUrl}
               className="w-full h-full"
             />
             {/* Dark overlay so wireframe text stays readable */}
-            <div className="absolute inset-0 bg-black/40" />
+            <div className="absolute inset-0 bg-black/50" />
           </div>
         ) : imagesLoading ? (
-          <div className="absolute inset-0 animate-pulse" style={{ backgroundColor: `${accent}15` }} />
-        ) : null}
+          <div className="absolute inset-0 rounded-lg animate-pulse" style={{ backgroundColor: `${accent}15` }} />
+        ) : (
+          <div className="absolute inset-0 rounded-lg" style={{ backgroundColor: `${text}08` }} />
+        )}
 
         {/* Wireframe text bars (always shown on top) */}
         <div className="relative z-10">
@@ -133,7 +137,7 @@ function FullMockup({ palette, templateType, isDark, images, imagesLoading, page
       </div>
 
       {/* Content area */}
-      <div className="px-5 pb-4 space-y-4">
+      <div className="px-5 py-5 space-y-5">
         {(sections.includes('services-grid') || sections.includes('gallery-grid')) && (
           <div className="grid grid-cols-3 gap-2">
             {[1, 2, 3].map((i) => (
@@ -147,27 +151,27 @@ function FullMockup({ palette, templateType, isDark, images, imagesLoading, page
         )}
 
         {sections.includes('image-grid') && (
-          <div className="grid grid-cols-3 gap-2">
-            {[0.2, 0.3, 0.15, 0.25, 0.18, 0.22].map((opacity, i) => {
+          <div className="grid grid-cols-3 gap-3">
+            {[0.2, 0.3, 0.15, 0.25].map((opacity, i) => {
               const img = images?.[i + 1] // offset by 1 because images[0] is the hero
               if (img) {
                 return (
                   <UnsplashImage
                     key={i}
-                    src={sizedUrl(img.url, 400)}
+                    src={sizedUrl(img.url, 600)}
                     alt={img.alt}
                     photographerName={img.photographerName}
                     photographerUrl={img.photographerUrl}
-                    className="aspect-square rounded-md"
-                    sizes="(max-width: 768px) 33vw, 200px"
+                    className="aspect-[4/3] rounded-lg"
+                    sizes="(max-width: 768px) 33vw, 280px"
                   />
                 )
               }
               return (
                 <div
                   key={i}
-                  className={`aspect-square rounded-md ${imagesLoading ? 'animate-pulse' : ''}`}
-                  style={{ backgroundColor: accent, opacity: opacity + 0.15 }}
+                  className={`aspect-[4/3] rounded-lg ${imagesLoading ? 'animate-pulse' : ''}`}
+                  style={{ backgroundColor: `${text}10` }}
                 />
               )
             })}
@@ -175,27 +179,27 @@ function FullMockup({ palette, templateType, isDark, images, imagesLoading, page
         )}
 
         {sections.includes('portfolio-grid') && (
-          <div className="grid grid-cols-4 gap-1.5">
-            {[0.2, 0.35, 0.15, 0.3, 0.25, 0.18, 0.32, 0.22].map((opacity, i) => {
+          <div className="grid grid-cols-3 gap-3">
+            {[0.2, 0.35, 0.15, 0.3, 0.25, 0.18].map((opacity, i) => {
               const img = images?.[i + 1]
               if (img) {
                 return (
                   <UnsplashImage
                     key={i}
-                    src={sizedUrl(img.url, 400)}
+                    src={sizedUrl(img.url, 600)}
                     alt={img.alt}
                     photographerName={img.photographerName}
                     photographerUrl={img.photographerUrl}
-                    className="aspect-square rounded-sm"
-                    sizes="(max-width: 768px) 25vw, 150px"
+                    className="aspect-square rounded-lg"
+                    sizes="(max-width: 768px) 33vw, 280px"
                   />
                 )
               }
               return (
                 <div
                   key={i}
-                  className={`aspect-square rounded-sm ${imagesLoading ? 'animate-pulse' : ''}`}
-                  style={{ backgroundColor: accent, opacity: opacity + 0.1 }}
+                  className={`aspect-square rounded-lg ${imagesLoading ? 'animate-pulse' : ''}`}
+                  style={{ backgroundColor: `${text}10` }}
                 />
               )
             })}
@@ -246,11 +250,11 @@ function FullMockup({ palette, templateType, isDark, images, imagesLoading, page
             </div>
             {images?.[2] ? (
               <UnsplashImage
-                src={sizedUrl(images[2].url, 400)}
+                src={sizedUrl(images[2].url, 600)}
                 alt={images[2].alt}
                 photographerName={images[2].photographerName}
                 photographerUrl={images[2].photographerUrl}
-                className="rounded-md min-h-[80px]"
+                className="rounded-lg min-h-[80px]"
                 sizes="(max-width: 768px) 50vw, 300px"
               />
             ) : (
@@ -338,7 +342,7 @@ function FullMockup({ palette, templateType, isDark, images, imagesLoading, page
       </div>
 
       {/* Footer */}
-      <div className="px-5 py-3 flex items-center justify-between" style={{ backgroundColor: `${text}06` }}>
+      <div className="mx-5 mb-5 mt-2 px-4 py-3 rounded-lg flex items-center justify-between" style={{ backgroundColor: `${text}06` }}>
         <div className="w-16 h-1.5 rounded-full" style={{ backgroundColor: text, opacity: 0.2 }} />
         <div className="flex gap-2">
           {[1, 2, 3].map((i) => (
