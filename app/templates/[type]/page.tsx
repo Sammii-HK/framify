@@ -22,10 +22,29 @@ function sizedUrl(url: string, width: number, quality = 80): string {
   }
 }
 
-function FullMockup({ palette, templateType, images, imagesLoading }: { palette: Palette; templateType: string; images?: StockImage[]; imagesLoading?: boolean }) {
-  const isDark = palette.darkBg !== palette.lightBg
-  const bg = palette.darkBg
-  const text = palette.darkText
+function SunIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="5" />
+      <line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+    </svg>
+  )
+}
+
+function MoonIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+  )
+}
+
+function FullMockup({ palette, templateType, isDark, images, imagesLoading }: { palette: Palette; templateType: string; isDark: boolean; images?: StockImage[]; imagesLoading?: boolean }) {
+  const bg = isDark ? palette.darkBg : palette.lightBg
+  const text = isDark ? palette.darkText : palette.lightText
   const accent = palette.accent
 
   const template = getTemplateDetail(templateType)
@@ -321,6 +340,7 @@ export default function TemplatePage() {
   const detail = getTemplateDetail(type)
   const [activePaletteIndex, setActivePaletteIndex] = useState(0)
   const [viewport, setViewport] = useState<'desktop' | 'mobile'>('desktop')
+  const [isDark, setIsDark] = useState(true)
   const [previewImages, setPreviewImages] = useState<StockImage[]>([])
   const [imagesLoading, setImagesLoading] = useState(true)
 
@@ -443,49 +463,80 @@ export default function TemplatePage() {
             <span className="text-sm text-neutral-400 dark:text-neutral-500 hidden sm:inline">{activePalette.name}</span>
           </div>
 
-          <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-1">
-            <button
-              onClick={() => setViewport('desktop')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-                viewport === 'desktop'
-                  ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm'
-                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700'
-              }`}
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25A2.25 2.25 0 015.25 3h13.5A2.25 2.25 0 0121 5.25z" />
-              </svg>
-              Desktop
-            </button>
-            <button
-              onClick={() => setViewport('mobile')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-                viewport === 'mobile'
-                  ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm'
-                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700'
-              }`}
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
-              </svg>
-              Mobile
-            </button>
+          <div className="flex items-center gap-2">
+            {/* Light / Dark toggle */}
+            <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-1">
+              <button
+                onClick={() => setIsDark(false)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                  !isDark
+                    ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm'
+                    : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700'
+                }`}
+                title="Light theme"
+              >
+                <SunIcon />
+                Light
+              </button>
+              <button
+                onClick={() => setIsDark(true)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                  isDark
+                    ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm'
+                    : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700'
+                }`}
+                title="Dark theme"
+              >
+                <MoonIcon />
+                Dark
+              </button>
+            </div>
+
+            {/* Desktop / Mobile toggle */}
+            <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-1">
+              <button
+                onClick={() => setViewport('desktop')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                  viewport === 'desktop'
+                    ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm'
+                    : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700'
+                }`}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25A2.25 2.25 0 015.25 3h13.5A2.25 2.25 0 0121 5.25z" />
+                </svg>
+                Desktop
+              </button>
+              <button
+                onClick={() => setViewport('mobile')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                  viewport === 'mobile'
+                    ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm'
+                    : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700'
+                }`}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
+                </svg>
+                Mobile
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Preview container */}
         <div className="flex justify-center">
           <div className={`transition-all duration-300 ${viewport === 'mobile' ? 'w-[375px]' : 'w-full'}`}>
-            <FullMockup palette={activePalette} templateType={type} images={previewImages.length > 0 ? previewImages : undefined} imagesLoading={imagesLoading} />
+            <FullMockup palette={activePalette} templateType={type} isDark={isDark} images={previewImages.length > 0 ? previewImages : undefined} imagesLoading={imagesLoading} />
           </div>
         </div>
 
         {/* Colour chips */}
         <div className="mt-6 flex items-center justify-center gap-6">
           {[
-            { label: 'Background', colour: activePalette.darkBg },
+            { label: 'Background', colour: isDark ? activePalette.darkBg : activePalette.lightBg },
             { label: 'Accent', colour: activePalette.accent },
-            { label: 'Text', colour: activePalette.darkText },
+            { label: 'Text', colour: isDark ? activePalette.darkText : activePalette.lightText },
           ].map((chip) => (
             <div key={chip.label} className="flex items-center gap-2">
               <div className="w-5 h-5 rounded border border-neutral-200 dark:border-neutral-700" style={{ backgroundColor: chip.colour }} />
