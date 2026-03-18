@@ -73,7 +73,7 @@ function escapeHtml(str: string): string {
     .replace(/'/g, '&#39;')
 }
 
-export function generateStaticSite(content: SiteContent, subdomain?: string, analyticsToken?: string): string {
+export function generateStaticSite(content: SiteContent, subdomain?: string, analyticsToken?: string, showBranding: boolean = true): string {
   const dark = PALETTES[content.palette]
   const light = LIGHT_PALETTES[content.palette]
 
@@ -858,6 +858,11 @@ ${canonicalUrl ? `  <meta property="og:url" content="${canonicalUrl}" />\n` : ''
             <div className="mt-12 pt-6 text-center text-xs border-t" style={{ borderColor: t.borderSubtle, color: t.textMuted }}>
               &copy; ${new Date().getFullYear()} {SITE.businessName}. All rights reserved.
             </div>
+${showBranding ? `            <div className="mt-4 text-center">
+              <a href="https://craftmypage.com" target="_blank" rel="noopener noreferrer" className="inline-block text-[11px] opacity-40 hover:opacity-70 transition-opacity" style={{ color: t.textMuted }}>
+                Created with CraftMyPage
+              </a>
+            </div>` : ''}
           </footer>
         </div>
       );
@@ -877,7 +882,7 @@ ${analyticsToken ? `<script defer src="https://static.cloudflareinsights.com/bea
  * The homepage is the existing single-page output with nav links to sub-pages.
  * Each sub-page shares the same nav, footer, palette, and CDN setup.
  */
-export function generateMultiPageSite(content: SiteContent, subdomain?: string, analyticsToken?: string): Map<string, string> {
+export function generateMultiPageSite(content: SiteContent, subdomain?: string, analyticsToken?: string, showBranding: boolean = true): Map<string, string> {
   const files = new Map<string, string>()
 
   const dark = PALETTES[content.palette]
@@ -899,7 +904,7 @@ export function generateMultiPageSite(content: SiteContent, subdomain?: string, 
   })))
 
   // Generate the homepage (index.html) with the full single-page layout + multi-page nav
-  files.set('index.html', generateHomePage(content, subdomain, navLinksJson, analyticsToken))
+  files.set('index.html', generateHomePage(content, subdomain, navLinksJson, analyticsToken, showBranding))
 
   // Generate each sub-page
   for (const page of pages) {
@@ -912,6 +917,7 @@ export function generateMultiPageSite(content: SiteContent, subdomain?: string, 
       dark,
       light,
       analyticsToken,
+      showBranding,
     })
     files.set(`${page.slug}.html`, pageHtml)
   }
@@ -928,8 +934,9 @@ function generateHomePage(
   subdomain: string | undefined,
   navLinksJson: string,
   analyticsToken?: string,
+  showBranding: boolean = true,
 ): string {
-  let html = generateStaticSite(content, subdomain, analyticsToken)
+  let html = generateStaticSite(content, subdomain, analyticsToken, showBranding)
 
   // Inject multi-page nav links into the SITE object
   html = html.replace(
@@ -958,6 +965,7 @@ interface SubPageParams {
   dark: (typeof PALETTES)[PaletteKey]
   light: (typeof LIGHT_PALETTES)[PaletteKey]
   analyticsToken?: string
+  showBranding?: boolean
 }
 
 /**
@@ -966,7 +974,7 @@ interface SubPageParams {
  * React's dangerouslySetInnerHTML on the static site the owner controls.
  */
 function generateSubPage(params: SubPageParams): string {
-  const { page, businessName, description, canonicalUrl, navLinksJson, dark, light, analyticsToken } = params
+  const { page, businessName, description, canonicalUrl, navLinksJson, dark, light, analyticsToken, showBranding = true } = params
 
   const pageTitle = `${escapeHtml(page.title)} — ${businessName}`
   const pageDescription = escapeHtml((page.content || '').replace(/<[^>]*>/g, '').slice(0, 160))
@@ -1127,6 +1135,11 @@ ${pageCanonical ? `  <meta property="og:url" content="${pageCanonical}" />\n` : 
               <div className="pt-6 text-xs border-t" style={{ borderColor: t.borderSubtle, color: t.textMuted }}>
                 &copy; ${new Date().getFullYear()} {SITE.businessName}. All rights reserved.
               </div>
+${showBranding ? `              <div className="mt-4">
+                <a href="https://craftmypage.com" target="_blank" rel="noopener noreferrer" className="inline-block text-[11px] opacity-40 hover:opacity-70 transition-opacity" style={{ color: t.textMuted }}>
+                  Created with CraftMyPage
+                </a>
+              </div>` : ''}
             </div>
           </footer>
         </div>

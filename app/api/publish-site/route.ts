@@ -69,14 +69,17 @@ export async function POST(request: NextRequest) {
     const deployDir = join('/tmp', `framify-deploy-${subdomain}-${Date.now()}`)
     mkdirSync(deployDir, { recursive: true })
 
+    // Branding is shown by default — hidden if user has a custom domain or paid for removal
+    const showBranding = !(existingSite?.customDomain || existingSite?.hideBranding)
+
     // Multi-page: generate all HTML files; single-page: just index.html
     if (content.pages && content.pages.length > 0) {
-      const files = generateMultiPageSite(content, subdomain, analyticsToken ?? undefined)
+      const files = generateMultiPageSite(content, subdomain, analyticsToken ?? undefined, showBranding)
       for (const [filename, html] of files) {
         writeFileSync(join(deployDir, filename), html)
       }
     } else {
-      const html = generateStaticSite(content, subdomain, analyticsToken ?? undefined)
+      const html = generateStaticSite(content, subdomain, analyticsToken ?? undefined, showBranding)
       writeFileSync(join(deployDir, 'index.html'), html)
     }
 

@@ -32,6 +32,7 @@ model Site {
   palette                String             @default("dark-celestial")
   cfDeploymentUrl        String?
   cfAnalyticsToken       String?
+  hideBranding           Boolean            @default(false)
   tier                   String             @default("free") // free, starter, pro (legacy: launch → starter)
   status                 SiteStatus         @default(DRAFT)
   domainExpiresAt        DateTime?
