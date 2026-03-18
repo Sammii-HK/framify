@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 
@@ -19,7 +19,7 @@ function formatNumber(n: number): string {
   return n.toString()
 }
 
-export default function AnalyticsPage() {
+function AnalyticsContent() {
   const searchParams = useSearchParams()
   const selectedSiteId = searchParams.get('site')
   const [analytics, setAnalytics] = useState<SiteAnalytics[]>([])
@@ -187,5 +187,22 @@ export default function AnalyticsPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function AnalyticsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-neutral-50">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center py-24">
+            <div className="w-10 h-10 border-2 border-brand-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-neutral-500 text-sm">Loading analytics...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <AnalyticsContent />
+    </Suspense>
   )
 }
