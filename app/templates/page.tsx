@@ -140,6 +140,18 @@ const palettes = [
 // ---------------------------------------------------------------------------
 
 type PageType = 'single' | 'multi'
+type CategoryType = 'all' | 'services' | 'food-hospitality' | 'creative' | 'professional' | 'health-wellness' | 'retail' | 'tech'
+
+const categories: { key: CategoryType; label: string }[] = [
+  { key: 'all', label: 'All industries' },
+  { key: 'services', label: 'Services' },
+  { key: 'food-hospitality', label: 'Food and hospitality' },
+  { key: 'creative', label: 'Creative' },
+  { key: 'professional', label: 'Professional' },
+  { key: 'health-wellness', label: 'Health and wellness' },
+  { key: 'retail', label: 'Retail' },
+  { key: 'tech', label: 'Tech' },
+]
 
 interface Template {
   type: string
@@ -149,6 +161,7 @@ interface Template {
   pages: PageType
   pageCount?: number
   mockupStyle: string
+  category: CategoryType
 }
 
 const templates: Template[] = [
@@ -160,6 +173,7 @@ const templates: Template[] = [
     bestFor: 'Any business',
     pages: 'single',
     mockupStyle: 'grid-3',
+    category: 'services',
   },
   {
     type: 'trades',
@@ -168,6 +182,7 @@ const templates: Template[] = [
     bestFor: 'Plumbers, builders, electricians, roofers',
     pages: 'single',
     mockupStyle: 'split-gallery',
+    category: 'services',
   },
   {
     type: 'hair-beauty',
@@ -176,6 +191,7 @@ const templates: Template[] = [
     bestFor: 'Salons, spas, barbers, nail techs',
     pages: 'single',
     mockupStyle: 'gallery-4',
+    category: 'health-wellness',
   },
   {
     type: 'food-drink',
@@ -184,6 +200,7 @@ const templates: Template[] = [
     bestFor: 'Restaurants, cafes, pubs, bakeries',
     pages: 'single',
     mockupStyle: 'menu-list',
+    category: 'food-hospitality',
   },
   {
     type: 'portfolio',
@@ -192,6 +209,7 @@ const templates: Template[] = [
     bestFor: 'Photographers, designers, artists, videographers',
     pages: 'single',
     mockupStyle: 'grid-6',
+    category: 'creative',
   },
   {
     type: 'professional',
@@ -200,6 +218,7 @@ const templates: Template[] = [
     bestFor: 'Consultants, coaches, accountants, solicitors',
     pages: 'single',
     mockupStyle: 'grid-3',
+    category: 'professional',
   },
   {
     type: 'health-fitness',
@@ -208,6 +227,7 @@ const templates: Template[] = [
     bestFor: 'Personal trainers, gyms, yoga studios, sports coaches',
     pages: 'single',
     mockupStyle: 'timetable',
+    category: 'health-wellness',
   },
   {
     type: 'events',
@@ -216,6 +236,7 @@ const templates: Template[] = [
     bestFor: 'DJs, entertainers, venues, event planners',
     pages: 'single',
     mockupStyle: 'hero-wide',
+    category: 'food-hospitality',
   },
   {
     type: 'pet-services',
@@ -224,6 +245,7 @@ const templates: Template[] = [
     bestFor: 'Dog groomers, walkers, vets, pet sitters',
     pages: 'single',
     mockupStyle: 'gallery-4',
+    category: 'services',
   },
   {
     type: 'automotive',
@@ -232,6 +254,7 @@ const templates: Template[] = [
     bestFor: 'Garages, detailers, car dealers, mechanics',
     pages: 'single',
     mockupStyle: 'split-gallery',
+    category: 'services',
   },
   {
     type: 'education',
@@ -240,6 +263,7 @@ const templates: Template[] = [
     bestFor: 'Tutors, training providers, music teachers, driving instructors',
     pages: 'single',
     mockupStyle: 'grid-3',
+    category: 'professional',
   },
   {
     type: 'property',
@@ -248,6 +272,7 @@ const templates: Template[] = [
     bestFor: 'Estate agents, landlords, property managers',
     pages: 'single',
     mockupStyle: 'listings',
+    category: 'professional',
   },
   {
     type: 'medical',
@@ -256,6 +281,7 @@ const templates: Template[] = [
     bestFor: 'Clinics, dentists, physios, opticians',
     pages: 'single',
     mockupStyle: 'grid-3',
+    category: 'health-wellness',
   },
   {
     type: 'creative-agency',
@@ -264,6 +290,7 @@ const templates: Template[] = [
     bestFor: 'Design studios, marketing agencies, dev shops',
     pages: 'single',
     mockupStyle: 'hero-wide',
+    category: 'creative',
   },
   {
     type: 'shop',
@@ -272,6 +299,7 @@ const templates: Template[] = [
     bestFor: 'Boutiques, gift shops, artisan sellers, online stores',
     pages: 'single',
     mockupStyle: 'product-grid',
+    category: 'retail',
   },
   // Multi-page templates
   {
@@ -282,6 +310,7 @@ const templates: Template[] = [
     pages: 'multi',
     pageCount: 6,
     mockupStyle: 'multi-tabs',
+    category: 'professional',
   },
   {
     type: 'startup',
@@ -291,6 +320,7 @@ const templates: Template[] = [
     pages: 'multi',
     pageCount: 5,
     mockupStyle: 'multi-tabs',
+    category: 'tech',
   },
   {
     type: 'restaurant-full',
@@ -300,6 +330,7 @@ const templates: Template[] = [
     pages: 'multi',
     pageCount: 6,
     mockupStyle: 'multi-tabs',
+    category: 'food-hospitality',
   },
   {
     type: 'portfolio-full',
@@ -309,6 +340,7 @@ const templates: Template[] = [
     pages: 'multi',
     pageCount: 5,
     mockupStyle: 'multi-tabs',
+    category: 'creative',
   },
   {
     type: 'clinic',
@@ -318,6 +350,7 @@ const templates: Template[] = [
     pages: 'multi',
     pageCount: 7,
     mockupStyle: 'multi-tabs',
+    category: 'health-wellness',
   },
   {
     type: 'property-full',
@@ -327,6 +360,7 @@ const templates: Template[] = [
     pages: 'multi',
     pageCount: 6,
     mockupStyle: 'multi-tabs',
+    category: 'professional',
   },
 ]
 
@@ -554,17 +588,28 @@ export default function TemplatesPage() {
     Object.fromEntries(templates.map((t) => [t.type, true]))
   )
   const [pageFilter, setPageFilter] = useState<FilterType>('all')
+  const [categoryFilter, setCategoryFilter] = useState<CategoryType>('all')
 
   const filteredTemplates = useMemo(() => {
-    if (pageFilter === 'all') return templates
-    return templates.filter((t) => t.pages === pageFilter)
-  }, [pageFilter])
+    return templates.filter((t) => {
+      if (pageFilter !== 'all' && t.pages !== pageFilter) return false
+      if (categoryFilter !== 'all' && t.category !== categoryFilter) return false
+      return true
+    })
+  }, [pageFilter, categoryFilter])
 
-  const counts = useMemo(() => ({
+  const pageCounts = useMemo(() => ({
     all: templates.length,
     single: templates.filter((t) => t.pages === 'single').length,
     multi: templates.filter((t) => t.pages === 'multi').length,
   }), [])
+
+  // Only show categories that have templates matching the current page filter
+  const visibleCategories = useMemo(() => {
+    const baseTemplates = pageFilter === 'all' ? templates : templates.filter((t) => t.pages === pageFilter)
+    const activeCats = new Set(baseTemplates.map((t) => t.category))
+    return categories.filter((c) => c.key === 'all' || activeCats.has(c.key))
+  }, [pageFilter])
 
   return (
     <main className="bg-neutral-50 dark:bg-neutral-950 min-h-screen">
@@ -585,32 +630,65 @@ export default function TemplatesPage() {
 
       {/* Filters */}
       <section className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 sticky top-[65px] z-40">
-        <div className="mx-auto max-w-6xl px-6 py-3 flex items-center gap-2">
-          {([
-            { key: 'all' as FilterType, label: 'All templates' },
-            { key: 'single' as FilterType, label: 'Single page' },
-            { key: 'multi' as FilterType, label: 'Multi-page' },
-          ]).map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => setPageFilter(key)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                pageFilter === key
-                  ? 'bg-blue-600 text-white'
-                  : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-              }`}
-            >
-              {label}
-              <span className={`ml-1.5 text-xs ${pageFilter === key ? 'text-blue-200' : 'text-neutral-400 dark:text-neutral-500'}`}>
-                {counts[key]}
-              </span>
-            </button>
-          ))}
+        <div className="mx-auto max-w-6xl px-6 py-3 space-y-2">
+          {/* Page type filter */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mr-1 shrink-0">Site type</span>
+            {([
+              { key: 'all' as FilterType, label: 'All' },
+              { key: 'single' as FilterType, label: 'Single page' },
+              { key: 'multi' as FilterType, label: 'Multi-page' },
+            ]).map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => setPageFilter(key)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  pageFilter === key
+                    ? 'bg-blue-600 text-white'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                }`}
+              >
+                {label}
+                <span className={`ml-1.5 text-xs ${pageFilter === key ? 'text-blue-200' : 'text-neutral-400 dark:text-neutral-500'}`}>
+                  {pageCounts[key]}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* Industry filter */}
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+            <span className="text-xs font-medium text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mr-1 shrink-0">Industry</span>
+            {visibleCategories.map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => setCategoryFilter(key)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                  categoryFilter === key
+                    ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Template grid */}
       <section className="mx-auto max-w-6xl px-6 py-14 md:py-20">
+        {filteredTemplates.length === 0 && (
+          <div className="text-center py-20">
+            <p className="text-neutral-500 dark:text-neutral-400 text-lg">No templates match those filters.</p>
+            <button
+              onClick={() => { setPageFilter('all'); setCategoryFilter('all') }}
+              className="mt-4 text-blue-600 hover:text-blue-700 font-medium text-sm"
+            >
+              Clear filters
+            </button>
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredTemplates.map((template) => {
             const activeIndex = activePalettes[template.type]
