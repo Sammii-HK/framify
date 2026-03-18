@@ -1,5 +1,28 @@
 import { PALETTES, LIGHT_PALETTES, type PaletteKey } from '@/lib/design-system'
 
+// ---------------------------------------------------------------------------
+// Image placeholder helpers
+// ---------------------------------------------------------------------------
+// Preview images from Unsplash are for demo purposes only. Generated/downloaded
+// sites use clean placeholders so users add their own photos.
+
+function isUnsplashUrl(url: string): boolean {
+  return url.includes('images.unsplash.com')
+}
+
+function imagePlaceholder(label: string = 'Your image here'): string {
+  return `<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;min-height:200px;background:#f3f4f6;border:2px dashed #d1d5db;border-radius:8px;color:#9ca3af;font-size:14px;text-align:center;padding:20px;">
+    <div>
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto 8px;display:block;opacity:0.5;">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+        <circle cx="8.5" cy="8.5" r="1.5"/>
+        <polyline points="21 15 16 10 5 21"/>
+      </svg>
+      ${label}
+    </div>
+  </div>`
+}
+
 export interface SiteContent {
   businessName: string
   tagline: string
@@ -138,9 +161,12 @@ export function generateStaticSite(content: SiteContent, subdomain?: string): st
     description: escapeHtml(s.description || ''),
   }))
 
-  // Images
-  const heroImage = escapeHtml(content.images?.hero || '')
-  const galleryImages = (content.images?.gallery || []).map(img => escapeHtml(img))
+  // Images — strip Unsplash URLs so downloaded sites use placeholders instead of preview images
+  const rawHeroImage = content.images?.hero || ''
+  const heroImage = isUnsplashUrl(rawHeroImage) ? '' : escapeHtml(rawHeroImage)
+  const galleryImages = (content.images?.gallery || [])
+    .map(img => isUnsplashUrl(img) ? '' : escapeHtml(img))
+    .filter(img => img !== '')
 
   const canonicalUrl = subdomain ? `https://${subdomain}.craftmypage.com` : ''
   const pageTitle = `${businessName} — ${tagline}`
@@ -356,6 +382,11 @@ ${canonicalUrl ? `  <meta property="og:url" content="${canonicalUrl}" />\n` : ''
                SITE.templateType === "consultant" ? "Book a Consultation" :
                "Get Started"} <ArrowRight className="w-4 h-4" />
             </a>
+            {SITE.templateType === "portfolio" && !SITE.heroImage && (
+              <p className="mt-6 text-xs" style={{ color: t.textMuted, opacity: 0.6 }}>
+                Add a hero background image to make this section stand out
+              </p>
+            )}
           </section>
 
           {/* === TRADES SECTIONS === */}
@@ -547,12 +578,27 @@ ${canonicalUrl ? `  <meta property="og:url" content="${canonicalUrl}" />\n` : ''
           )}
 
           {/* Portfolio: Image Gallery */}
-          {SITE.templateType === "portfolio" && SITE.galleryImages.length > 0 && (
+          {SITE.templateType === "portfolio" && (
             <section className="py-12 md:py-16 px-4 md:px-8 lg:px-12" style={{ backgroundColor: t.elevated }}>
               <div className="columns-1 md:columns-2 lg:columns-3 gap-4 max-w-6xl mx-auto">
-                {SITE.galleryImages.map((src, i) => (
-                  <img key={i} src={src} alt={"Gallery image " + (i + 1)} className="w-full rounded-lg mb-4 break-inside-avoid" loading="lazy" />
-                ))}
+                {SITE.galleryImages.length > 0 ? (
+                  SITE.galleryImages.map((src, i) => (
+                    <img key={i} src={src} alt={"Gallery image " + (i + 1)} className="w-full rounded-lg mb-4 break-inside-avoid" loading="lazy" />
+                  ))
+                ) : (
+                  [1, 2, 3].map((n) => (
+                    <div key={n} className="mb-4 break-inside-avoid flex items-center justify-center rounded-lg" style={{ minHeight: "200px", background: "#f3f4f6", border: "2px dashed #d1d5db", color: "#9ca3af", fontSize: "14px", textAlign: "center", padding: "20px" }}>
+                      <div>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ margin: "0 auto 8px", display: "block", opacity: 0.5 }}>
+                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                          <circle cx="8.5" cy="8.5" r="1.5"/>
+                          <polyline points="21 15 16 10 5 21"/>
+                        </svg>
+                        Gallery image {n} — add your own
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </section>
           )}

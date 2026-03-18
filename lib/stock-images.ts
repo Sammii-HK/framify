@@ -7,6 +7,18 @@
  */
 
 // ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const UTM_PARAMS = '?utm_source=craftmypage&utm_medium=referral'
+
+const FALLBACK_ACCESS_KEY = 'ffcX9zjAmWQhmYAFkUXzixqcKMQ0_q99Y3r_ioiTJp8'
+
+function getAccessKey(): string | undefined {
+  return process.env.UNSPLASH_ACCESS_KEY || FALLBACK_ACCESS_KEY
+}
+
+// ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
@@ -14,6 +26,10 @@ export interface StockImage {
   url: string
   alt: string
   credit: string
+  photographerName: string
+  photographerUrl: string
+  unsplashUrl: string
+  downloadEndpoint: string
 }
 
 // ---------------------------------------------------------------------------
@@ -41,6 +57,34 @@ const KEYWORD_MAP: Record<string, string[]> = {
 const DEFAULT_KEYWORDS = ['small business', 'professional service', 'local business', 'team working']
 
 // ---------------------------------------------------------------------------
+// Template query mappings (all 21 template types)
+// ---------------------------------------------------------------------------
+
+export const TEMPLATE_QUERIES: Record<string, string> = {
+  standard: 'small business storefront',
+  trades: 'construction worker tools',
+  'hair-beauty': 'hair salon interior',
+  'food-drink': 'restaurant interior food',
+  portfolio: 'creative workspace design',
+  professional: 'business meeting professional',
+  'health-fitness': 'gym fitness training',
+  events: 'event venue stage lighting',
+  'pet-services': 'dog grooming pets',
+  automotive: 'car mechanic garage',
+  education: 'tutoring classroom learning',
+  property: 'house exterior real estate',
+  medical: 'dental clinic medical office',
+  'creative-agency': 'design studio creative team',
+  shop: 'retail boutique store display',
+  'business-pro': 'corporate office modern',
+  startup: 'startup technology workspace',
+  'restaurant-full': 'restaurant dining fine food',
+  'portfolio-full': 'architecture interior design',
+  clinic: 'medical clinic reception area',
+  'property-full': 'luxury property estate',
+}
+
+// ---------------------------------------------------------------------------
 // Hardcoded fallback images (royalty-free from Unsplash — no API key needed
 // when using the special /photo/ URL format which is permitted for hotlinking)
 // ---------------------------------------------------------------------------
@@ -50,31 +94,55 @@ const FALLBACK_IMAGES: StockImage[] = [
     url: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800&q=80',
     alt: 'Modern office workspace',
     credit: 'Unsplash',
+    photographerName: 'Unsplash',
+    photographerUrl: `https://unsplash.com${UTM_PARAMS}`,
+    unsplashUrl: `https://unsplash.com${UTM_PARAMS}`,
+    downloadEndpoint: '',
   },
   {
     url: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=800&q=80',
     alt: 'Team collaboration',
     credit: 'Unsplash',
+    photographerName: 'Unsplash',
+    photographerUrl: `https://unsplash.com${UTM_PARAMS}`,
+    unsplashUrl: `https://unsplash.com${UTM_PARAMS}`,
+    downloadEndpoint: '',
   },
   {
     url: 'https://images.unsplash.com/photo-1556761175-4b46a572b786?w=800&q=80',
     alt: 'Professional business environment',
     credit: 'Unsplash',
+    photographerName: 'Unsplash',
+    photographerUrl: `https://unsplash.com${UTM_PARAMS}`,
+    unsplashUrl: `https://unsplash.com${UTM_PARAMS}`,
+    downloadEndpoint: '',
   },
   {
     url: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80',
     alt: 'Clean modern interior',
     credit: 'Unsplash',
+    photographerName: 'Unsplash',
+    photographerUrl: `https://unsplash.com${UTM_PARAMS}`,
+    unsplashUrl: `https://unsplash.com${UTM_PARAMS}`,
+    downloadEndpoint: '',
   },
   {
     url: 'https://images.unsplash.com/photo-1531973576160-7125cd663d86?w=800&q=80',
     alt: 'Small business storefront',
     credit: 'Unsplash',
+    photographerName: 'Unsplash',
+    photographerUrl: `https://unsplash.com${UTM_PARAMS}`,
+    unsplashUrl: `https://unsplash.com${UTM_PARAMS}`,
+    downloadEndpoint: '',
   },
   {
     url: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80',
     alt: 'Business team discussion',
     credit: 'Unsplash',
+    photographerName: 'Unsplash',
+    photographerUrl: `https://unsplash.com${UTM_PARAMS}`,
+    unsplashUrl: `https://unsplash.com${UTM_PARAMS}`,
+    downloadEndpoint: '',
   },
 ]
 
@@ -87,10 +155,26 @@ interface UnsplashPhoto {
   alt_description: string | null
   description: string | null
   user: { name: string; links: { html: string } }
+  links: { html: string; download_location: string }
 }
 
 interface UnsplashSearchResponse {
   results: UnsplashPhoto[]
+}
+
+/**
+ * Parse an Unsplash API photo object into a StockImage with full attribution.
+ */
+function parseUnsplashPhoto(photo: UnsplashPhoto, fallbackAlt: string): StockImage {
+  return {
+    url: photo.urls.regular,
+    alt: photo.alt_description || photo.description || fallbackAlt,
+    credit: `Photo by ${photo.user.name} on Unsplash`,
+    photographerName: photo.user.name,
+    photographerUrl: `${photo.user.links.html}${UTM_PARAMS}`,
+    unsplashUrl: `${photo.links.html}${UTM_PARAMS}`,
+    downloadEndpoint: photo.links.download_location,
+  }
 }
 
 async function searchUnsplash(
@@ -113,11 +197,46 @@ async function searchUnsplash(
 
   const data = (await res.json()) as UnsplashSearchResponse
 
-  return data.results.map((photo) => ({
-    url: photo.urls.regular,
-    alt: photo.alt_description || photo.description || query,
-    credit: `Photo by ${photo.user.name} on Unsplash`,
-  }))
+  return data.results.map((photo) => parseUnsplashPhoto(photo, query))
+}
+
+// ---------------------------------------------------------------------------
+// Download tracking (required by Unsplash guidelines)
+// ---------------------------------------------------------------------------
+
+/**
+ * Trigger Unsplash download tracking. Fire-and-forget — no await needed.
+ * Must be called whenever a photo is used/displayed, per Unsplash API guidelines.
+ */
+export function triggerDownload(downloadEndpoint: string): void {
+  if (!downloadEndpoint) return
+
+  const apiKey = getAccessKey()
+  if (!apiKey) return
+
+  const separator = downloadEndpoint.includes('?') ? '&' : '?'
+  const url = `${downloadEndpoint}${separator}client_id=${apiKey}`
+
+  // Fire-and-forget — intentionally not awaited
+  fetch(url).catch(() => {
+    // Silently ignore tracking failures
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Utilities
+// ---------------------------------------------------------------------------
+
+/**
+ * Check if a URL is from Unsplash's image CDN.
+ */
+export function isUnsplashUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url)
+    return parsed.hostname === 'images.unsplash.com'
+  } catch {
+    return false
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -158,7 +277,7 @@ export async function getStockImages(
   count: number = 4,
 ): Promise<StockImage[]> {
   const keywords = getKeywordsForBusiness(businessType)
-  const apiKey = process.env.UNSPLASH_ACCESS_KEY
+  const apiKey = getAccessKey()
 
   if (!apiKey) {
     // No API key — return fallback images, cycling if count exceeds available
@@ -189,6 +308,38 @@ export async function getStockImages(
   } catch {
     // API error — fall back silently
     return pickFallbacks(count)
+  }
+}
+
+/**
+ * Fetch preview images for a specific template type.
+ * Returns 4-6 images with full attribution data from Unsplash.
+ *
+ * @param templateType - one of the keys from TEMPLATE_QUERIES (e.g. "trades", "hair-beauty")
+ * @param count - number of images to return (default 6)
+ */
+export async function getTemplatePreviewImages(
+  templateType: string,
+  count: number = 6,
+): Promise<StockImage[]> {
+  const query = TEMPLATE_QUERIES[templateType]
+  if (!query) {
+    return pickFallbacks(Math.min(count, 6))
+  }
+
+  const apiKey = getAccessKey()
+  if (!apiKey) {
+    return pickFallbacks(Math.min(count, 6))
+  }
+
+  try {
+    const images = await searchUnsplash(query, count, apiKey)
+    if (images.length > 0) {
+      return images.slice(0, count)
+    }
+    return pickFallbacks(Math.min(count, 6))
+  } catch {
+    return pickFallbacks(Math.min(count, 6))
   }
 }
 

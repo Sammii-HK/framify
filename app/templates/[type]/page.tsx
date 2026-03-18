@@ -1,11 +1,28 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { palettes, templates, getTemplateDetail, type Palette } from '@/lib/template-data'
+import type { StockImage } from '@/lib/stock-images'
+import UnsplashImage from '@/components/UnsplashImage'
 
-function FullMockup({ palette, templateType }: { palette: Palette; templateType: string }) {
+/**
+ * Helper: append Unsplash sizing params to a URL.
+ * Strips any existing `w` / `q` params to avoid duplicates.
+ */
+function sizedUrl(url: string, width: number, quality = 80): string {
+  try {
+    const u = new URL(url)
+    u.searchParams.set('w', String(width))
+    u.searchParams.set('q', String(quality))
+    return u.toString()
+  } catch {
+    return url
+  }
+}
+
+function FullMockup({ palette, templateType, images, imagesLoading }: { palette: Palette; templateType: string; images?: StockImage[]; imagesLoading?: boolean }) {
   const isDark = palette.darkBg !== palette.lightBg
   const bg = palette.darkBg
   const text = palette.darkText
@@ -52,11 +69,31 @@ function FullMockup({ palette, templateType }: { palette: Palette; templateType:
       )}
 
       {/* Hero */}
-      <div className={`px-5 ${sections.includes('hero-fullwidth') ? 'py-10' : 'py-6'}`}>
-        <div className="w-2/3 h-3 rounded-full mb-2" style={{ backgroundColor: text, opacity: 0.9 }} />
-        <div className="w-1/2 h-3 rounded-full mb-2" style={{ backgroundColor: text, opacity: 0.5 }} />
-        <div className="w-5/12 h-2 rounded-full mb-4" style={{ backgroundColor: text, opacity: 0.3 }} />
-        <div className="w-20 h-6 rounded-md" style={{ backgroundColor: accent }} />
+      <div className={`relative px-5 ${sections.includes('hero-fullwidth') ? 'py-10' : 'py-6'} overflow-hidden`}>
+        {/* Real hero image background */}
+        {images && images[0] ? (
+          <div className="absolute inset-0">
+            <UnsplashImage
+              src={sizedUrl(images[0].url, 800)}
+              alt={images[0].alt}
+              photographerName={images[0].photographerName}
+              photographerUrl={images[0].photographerUrl}
+              className="w-full h-full"
+            />
+            {/* Dark overlay so wireframe text stays readable */}
+            <div className="absolute inset-0 bg-black/40" />
+          </div>
+        ) : imagesLoading ? (
+          <div className="absolute inset-0 animate-pulse" style={{ backgroundColor: `${accent}15` }} />
+        ) : null}
+
+        {/* Wireframe text bars (always shown on top) */}
+        <div className="relative z-10">
+          <div className="w-2/3 h-3 rounded-full mb-2" style={{ backgroundColor: images?.[0] ? '#ffffff' : text, opacity: 0.9 }} />
+          <div className="w-1/2 h-3 rounded-full mb-2" style={{ backgroundColor: images?.[0] ? '#ffffff' : text, opacity: 0.5 }} />
+          <div className="w-5/12 h-2 rounded-full mb-4" style={{ backgroundColor: images?.[0] ? '#ffffff' : text, opacity: 0.3 }} />
+          <div className="w-20 h-6 rounded-md" style={{ backgroundColor: accent }} />
+        </div>
       </div>
 
       {/* Content area */}
@@ -75,17 +112,57 @@ function FullMockup({ palette, templateType }: { palette: Palette; templateType:
 
         {sections.includes('image-grid') && (
           <div className="grid grid-cols-3 gap-2">
-            {[0.2, 0.3, 0.15, 0.25, 0.18, 0.22].map((opacity, i) => (
-              <div key={i} className="aspect-square rounded-md" style={{ backgroundColor: accent, opacity: opacity + 0.15 }} />
-            ))}
+            {[0.2, 0.3, 0.15, 0.25, 0.18, 0.22].map((opacity, i) => {
+              const img = images?.[i + 1] // offset by 1 because images[0] is the hero
+              if (img) {
+                return (
+                  <UnsplashImage
+                    key={i}
+                    src={sizedUrl(img.url, 400)}
+                    alt={img.alt}
+                    photographerName={img.photographerName}
+                    photographerUrl={img.photographerUrl}
+                    className="aspect-square rounded-md"
+                    sizes="(max-width: 768px) 33vw, 200px"
+                  />
+                )
+              }
+              return (
+                <div
+                  key={i}
+                  className={`aspect-square rounded-md ${imagesLoading ? 'animate-pulse' : ''}`}
+                  style={{ backgroundColor: accent, opacity: opacity + 0.15 }}
+                />
+              )
+            })}
           </div>
         )}
 
         {sections.includes('portfolio-grid') && (
           <div className="grid grid-cols-4 gap-1.5">
-            {[0.2, 0.35, 0.15, 0.3, 0.25, 0.18, 0.32, 0.22].map((opacity, i) => (
-              <div key={i} className="aspect-square rounded-sm" style={{ backgroundColor: accent, opacity: opacity + 0.1 }} />
-            ))}
+            {[0.2, 0.35, 0.15, 0.3, 0.25, 0.18, 0.32, 0.22].map((opacity, i) => {
+              const img = images?.[i + 1]
+              if (img) {
+                return (
+                  <UnsplashImage
+                    key={i}
+                    src={sizedUrl(img.url, 400)}
+                    alt={img.alt}
+                    photographerName={img.photographerName}
+                    photographerUrl={img.photographerUrl}
+                    className="aspect-square rounded-sm"
+                    sizes="(max-width: 768px) 25vw, 150px"
+                  />
+                )
+              }
+              return (
+                <div
+                  key={i}
+                  className={`aspect-square rounded-sm ${imagesLoading ? 'animate-pulse' : ''}`}
+                  style={{ backgroundColor: accent, opacity: opacity + 0.1 }}
+                />
+              )
+            })}
           </div>
         )}
 
@@ -131,7 +208,18 @@ function FullMockup({ palette, templateType }: { palette: Palette; templateType:
                 </div>
               ))}
             </div>
-            <div className="rounded-md" style={{ backgroundColor: `${text}10` }} />
+            {images?.[2] ? (
+              <UnsplashImage
+                src={sizedUrl(images[2].url, 400)}
+                alt={images[2].alt}
+                photographerName={images[2].photographerName}
+                photographerUrl={images[2].photographerUrl}
+                className="rounded-md min-h-[80px]"
+                sizes="(max-width: 768px) 50vw, 300px"
+              />
+            ) : (
+              <div className={`rounded-md ${imagesLoading ? 'animate-pulse' : ''}`} style={{ backgroundColor: `${text}10` }} />
+            )}
           </div>
         )}
 
@@ -233,6 +321,28 @@ export default function TemplatePage() {
   const detail = getTemplateDetail(type)
   const [activePaletteIndex, setActivePaletteIndex] = useState(0)
   const [viewport, setViewport] = useState<'desktop' | 'mobile'>('desktop')
+  const [previewImages, setPreviewImages] = useState<StockImage[]>([])
+  const [imagesLoading, setImagesLoading] = useState(true)
+
+  useEffect(() => {
+    if (!type) return
+    setImagesLoading(true)
+    fetch(`/api/template-images/${type}`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        return res.json()
+      })
+      .then((data: StockImage[]) => {
+        setPreviewImages(data)
+      })
+      .catch((err) => {
+        console.error('Failed to fetch template preview images:', err)
+        // Leave previewImages empty — the mockup will stay abstract
+      })
+      .finally(() => {
+        setImagesLoading(false)
+      })
+  }, [type])
 
   if (!galleryTemplate) {
     return (
@@ -366,7 +476,7 @@ export default function TemplatePage() {
         {/* Preview container */}
         <div className="flex justify-center">
           <div className={`transition-all duration-300 ${viewport === 'mobile' ? 'w-[375px]' : 'w-full'}`}>
-            <FullMockup palette={activePalette} templateType={type} />
+            <FullMockup palette={activePalette} templateType={type} images={previewImages.length > 0 ? previewImages : undefined} imagesLoading={imagesLoading} />
           </div>
         </div>
 
