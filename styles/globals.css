@@ -6,6 +6,17 @@
   --framer-bg: #fafafa;
   --framer-border: #e5e5e5;
   --framer-text: #1a1a1a;
+
+  /* Brand colour scale — change these to rebrand the entire site */
+  --brand-50: 238 242 255;   /* #EEF2FF */
+  --brand-100: 224 231 255;  /* #E0E7FF */
+  --brand-200: 199 210 254;  /* #C7D2FE */
+  --brand-400: 129 140 248;  /* #818CF8 */
+  --brand-500: 99 102 241;   /* #6366F1 */
+  --brand-600: 79 70 229;    /* #4F46E5 */
+  --brand-700: 67 56 202;    /* #4338CA */
+  --brand-800: 55 48 163;    /* #3730A3 */
+  --brand-900: 49 46 129;    /* #312E81 */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -55,7 +66,7 @@ button, a {
 
 /* Focus styles */
 *:focus-visible {
-  outline: 2px solid rgb(56, 189, 248);
+  outline: 2px solid rgb(var(--brand-500));
   outline-offset: 2px;
 }
 

@@ -192,7 +192,7 @@ export default function ImageUpload({
           w-full rounded-lg border-2 border-dashed p-8
           text-center transition-colors cursor-pointer
           ${isDragging
-            ? 'border-blue-500 bg-blue-500/10'
+            ? 'border-brand-500 bg-brand-500/10'
             : 'border-gray-600 hover:border-gray-400 bg-gray-800/50'
           }
           ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}
@@ -211,7 +211,7 @@ export default function ImageUpload({
             <p className="text-sm text-gray-400">Uploading...</p>
             <div className="mx-auto w-48 h-2 bg-gray-700 rounded-full overflow-hidden">
               <div
-                className="h-full bg-blue-500 rounded-full transition-all duration-300"
+                className="h-full bg-brand-500 rounded-full transition-all duration-300"
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>

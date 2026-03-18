@@ -36,7 +36,7 @@ export default function TemplateCard({ template }: TemplateCardProps) {
 	const priceDisplay = formatPrice(template.price);
 	const tierColors: Record<PricingTier, string> = {
 		free: "bg-green-100 text-green-700 border-green-200",
-		standard: "bg-blue-100 text-blue-700 border-blue-200",
+		standard: "bg-brand-100 text-brand-700 border-brand-200",
 		premium: "bg-purple-100 text-purple-700 border-purple-200",
 	};
 

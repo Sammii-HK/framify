@@ -14,7 +14,7 @@ export default function Navigation() {
 				<div className="flex items-center justify-between">
 					<Link
 						href="/"
-						className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors"
+						className="text-2xl font-bold text-brand-600 hover:text-brand-700 transition-colors"
 					>
 						CraftMyPage
 					</Link>
@@ -24,7 +24,7 @@ export default function Navigation() {
 							href="/templates"
 							className={`px-4 py-2 rounded-lg font-medium transition-all ${
 								pathname?.startsWith("/templates")
-									? "bg-blue-600 text-white"
+									? "bg-brand-600 text-white"
 									: "text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800"
 							}`}
 						>
@@ -34,7 +34,7 @@ export default function Navigation() {
 							href="/generate"
 							className={`px-4 py-2 rounded-lg font-medium transition-all ${
 								pathname === "/generate"
-									? "bg-blue-600 text-white"
+									? "bg-brand-600 text-white"
 									: "text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800"
 							}`}
 						>
@@ -45,7 +45,7 @@ export default function Navigation() {
 								href="/dashboard"
 								className={`px-4 py-2 rounded-lg font-medium transition-all ${
 									pathname === "/dashboard"
-										? "bg-blue-600 text-white"
+										? "bg-brand-600 text-white"
 										: "text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800"
 								}`}
 							>
@@ -69,7 +69,7 @@ export default function Navigation() {
 						) : (
 							<a
 								href="/auth/login"
-								className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all"
+								className="px-4 py-2 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 transition-all"
 							>
 								Login
 							</a>

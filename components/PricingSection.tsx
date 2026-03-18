@@ -59,7 +59,7 @@ export function PricingSection() {
           </span>
           <button
             onClick={() => setInterval(interval === 'monthly' ? 'yearly' : 'monthly')}
-            className="relative inline-flex h-7 w-12 items-center rounded-full bg-blue-600 transition-colors"
+            className="relative inline-flex h-7 w-12 items-center rounded-full bg-brand-600 transition-colors"
             aria-label="Toggle billing interval"
           >
             <span
@@ -94,7 +94,7 @@ export function PricingSection() {
             <ul className="mt-8 space-y-3 text-sm text-neutral-600">
               {tiers.starter.features.map((feature) => (
                 <li key={feature} className="flex items-start gap-2">
-                  <span className="text-blue-600 mt-0.5 font-bold">&#10003;</span>
+                  <span className="text-brand-600 mt-0.5 font-bold">&#10003;</span>
                   {feature}
                 </li>
               ))}
@@ -108,8 +108,8 @@ export function PricingSection() {
           </div>
 
           {/* Pro */}
-          <div className="rounded-xl border-2 border-blue-600 p-8 relative">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-full">
+          <div className="rounded-xl border-2 border-brand-600 p-8 relative">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-600 text-white text-xs font-semibold px-3 py-1 rounded-full">
               Most popular
             </div>
             <h3 className="text-lg font-semibold text-neutral-900">{tiers.pro.name}</h3>
@@ -125,14 +125,14 @@ export function PricingSection() {
             <ul className="mt-8 space-y-3 text-sm text-neutral-600">
               {tiers.pro.features.map((feature) => (
                 <li key={feature} className="flex items-start gap-2">
-                  <span className="text-blue-600 mt-0.5 font-bold">&#10003;</span>
+                  <span className="text-brand-600 mt-0.5 font-bold">&#10003;</span>
                   {feature}
                 </li>
               ))}
             </ul>
             <Link
               href="/generate"
-              className="mt-8 block w-full rounded-lg bg-blue-600 py-2.5 text-center text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
+              className="mt-8 block w-full rounded-lg bg-brand-600 py-2.5 text-center text-sm font-semibold text-white hover:bg-brand-700 transition-colors"
             >
               Get started
             </Link>
@@ -141,7 +141,7 @@ export function PricingSection() {
 
         <p className="mt-8 text-center text-sm text-neutral-400">
           Want to see the templates first?{' '}
-          <Link href="/templates" className="text-blue-600 hover:text-blue-700 font-medium">
+          <Link href="/templates" className="text-brand-600 hover:text-brand-700 font-medium">
             Browse the gallery
           </Link>
         </p>

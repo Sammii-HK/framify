@@ -90,7 +90,7 @@ export default function AnalyticsPage() {
       <div className="min-h-screen bg-neutral-50">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center py-24">
-            <div className="w-10 h-10 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <div className="w-10 h-10 border-2 border-brand-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
             <p className="text-neutral-500 text-sm">Loading analytics...</p>
           </div>
         </div>
@@ -146,7 +146,7 @@ export default function AnalyticsPage() {
             <p className="text-neutral-500">No published sites to show analytics for.</p>
             <Link
               href="/dashboard"
-              className="mt-4 inline-flex items-center text-blue-600 font-medium hover:text-blue-700 text-sm"
+              className="mt-4 inline-flex items-center text-brand-600 font-medium hover:text-brand-700 text-sm"
             >
               Back to dashboard
             </Link>

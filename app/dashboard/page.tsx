@@ -59,7 +59,7 @@ const paletteGradients: Record<string, string> = {
 }
 
 const renewalStatusConfig: Record<string, { label: string; colour: string }> = {
-  reminder_sent: { label: 'Reminder sent', colour: 'text-blue-700 bg-blue-50' },
+  reminder_sent: { label: 'Reminder sent', colour: 'text-brand-700 bg-brand-50' },
   invoice_created: { label: 'Invoice pending', colour: 'text-amber-700 bg-amber-50' },
   paid: { label: 'Renewed', colour: 'text-green-700 bg-green-50' },
   retry_pending: { label: 'Payment retry pending', colour: 'text-orange-700 bg-orange-50' },
@@ -97,7 +97,7 @@ function getPlanBadge(plan: string) {
     case 'starter':
     case 'launch':
       return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold text-blue-700 bg-blue-100">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold text-brand-700 bg-brand-100">
           Starter
         </span>
       )
@@ -216,7 +216,7 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-neutral-50">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center py-24">
-            <div className="w-10 h-10 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <div className="w-10 h-10 border-2 border-brand-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
             <p className="text-neutral-500 text-sm">Loading your sites...</p>
           </div>
         </div>
@@ -243,7 +243,7 @@ export default function DashboardPage() {
           </div>
           <Link
             href="/generate"
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 transition-colors shadow-sm whitespace-nowrap"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -360,14 +360,14 @@ export default function DashboardPage() {
 
         {/* Upgrade prompts — free users */}
         {billing && billing.plan === 'free' && sites.length > 0 && (
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-5 mb-8">
+          <div className="bg-gradient-to-r from-brand-50 to-indigo-50 rounded-xl border border-brand-200 p-5 mb-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <p className="text-sm text-neutral-700">
                 Subscribe to publish your site. Plans start at <span className="font-semibold">£9/mo</span>.
               </p>
               <Link
                 href="/#pricing"
-                className="inline-flex items-center justify-center px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap"
+                className="inline-flex items-center justify-center px-5 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors shadow-sm whitespace-nowrap"
               >
                 View plans
               </Link>
@@ -395,8 +395,8 @@ export default function DashboardPage() {
         {/* Empty state */}
         {sites.length === 0 && !error && (
           <div className="bg-white rounded-xl border border-neutral-200 px-6 py-16 text-center">
-            <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mx-auto mb-5">
-              <svg className="w-7 h-7 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <div className="w-14 h-14 rounded-full bg-brand-50 flex items-center justify-center mx-auto mb-5">
+              <svg className="w-7 h-7 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
               </svg>
             </div>
@@ -408,7 +408,7 @@ export default function DashboardPage() {
             </p>
             <Link
               href="/generate"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 transition-colors shadow-sm"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -469,7 +469,7 @@ export default function DashboardPage() {
                         href={`https://${site.customDomain || siteUrl}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-blue-600 hover:text-blue-700 hover:underline truncate block mb-3"
+                        className="text-sm text-brand-600 hover:text-brand-700 hover:underline truncate block mb-3"
                       >
                         {site.customDomain || siteUrl}
                       </a>
@@ -550,7 +550,7 @@ export default function DashboardPage() {
                           href={site.cfDeploymentUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex-1 px-4 py-2 text-sm font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                          className="flex-1 px-4 py-2 text-sm font-medium text-center text-white bg-brand-600 rounded-lg hover:bg-brand-700 transition-colors"
                         >
                           View site
                         </a>

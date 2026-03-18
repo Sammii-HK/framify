@@ -49,7 +49,7 @@ export default function Home() {
       {/* Hero */}
       <section className="bg-white">
         <div className="mx-auto max-w-5xl px-6 py-24 md:py-32 text-center">
-          <p className="text-blue-600 font-semibold text-sm tracking-wide uppercase mb-4">
+          <p className="text-brand-600 font-semibold text-sm tracking-wide uppercase mb-4">
             Professional websites for local businesses
           </p>
           <h1 className="text-4xl md:text-6xl font-bold text-neutral-900 leading-tight tracking-tight">
@@ -63,7 +63,7 @@ export default function Home() {
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/generate"
-              className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-brand-700 transition-colors"
             >
               Build your site now
             </Link>
@@ -105,7 +105,7 @@ export default function Home() {
               },
             ].map((item) => (
               <div key={item.step} className="text-center">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white text-xl font-bold">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-600 text-white text-xl font-bold">
                   {item.step}
                 </div>
                 <h3 className="mt-5 text-lg font-semibold text-neutral-900">{item.title}</h3>
@@ -230,7 +230,7 @@ export default function Home() {
           </p>
           <Link
             href="/generate"
-            className="mt-10 inline-flex items-center justify-center rounded-lg bg-blue-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors"
+            className="mt-10 inline-flex items-center justify-center rounded-lg bg-brand-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-brand-700 transition-colors"
           >
             Build your site now
           </Link>

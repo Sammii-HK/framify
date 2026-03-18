@@ -91,13 +91,13 @@ export default function ChatWidget() {
 				style={{ height: isOpen ? "500px" : "0px" }}
 			>
 				{/* Header */}
-				<div className="flex items-center justify-between px-4 py-3 bg-blue-600 text-white shrink-0">
+				<div className="flex items-center justify-between px-4 py-3 bg-brand-600 text-white shrink-0">
 					<span className="font-semibold text-sm">
 						CraftMyPage Assistant
 					</span>
 					<button
 						onClick={() => setIsOpen(false)}
-						className="p-1 hover:bg-blue-700 rounded-lg transition-colors"
+						className="p-1 hover:bg-brand-700 rounded-lg transition-colors"
 						aria-label="Close chat"
 					>
 						<svg
@@ -130,7 +130,7 @@ export default function ChatWidget() {
 							<div
 								className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
 									msg.role === "user"
-										? "bg-blue-600 text-white rounded-br-md"
+										? "bg-brand-600 text-white rounded-br-md"
 										: "bg-gray-100 text-gray-800 rounded-bl-md"
 								}`}
 							>
@@ -163,13 +163,13 @@ export default function ChatWidget() {
 						onChange={(e) => setInput(e.target.value)}
 						onKeyDown={handleKeyDown}
 						placeholder="Type your message..."
-						className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+						className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
 						disabled={isLoading}
 					/>
 					<button
 						onClick={sendMessage}
 						disabled={isLoading || !input.trim()}
-						className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0"
+						className="p-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0"
 						aria-label="Send message"
 					>
 						<svg
@@ -192,7 +192,7 @@ export default function ChatWidget() {
 			{/* Floating button */}
 			<button
 				onClick={() => setIsOpen(!isOpen)}
-				className={`fixed bottom-4 right-4 z-[9999] w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 hover:shadow-xl transition-all duration-300 flex items-center justify-center ${
+				className={`fixed bottom-4 right-4 z-[9999] w-14 h-14 bg-brand-600 text-white rounded-full shadow-lg hover:bg-brand-700 hover:shadow-xl transition-all duration-300 flex items-center justify-center ${
 					isOpen ? "max-sm:hidden" : ""
 				}`}
 				aria-label="Open chat"

@@ -256,7 +256,7 @@ export default function TemplatesPage() {
       {/* Hero */}
       <section className="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
         <div className="mx-auto max-w-5xl px-6 py-16 md:py-20 text-center">
-          <p className="text-blue-600 font-semibold text-sm tracking-wide uppercase mb-4">
+          <p className="text-brand-600 font-semibold text-sm tracking-wide uppercase mb-4">
             Template gallery
           </p>
           <h1 className="text-3xl md:text-5xl font-bold text-neutral-900 dark:text-white leading-tight tracking-tight">
@@ -284,12 +284,12 @@ export default function TemplatesPage() {
                 onClick={() => setPageFilter(key)}
                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   pageFilter === key
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-brand-600 text-white'
                     : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                 }`}
               >
                 {label}
-                <span className={`ml-1.5 text-xs ${pageFilter === key ? 'text-blue-200' : 'text-neutral-400 dark:text-neutral-500'}`}>
+                <span className={`ml-1.5 text-xs ${pageFilter === key ? 'text-brand-200' : 'text-neutral-400 dark:text-neutral-500'}`}>
                   {pageCounts[key]}
                 </span>
               </button>
@@ -323,7 +323,7 @@ export default function TemplatesPage() {
             <p className="text-neutral-500 dark:text-neutral-400 text-lg">No templates match those filters.</p>
             <button
               onClick={() => { setPageFilter('all'); setCategoryFilter('all') }}
-              className="mt-4 text-blue-600 hover:text-blue-700 font-medium text-sm"
+              className="mt-4 text-brand-600 hover:text-brand-700 font-medium text-sm"
             >
               Clear filters
             </button>
@@ -353,7 +353,7 @@ export default function TemplatesPage() {
                       onClick={() => setActivePalettes((prev) => ({ ...prev, [template.type]: index }))}
                       className={`w-4 h-4 rounded-full border-2 transition-all ${
                         index === activeIndex
-                          ? 'border-blue-600 scale-125 ring-2 ring-blue-600/20'
+                          ? 'border-brand-600 scale-125 ring-2 ring-brand-600/20'
                           : 'border-neutral-300 dark:border-neutral-600 hover:border-neutral-400 dark:hover:border-neutral-500 hover:scale-110'
                       }`}
                       style={{ backgroundColor: palette.accent }}
@@ -378,7 +378,7 @@ export default function TemplatesPage() {
                       onClick={() => setDarkModes((prev) => ({ ...prev, [template.type]: true }))}
                       className={`p-1 rounded-full transition-all ${
                         isDark
-                          ? 'bg-neutral-700 dark:bg-neutral-600 text-blue-400 shadow-sm'
+                          ? 'bg-neutral-700 dark:bg-neutral-600 text-brand-400 shadow-sm'
                           : 'text-neutral-400 hover:text-neutral-500'
                       }`}
                       title="Dark theme"
@@ -392,13 +392,13 @@ export default function TemplatesPage() {
                 <div className="p-4 pt-2">
                   <div className="flex items-center gap-2 mb-1">
                     <Link href={`/templates/${template.type}`}>
-                      <h2 className="text-lg font-semibold text-neutral-900 dark:text-white group-hover:text-blue-600 transition-colors">
+                      <h2 className="text-lg font-semibold text-neutral-900 dark:text-white group-hover:text-brand-600 transition-colors">
                         {template.name}
                       </h2>
                     </Link>
                     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
                       template.pages === 'multi'
-                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                        ? 'bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-400'
                         : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400'
                     }`}>
                       {template.pages === 'multi' ? `${template.pageCount} pages` : '1 page'}
@@ -429,7 +429,7 @@ export default function TemplatesPage() {
           </p>
           <Link
             href="/generate"
-            className="mt-8 inline-flex items-center justify-center rounded-lg bg-blue-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors"
+            className="mt-8 inline-flex items-center justify-center rounded-lg bg-brand-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-brand-700 transition-colors"
           >
             Build your site now
           </Link>

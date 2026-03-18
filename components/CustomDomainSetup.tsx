@@ -115,13 +115,13 @@ export default function CustomDomainSetup({ siteId, onConnected }: CustomDomainS
             value={domain}
             onChange={(e) => setDomain(e.target.value)}
             placeholder="yourbusiness.com"
-            className="flex-1 px-3 py-2 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="flex-1 px-3 py-2 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
             onKeyDown={(e) => e.key === 'Enter' && handleConnect()}
           />
           <button
             onClick={handleConnect}
             disabled={connecting}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+            className="px-4 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
           >
             {connecting ? 'Connecting...' : 'Connect domain'}
           </button>
@@ -159,7 +159,7 @@ export default function CustomDomainSetup({ siteId, onConnected }: CustomDomainS
             <tr className="border-b border-neutral-100">
               <td className="px-3 py-2.5 font-mono text-xs text-neutral-700">CNAME</td>
               <td className="px-3 py-2.5 font-mono text-xs text-neutral-700">@</td>
-              <td className="px-3 py-2.5 font-mono text-xs text-blue-600">{instructions?.value}</td>
+              <td className="px-3 py-2.5 font-mono text-xs text-brand-600">{instructions?.value}</td>
               <td className="px-3 py-2.5 text-right">
                 <button
                   onClick={() => copyToClipboard(instructions?.value || '', 'root')}
@@ -173,7 +173,7 @@ export default function CustomDomainSetup({ siteId, onConnected }: CustomDomainS
             <tr>
               <td className="px-3 py-2.5 font-mono text-xs text-neutral-700">CNAME</td>
               <td className="px-3 py-2.5 font-mono text-xs text-neutral-700">www</td>
-              <td className="px-3 py-2.5 font-mono text-xs text-blue-600">{instructions?.value}</td>
+              <td className="px-3 py-2.5 font-mono text-xs text-brand-600">{instructions?.value}</td>
               <td className="px-3 py-2.5 text-right">
                 <button
                   onClick={() => copyToClipboard(instructions?.value || '', 'www')}

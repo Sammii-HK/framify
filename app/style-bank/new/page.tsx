@@ -277,13 +277,13 @@ export default function NewPromptTemplatePage() {
 				<div className="mb-6">
 					<Link
 						href="/style-bank"
-						className="text-sky-600 hover:text-sky-700 font-medium mb-4 inline-block"
+						className="text-brand-600 hover:text-brand-700 font-medium mb-4 inline-block"
 					>
 						← Back to Style Bank
 					</Link>
 					<div className="flex items-center justify-between mb-2">
 						<div>
-							<h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-sky-400 to-indigo-500 bg-clip-text text-transparent">
+							<h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-brand-400 to-indigo-500 bg-clip-text text-transparent">
 								Save Prompt Template
 							</h1>
 							<p className="text-gray-600">
@@ -293,7 +293,7 @@ export default function NewPromptTemplatePage() {
 						<button
 							type="button"
 							onClick={copyJsonTemplate}
-							className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-sky-600 bg-sky-50 rounded-framer hover:bg-sky-100 transition-all"
+							className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-brand-600 bg-sky-50 rounded-framer hover:bg-sky-100 transition-all"
 						>
 							{copied ? (
 								<>
@@ -350,12 +350,12 @@ export default function NewPromptTemplatePage() {
   "tags": ["tag1", "tag2"]
 }`}
 								rows={12}
-								className="w-full px-4 py-3 border border-gray-300 rounded-framer focus:ring-2 focus:ring-sky-400 focus:border-transparent outline-none transition-all resize-none font-mono text-sm"
+								className="w-full px-4 py-3 border border-gray-300 rounded-framer focus:ring-2 focus:ring-brand-400 focus:border-transparent outline-none transition-all resize-none font-mono text-sm"
 							/>
 							<button
 								type="button"
 								onClick={handleJsonPaste}
-								className="w-full px-6 py-3 bg-gradient-to-r from-sky-400 to-indigo-500 text-white rounded-framer-lg font-medium hover:shadow-md transition-all"
+								className="w-full px-6 py-3 bg-gradient-to-r from-brand-400 to-indigo-500 text-white rounded-framer-lg font-medium hover:shadow-md transition-all"
 							>
 								{isSaving ? "Saving..." : "Fill Form from JSON"}
 							</button>
@@ -371,12 +371,12 @@ export default function NewPromptTemplatePage() {
 								type="button"
 								onClick={handlePasteFromClipboard}
 								disabled={pasting || isSaving}
-								className="flex items-center gap-2 text-sm text-sky-600 hover:text-sky-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+								className="flex items-center gap-2 text-sm text-brand-600 hover:text-brand-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
 							>
 								{pasting ? (
 									<>
 										<motion.div
-											className="w-4 h-4 border-2 border-sky-600 border-t-transparent rounded-full"
+											className="w-4 h-4 border-2 border-brand-600 border-t-transparent rounded-full"
 											animate={{ rotate: 360 }}
 											transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
 										/>
@@ -411,7 +411,7 @@ export default function NewPromptTemplatePage() {
 								value={name}
 								onChange={(e) => setName(e.target.value)}
 								placeholder="e.g., Startup Launch Page"
-								className="w-full px-4 py-3 border border-gray-300 rounded-framer focus:ring-2 focus:ring-sky-400 focus:border-transparent outline-none transition-all"
+								className="w-full px-4 py-3 border border-gray-300 rounded-framer focus:ring-2 focus:ring-brand-400 focus:border-transparent outline-none transition-all"
 								required
 							/>
 						</div>
@@ -425,7 +425,7 @@ export default function NewPromptTemplatePage() {
 								onChange={(e) => setPrompt(e.target.value)}
 								placeholder="e.g., A modern landing page for a tech startup with hero section, features, and CTA"
 								rows={5}
-								className="w-full px-4 py-3 border border-gray-300 rounded-framer focus:ring-2 focus:ring-sky-400 focus:border-transparent outline-none transition-all resize-none"
+								className="w-full px-4 py-3 border border-gray-300 rounded-framer focus:ring-2 focus:ring-brand-400 focus:border-transparent outline-none transition-all resize-none"
 								required
 							/>
 						</div>
@@ -439,7 +439,7 @@ export default function NewPromptTemplatePage() {
 								onChange={(e) => setDescription(e.target.value)}
 								placeholder="Brief description of what this template creates"
 								rows={3}
-								className="w-full px-4 py-3 border border-gray-300 rounded-framer focus:ring-2 focus:ring-sky-400 focus:border-transparent outline-none transition-all resize-none"
+								className="w-full px-4 py-3 border border-gray-300 rounded-framer focus:ring-2 focus:ring-brand-400 focus:border-transparent outline-none transition-all resize-none"
 							/>
 						</div>
 
@@ -453,7 +453,7 @@ export default function NewPromptTemplatePage() {
 									value={category}
 									onChange={(e) => setCategory(e.target.value)}
 									placeholder="e.g., landing-page"
-									className="w-full px-4 py-3 border border-gray-300 rounded-framer focus:ring-2 focus:ring-sky-400 focus:border-transparent outline-none transition-all"
+									className="w-full px-4 py-3 border border-gray-300 rounded-framer focus:ring-2 focus:ring-brand-400 focus:border-transparent outline-none transition-all"
 								/>
 							</div>
 
@@ -466,7 +466,7 @@ export default function NewPromptTemplatePage() {
 									value={tags}
 									onChange={(e) => setTags(e.target.value)}
 									placeholder="startup, tech, modern"
-									className="w-full px-4 py-3 border border-gray-300 rounded-framer focus:ring-2 focus:ring-sky-400 focus:border-transparent outline-none transition-all"
+									className="w-full px-4 py-3 border border-gray-300 rounded-framer focus:ring-2 focus:ring-brand-400 focus:border-transparent outline-none transition-all"
 								/>
 							</div>
 						</div>
@@ -477,7 +477,7 @@ export default function NewPromptTemplatePage() {
 								disabled={isSaving}
 								whileHover={{ scale: isSaving ? 1 : 1.02 }}
 								whileTap={{ scale: isSaving ? 1 : 0.98 }}
-								className="flex-1 px-6 py-3 bg-gradient-to-r from-sky-400 to-indigo-500 text-white rounded-framer-lg font-medium hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+								className="flex-1 px-6 py-3 bg-gradient-to-r from-brand-400 to-indigo-500 text-white rounded-framer-lg font-medium hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
 							>
 								{isSaving ? (
 									<>
@@ -506,8 +506,8 @@ export default function NewPromptTemplatePage() {
 					</form>
 				</motion.div>
 
-				<div className="mt-6 bg-blue-50 border border-blue-200 rounded-framer-lg p-4">
-					<p className="text-sm text-blue-800">
+				<div className="mt-6 bg-brand-50 border border-brand-200 rounded-framer-lg p-4">
+					<p className="text-sm text-brand-800">
 						<strong>Tip:</strong> After saving, you can generate this template
 						in multiple styles with one click!
 					</p>

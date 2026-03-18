@@ -23,7 +23,7 @@ interface ComponentCardProps {
 
 export default function ComponentCard({ component }: ComponentCardProps) {
   const typeColors: Record<string, string> = {
-    button: 'bg-blue-100 text-blue-800',
+    button: 'bg-brand-100 text-brand-800',
     card: 'bg-purple-100 text-purple-800',
     hero: 'bg-pink-100 text-pink-800',
     nav: 'bg-green-100 text-green-800',

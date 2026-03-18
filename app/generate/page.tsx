@@ -206,7 +206,7 @@ function getSteps(templateType: string): string[] {
 
 export default function GeneratePage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-neutral-50 flex items-center justify-center"><div className="w-10 h-10 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" /></div>}>
+    <Suspense fallback={<div className="min-h-screen bg-neutral-50 flex items-center justify-center"><div className="w-10 h-10 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" /></div>}>
       <GeneratePageInner />
     </Suspense>
   )
@@ -472,9 +472,9 @@ function GeneratePageInner() {
     }
   }
 
-  const inputClass = "w-full p-3 rounded-lg border border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+  const inputClass = "w-full p-3 rounded-lg border border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
   const labelClass = "block text-sm font-medium text-neutral-700 mb-1"
-  const addBtnClass = "text-sm text-blue-600 hover:text-blue-700 font-medium mt-2"
+  const addBtnClass = "text-sm text-brand-600 hover:text-brand-700 font-medium mt-2"
   const removeBtnClass = "text-sm text-red-500 hover:text-red-600"
   const tagClass = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-100 text-neutral-700 text-sm"
 
@@ -503,7 +503,7 @@ function GeneratePageInner() {
               key={s}
               onClick={() => i <= step && setStep(i)}
               className={`flex-1 h-1.5 rounded-full transition-colors ${
-                i <= step ? 'bg-blue-500' : 'bg-neutral-200'
+                i <= step ? 'bg-brand-500' : 'bg-neutral-200'
               }`}
             />
           ))}
@@ -521,7 +521,7 @@ function GeneratePageInner() {
                   onClick={() => selectTemplate(t.id)}
                   className={`p-5 rounded-xl border-2 text-left transition-all ${
                     content.templateType === t.id
-                      ? 'border-blue-500 ring-2 ring-blue-200'
+                      ? 'border-brand-500 ring-2 ring-brand-200'
                       : 'border-neutral-200 hover:border-neutral-300'
                   }`}
                 >
@@ -579,7 +579,7 @@ function GeneratePageInner() {
                 onClick={() => setContent({ ...content, palette: key })}
                 className={`p-4 rounded-xl border-2 text-left transition-all ${
                   content.palette === key
-                    ? 'border-blue-500 ring-2 ring-blue-200'
+                    ? 'border-brand-500 ring-2 ring-brand-200'
                     : 'border-neutral-200 hover:border-neutral-300'
                 }`}
               >
@@ -708,7 +708,7 @@ function GeneratePageInner() {
                       checked={content.emergencyAvailable ?? false}
                       onChange={e => setContent({ ...content, emergencyAvailable: e.target.checked })}
                     />
-                    <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
                   </label>
                   <span className="text-sm font-medium text-neutral-700">Emergency callout available</span>
                 </div>
@@ -1137,7 +1137,7 @@ function GeneratePageInner() {
                 </p>
                 <button
                   onClick={handleGenerate}
-                  className="px-8 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
+                  className="px-8 py-3 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700"
                 >
                   Generate my website
                 </button>
@@ -1146,7 +1146,7 @@ function GeneratePageInner() {
 
             {generating && (
               <div className="text-center py-12">
-                <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                <div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
                 <p className="text-neutral-500">Generating your website...</p>
               </div>
             )}
@@ -1161,7 +1161,7 @@ function GeneratePageInner() {
                 <div className="flex gap-3">
                   <button
                     onClick={handleDownload}
-                    className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
+                    className="flex-1 px-6 py-3 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700"
                   >
                     Download HTML
                   </button>

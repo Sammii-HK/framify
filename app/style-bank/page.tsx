@@ -110,7 +110,7 @@ export default function StyleBankPage() {
     <main className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
       <div className="container mx-auto px-4 py-8 md:py-12 max-w-7xl">
         <div className="mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-sky-400 to-indigo-500 bg-clip-text text-transparent">
+          <h1 className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-brand-400 to-indigo-500 bg-clip-text text-transparent">
             Style Bank
           </h1>
           <p className="text-gray-600">
@@ -123,15 +123,15 @@ export default function StyleBankPage() {
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-blue-50 border border-blue-200 rounded-framer-lg p-4 mb-6"
+            className="bg-brand-50 border border-brand-200 rounded-framer-lg p-4 mb-6"
           >
             <div className="flex items-center gap-3">
               <motion.div
-                className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full"
+                className="w-5 h-5 border-2 border-brand-500 border-t-transparent rounded-full"
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
               />
-              <p className="text-blue-800 font-medium">{generationProgress}</p>
+              <p className="text-brand-800 font-medium">{generationProgress}</p>
             </div>
           </motion.div>
         )}
@@ -140,7 +140,7 @@ export default function StyleBankPage() {
         <div className="bg-white rounded-framer-lg p-6 shadow-sm border border-framer-border mb-6">
           <Link
             href="/style-bank/new"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-sky-400 to-indigo-500 text-white rounded-framer-lg font-medium hover:shadow-md transition-all"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brand-400 to-indigo-500 text-white rounded-framer-lg font-medium hover:shadow-md transition-all"
           >
             + Save New Prompt Template
           </Link>
@@ -150,7 +150,7 @@ export default function StyleBankPage() {
         {loading ? (
           <div className="text-center py-12">
             <motion.div
-              className="w-12 h-12 border-4 border-sky-400 border-t-transparent rounded-full mx-auto mb-4"
+              className="w-12 h-12 border-4 border-brand-400 border-t-transparent rounded-full mx-auto mb-4"
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
             />
@@ -161,7 +161,7 @@ export default function StyleBankPage() {
             <p className="text-gray-600 text-lg mb-4">No saved prompts yet</p>
             <Link
               href="/style-bank/new"
-              className="inline-block px-6 py-3 bg-gradient-to-r from-sky-400 to-indigo-500 text-white rounded-framer-lg font-medium hover:shadow-md transition-all"
+              className="inline-block px-6 py-3 bg-gradient-to-r from-brand-400 to-indigo-500 text-white rounded-framer-lg font-medium hover:shadow-md transition-all"
             >
               Create Your First Prompt Template
             </Link>
@@ -191,7 +191,7 @@ export default function StyleBankPage() {
                   <button
                     onClick={() => handleGenerateAllStyles(prompt)}
                     disabled={isGeneratingAll}
-                    className="flex-1 px-4 py-2 bg-gradient-to-r from-sky-400 to-indigo-500 text-white rounded-framer text-sm font-medium hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 px-4 py-2 bg-gradient-to-r from-brand-400 to-indigo-500 text-white rounded-framer text-sm font-medium hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Generate All Styles
                   </button>

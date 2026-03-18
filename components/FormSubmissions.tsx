@@ -118,7 +118,7 @@ export default function FormSubmissions({ siteId }: FormSubmissionsProps) {
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">Form submissions</h3>
         {unreadCount > 0 && (
-          <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-600 text-white">
+          <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-600 text-white">
             {unreadCount} unread
           </span>
         )}
@@ -144,7 +144,7 @@ export default function FormSubmissions({ siteId }: FormSubmissionsProps) {
                 {/* Unread dot */}
                 <span
                   className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                    sub.read ? 'bg-transparent' : 'bg-blue-500'
+                    sub.read ? 'bg-transparent' : 'bg-brand-500'
                   }`}
                 />
 
@@ -229,7 +229,7 @@ export default function FormSubmissions({ siteId }: FormSubmissionsProps) {
                       </button>
                       <a
                         href={`mailto:${sub.email}?subject=Re: Your enquiry on ${sub.site.subdomain}.craftmypage.com`}
-                        className="text-xs px-3 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-500 transition-colors"
+                        className="text-xs px-3 py-1.5 rounded bg-brand-600 text-white hover:bg-brand-500 transition-colors"
                         onClick={(e) => e.stopPropagation()}
                       >
                         Reply

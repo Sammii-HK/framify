@@ -393,7 +393,7 @@ export default function TemplatePage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2">Template not found</h1>
           <p className="text-neutral-500 dark:text-neutral-400 mb-6">That template type does not exist.</p>
-          <Link href="/templates" className="text-blue-600 font-medium hover:text-blue-700 transition-colors">
+          <Link href="/templates" className="text-brand-600 font-medium hover:text-brand-700 transition-colors">
             Back to templates
           </Link>
         </div>
@@ -425,12 +425,12 @@ export default function TemplatePage() {
         <div className="mx-auto max-w-6xl px-6 py-14 md:py-20">
           <div className="max-w-2xl">
             <div className="flex items-center gap-3 mb-3">
-              <p className="text-blue-600 font-semibold text-sm tracking-wide uppercase">
+              <p className="text-brand-600 font-semibold text-sm tracking-wide uppercase">
                 {galleryTemplate.name} template
               </p>
               <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
                 galleryTemplate.pages === 'multi'
-                  ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                  ? 'bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-400'
                   : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400'
               }`}>
                 {galleryTemplate.pages === 'multi' ? `${galleryTemplate.pageCount} pages` : '1 page'}
@@ -447,7 +447,7 @@ export default function TemplatePage() {
             </p>
             <Link
               href={`/generate?template=${type}&palette=${activePalette.id}`}
-              className="mt-8 inline-flex items-center justify-center rounded-lg bg-blue-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors"
+              className="mt-8 inline-flex items-center justify-center rounded-lg bg-brand-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-brand-700 transition-colors"
             >
               Use this template
             </Link>
@@ -475,7 +475,7 @@ export default function TemplatePage() {
                   onClick={() => setActivePaletteIndex(index)}
                   className={`w-6 h-6 rounded-full border-2 transition-all ${
                     index === activePaletteIndex
-                      ? 'border-blue-600 scale-110 shadow-sm ring-2 ring-blue-600/20'
+                      ? 'border-brand-600 scale-110 shadow-sm ring-2 ring-brand-600/20'
                       : 'border-neutral-300 dark:border-neutral-600 hover:border-neutral-400'
                   }`}
                   style={{ backgroundColor: palette.accent }}
@@ -574,7 +574,7 @@ export default function TemplatePage() {
         <div className="mt-8 text-center">
           <Link
             href={`/generate?template=${type}&palette=${activePalette.id}`}
-            className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-brand-700 transition-colors"
           >
             Use this template
           </Link>
@@ -612,7 +612,7 @@ export default function TemplatePage() {
           </p>
           <Link
             href={`/generate?template=${type}&palette=${activePalette.id}`}
-            className="mt-8 inline-flex items-center justify-center rounded-lg bg-blue-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors"
+            className="mt-8 inline-flex items-center justify-center rounded-lg bg-brand-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-brand-700 transition-colors"
           >
             Use this template
           </Link>
