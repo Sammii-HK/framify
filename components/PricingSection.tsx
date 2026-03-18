@@ -6,34 +6,34 @@ import Link from 'next/link'
 const tiers = {
   starter: {
     name: 'Starter',
-    description: 'Everything you need to get your business online',
+    description: 'Perfect single-page site for your business',
     monthly: 9,
     yearly: 89,
     features: [
+      'Single-page website',
       'Hosted on craftmypage.com subdomain',
       'All templates and colour palettes',
       'Contact form included',
       'Mobile responsive',
       'SEO optimised',
-      '"Made with CraftMyPage" branding',
+      'Site analytics',
       'Email support',
     ],
   },
   pro: {
     name: 'Pro',
-    description: 'Custom domain and full control over your brand',
+    description: 'Multi-page sites for businesses that need more',
     monthly: 19,
     yearly: 179,
     popular: true,
     features: [
-      'Custom domain included',
+      'Multi-page website (up to 7 pages)',
+      'Hosted on craftmypage.com subdomain',
       'All templates and colour palettes',
       'Contact form included',
-      'Basic site analytics',
-      'No CraftMyPage branding',
+      'Site analytics',
       'Mobile responsive',
       'SEO optimised',
-      'Domain renewal included',
       'Priority support',
     ],
   },
@@ -136,6 +136,36 @@ export function PricingSection() {
             >
               Get started
             </Link>
+          </div>
+        </div>
+
+        {/* Add-ons */}
+        <div className="mt-16 max-w-3xl mx-auto">
+          <h3 className="text-xl font-semibold text-neutral-900 text-center mb-2">
+            Optional add-ons
+          </h3>
+          <p className="text-sm text-neutral-500 text-center mb-8">
+            Available on any plan once your site is live.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="rounded-xl border border-neutral-200 p-6">
+              <div className="flex items-start justify-between mb-2">
+                <h4 className="font-semibold text-neutral-900">Custom domain</h4>
+                <span className="text-sm text-neutral-500">From £10/yr</span>
+              </div>
+              <p className="text-sm text-neutral-500">
+                Connect your own domain (e.g. yourbusiness.co.uk) instead of a .craftmypage.com subdomain. Price depends on the domain.
+              </p>
+            </div>
+            <div className="rounded-xl border border-neutral-200 p-6">
+              <div className="flex items-start justify-between mb-2">
+                <h4 className="font-semibold text-neutral-900">Remove branding</h4>
+                <span className="text-sm text-neutral-500">£3/mo</span>
+              </div>
+              <p className="text-sm text-neutral-500">
+                Remove the &quot;Created with CraftMyPage&quot; footer from your site for a fully white-label look.
+              </p>
+            </div>
           </div>
         </div>
 

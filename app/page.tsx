@@ -174,8 +174,44 @@ export default function Home() {
       {/* Pricing */}
       <PricingSection />
 
-      {/* SEO section */}
+      {/* Add-ons / customisation section */}
       <section className="bg-neutral-50">
+        <div className="mx-auto max-w-5xl px-6 py-20 md:py-24">
+          <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 text-center tracking-tight">
+            Make it fully yours
+          </h2>
+          <p className="mt-4 text-neutral-500 text-center text-lg max-w-xl mx-auto">
+            Your site works beautifully out of the box. When you are ready for more, these add-ons are one click away.
+          </p>
+          <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            <div className="rounded-xl bg-white border border-neutral-200 p-6">
+              <div className="h-10 w-10 rounded-lg bg-brand-50 flex items-center justify-center mb-4">
+                <svg className="w-5 h-5 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-neutral-900">Custom domain</h3>
+              <p className="mt-2 text-neutral-500 text-sm leading-relaxed">
+                Connect your own domain like yourbusiness.co.uk. Bring one you already own or register a new one. From £10/yr.
+              </p>
+            </div>
+            <div className="rounded-xl bg-white border border-neutral-200 p-6">
+              <div className="h-10 w-10 rounded-lg bg-brand-50 flex items-center justify-center mb-4">
+                <svg className="w-5 h-5 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-neutral-900">White-label branding</h3>
+              <p className="mt-2 text-neutral-500 text-sm leading-relaxed">
+                Remove the CraftMyPage footer and present your site as entirely your own. Just £3/mo.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SEO section */}
+      <section className="bg-white">
         <div className="mx-auto max-w-5xl px-6 py-20 md:py-24">
           <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 text-center tracking-tight">
             Built for Google

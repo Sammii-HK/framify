@@ -6,6 +6,7 @@ import {
   createCheckoutSession,
   createSubscriptionCheckoutSession,
   createDomainCheckoutSession,
+  createBrandingRemovalCheckoutSession,
 } from '@/lib/stripe'
 import type { SubscriptionTier, SubscriptionInterval } from '@/lib/stripe'
 
@@ -105,6 +106,33 @@ export async function POST(req: NextRequest) {
         siteId,
         domainPrice,
         customDomain,
+        customerEmail: session.user.email || undefined,
+        customerId: user.stripeCustomerId || undefined,
+      })
+
+      return NextResponse.json({
+        url: checkoutSession.url,
+        sessionId: checkoutSession.id,
+      })
+    }
+
+    // ── Branding removal add-on checkout ──
+    if (body.tier === 'branding_removal') {
+      const { siteId, subdomain } = body as {
+        siteId: string
+        subdomain: string
+      }
+
+      if (!siteId || !subdomain) {
+        return NextResponse.json(
+          { error: 'siteId and subdomain are required for branding removal' },
+          { status: 400 }
+        )
+      }
+
+      const checkoutSession = await createBrandingRemovalCheckoutSession({
+        siteId,
+        subdomain,
         customerEmail: session.user.email || undefined,
         customerId: user.stripeCustomerId || undefined,
       })

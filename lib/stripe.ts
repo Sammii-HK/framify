@@ -251,6 +251,50 @@ export async function retryInvoicePayment(invoiceId: string): Promise<Stripe.Inv
 }
 
 /**
+ * Create a Stripe Checkout session for branding removal add-on (£3/mo)
+ */
+export async function createBrandingRemovalCheckoutSession({
+  siteId,
+  subdomain,
+  customerEmail,
+  customerId,
+}: {
+  siteId: string
+  subdomain: string
+  customerEmail?: string
+  customerId?: string
+}): Promise<Stripe.Checkout.Session> {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const priceId = process.env.STRIPE_PRICE_BRANDING_REMOVAL
+
+  if (!priceId) {
+    throw new Error('STRIPE_PRICE_BRANDING_REMOVAL env var is not set. Run /api/admin/verify-stripe to create it.')
+  }
+
+  const sessionParams: Stripe.Checkout.SessionCreateParams = {
+    mode: 'subscription',
+    payment_method_types: ['card'],
+    line_items: [{ price: priceId, quantity: 1 }],
+    metadata: {
+      type: 'branding_removal',
+      siteId,
+      subdomain,
+    },
+    success_url: `${appUrl}/dashboard?payment=success`,
+    cancel_url: `${appUrl}/dashboard?payment=cancelled`,
+  }
+
+  if (customerId) {
+    sessionParams.customer = customerId
+  } else if (customerEmail) {
+    sessionParams.customer_email = customerEmail
+  }
+
+  const session = await stripe.checkout.sessions.create(sessionParams)
+  return session
+}
+
+/**
  * Create a Stripe Billing Portal session for subscription management
  */
 export async function createBillingPortalSession(customerId: string, returnUrl: string) {

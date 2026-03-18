@@ -1195,16 +1195,65 @@ function GeneratePageInner() {
                     </button>
                   </div>
                 ) : (
-                  <div className="p-4 rounded-xl border border-green-200 bg-green-50 space-y-2">
-                    <p className="text-sm font-medium text-green-800">Your site is live!</p>
-                    <a
-                      href={publishedUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-green-700 underline text-sm break-all"
-                    >
-                      {publishedUrl}
-                    </a>
+                  <div className="space-y-4">
+                    {/* Success banner */}
+                    <div className="p-5 rounded-xl border border-green-200 bg-green-50 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-5 h-5 text-green-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p className="text-sm font-semibold text-green-800">Your site is live!</p>
+                      </div>
+                      <a
+                        href={publishedUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-green-700 underline text-sm break-all block"
+                      >
+                        {publishedUrl}
+                      </a>
+                    </div>
+
+                    {/* Upsell cards */}
+                    <div className="p-5 rounded-xl border border-neutral-200 bg-white space-y-4">
+                      <p className="text-sm font-semibold text-neutral-900">Make it yours</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button
+                          onClick={() => window.location.href = '/dashboard'}
+                          className="p-4 rounded-lg border border-neutral-200 hover:border-brand-300 hover:bg-brand-50/50 transition-all text-left group"
+                        >
+                          <div className="flex items-center gap-2 mb-1">
+                            <svg className="w-4 h-4 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
+                            </svg>
+                            <span className="text-sm font-semibold text-neutral-900">Custom domain</span>
+                          </div>
+                          <p className="text-xs text-neutral-500">
+                            Use yourbusiness.co.uk instead of a subdomain. From £10/yr.
+                          </p>
+                        </button>
+                        <button
+                          onClick={() => window.location.href = '/dashboard'}
+                          className="p-4 rounded-lg border border-neutral-200 hover:border-brand-300 hover:bg-brand-50/50 transition-all text-left group"
+                        >
+                          <div className="flex items-center gap-2 mb-1">
+                            <svg className="w-4 h-4 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                            </svg>
+                            <span className="text-sm font-semibold text-neutral-900">Remove branding</span>
+                          </div>
+                          <p className="text-xs text-neutral-500">
+                            Remove the CraftMyPage footer for a clean, white-label look. £3/mo.
+                          </p>
+                        </button>
+                      </div>
+                      <a
+                        href="/dashboard"
+                        className="text-xs text-brand-600 hover:text-brand-700 font-medium"
+                      >
+                        Go to dashboard to manage your site
+                      </a>
+                    </div>
                   </div>
                 )}
               </div>

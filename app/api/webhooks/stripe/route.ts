@@ -112,6 +112,32 @@ export async function POST(req: NextRequest) {
           break
         }
 
+        // ── Branding removal add-on ──
+        if (session.mode === 'subscription' && metadata.type === 'branding_removal') {
+          const { siteId, subdomain } = metadata
+
+          console.log(`[Branding] Checkout completed: siteId=${siteId}, subdomain=${subdomain}`)
+
+          // Find the site and enable hideBranding
+          if (siteId) {
+            await prisma.site.update({
+              where: { id: siteId },
+              data: { hideBranding: true },
+            })
+          } else if (subdomain) {
+            const site = await prisma.site.findUnique({ where: { subdomain } })
+            if (site) {
+              await prisma.site.update({
+                where: { id: site.id },
+                data: { hideBranding: true },
+              })
+            }
+          }
+
+          console.log(`[Branding] Branding removal activated for site ${siteId || subdomain}`)
+          break
+        }
+
         // ── Legacy: one-time launch payment (grandfathered) ──
         if (metadata.tier === 'launch' && metadata.siteId) {
           const site = await prisma.site.update({
@@ -343,6 +369,27 @@ export async function POST(req: NextRequest) {
 
         if (!customerId) {
           console.warn('[Webhook] customer.subscription.deleted: no customer ID')
+          break
+        }
+
+        // Check if this is a branding removal subscription
+        const brandingPriceId = process.env.STRIPE_PRICE_BRANDING_REMOVAL
+        const isBrandingRemoval = brandingPriceId && subscription.items?.data?.some(
+          item => item.price?.id === brandingPriceId
+        )
+
+        if (isBrandingRemoval) {
+          // Re-enable branding on all sites owned by this customer
+          const user = await prisma.user.findFirst({
+            where: { stripeCustomerId: customerId },
+          })
+          if (user) {
+            await prisma.site.updateMany({
+              where: { userId: user.id, hideBranding: true },
+              data: { hideBranding: false },
+            })
+            console.log(`[Webhook] Branding removal cancelled for user ${user.id} — branding restored`)
+          }
           break
         }
 
