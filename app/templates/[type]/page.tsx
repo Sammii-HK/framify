@@ -42,13 +42,13 @@ function MoonIcon() {
   )
 }
 
-function FullMockup({ palette, templateType, isDark, images, imagesLoading }: { palette: Palette; templateType: string; isDark: boolean; images?: StockImage[]; imagesLoading?: boolean }) {
+function FullMockup({ palette, templateType, isDark, images, imagesLoading, pages, activePage, onPageChange }: { palette: Palette; templateType: string; isDark: boolean; images?: StockImage[]; imagesLoading?: boolean; pages?: { name: string; sections: string[] }[]; activePage?: number; onPageChange?: (index: number) => void }) {
   const bg = isDark ? palette.darkBg : palette.lightBg
   const text = isDark ? palette.darkText : palette.lightText
   const accent = palette.accent
 
   const template = getTemplateDetail(templateType)
-  const sections = template.layoutSections
+  const sections = pages && activePage !== undefined ? pages[activePage].sections : template.layoutSections
 
   return (
     <div
@@ -69,6 +69,23 @@ function FullMockup({ palette, templateType, isDark, images, imagesLoading }: { 
               <div key={i} className="w-8 h-1.5 rounded-full" style={{ backgroundColor: text, opacity: 0.3 }} />
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Page tabs (multi-page templates) */}
+      {pages && pages.length > 1 && (
+        <div className="flex items-center gap-1 px-5 py-2 overflow-x-auto" style={{ borderBottom: `1px solid ${accent}15` }}>
+          {pages.map((page, i) => (
+            <button key={page.name} onClick={() => onPageChange?.(i)}
+              className="px-3 py-1.5 text-[10px] font-medium rounded-md whitespace-nowrap transition-all"
+              style={{
+                backgroundColor: i === activePage ? `${accent}20` : 'transparent',
+                color: i === activePage ? accent : `${text}60`,
+                borderBottom: i === activePage ? `2px solid ${accent}` : '2px solid transparent'
+              }}>
+              {page.name}
+            </button>
+          ))}
         </div>
       )}
 
@@ -343,9 +360,11 @@ export default function TemplatePage() {
   const [isDark, setIsDark] = useState(true)
   const [previewImages, setPreviewImages] = useState<StockImage[]>([])
   const [imagesLoading, setImagesLoading] = useState(true)
+  const [activePage, setActivePage] = useState(0)
 
   useEffect(() => {
     if (!type) return
+    setActivePage(0)
     setImagesLoading(true)
     fetch(`/api/template-images/${type}`)
       .then((res) => {
@@ -527,7 +546,7 @@ export default function TemplatePage() {
         {/* Preview container */}
         <div className="flex justify-center">
           <div className={`transition-all duration-300 ${viewport === 'mobile' ? 'w-[375px]' : 'w-full'}`}>
-            <FullMockup palette={activePalette} templateType={type} isDark={isDark} images={previewImages.length > 0 ? previewImages : undefined} imagesLoading={imagesLoading} />
+            <FullMockup palette={activePalette} templateType={type} isDark={isDark} images={previewImages.length > 0 ? previewImages : undefined} imagesLoading={imagesLoading} pages={detail.pages} activePage={activePage} onPageChange={setActivePage} />
           </div>
         </div>
 
