@@ -10,13 +10,22 @@ import { join } from 'path'
 
 export async function POST(request: NextRequest) {
   try {
+    // DEV BYPASS: skip auth in local development
+    const isDev = process.env.NODE_ENV === 'development'
+
     // Require authentication
-    const session = await auth0.getSession()
-    if (!session?.user) {
+    const session = isDev ? null : await auth0.getSession()
+    if (!isDev && !session?.user) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
-    const user = await findOrCreateUser(session.user)
+    const user = isDev
+      ? await prisma.user.upsert({
+          where: { email: 'kellow.sammii@gmail.com' },
+          update: {},
+          create: { email: 'kellow.sammii@gmail.com', name: 'Sammii', plan: 'starter' },
+        })
+      : await findOrCreateUser(session!.user)
 
     const { content, subdomain } = await request.json() as {
       content: SiteContent
@@ -39,7 +48,10 @@ export async function POST(request: NextRequest) {
 
     // Subscription gate: require active subscription to publish
     // Grandfathered users (starter/launch with no stripeSubscriptionId) are allowed
-    const isGrandfathered = (user.plan === 'starter' || user.plan === 'launch') && !user.stripeSubscriptionId
+    // Owner email always bypasses subscription gate
+    const ownerEmails = (process.env.OWNER_EMAILS || '').split(',').map(e => e.trim()).filter(Boolean)
+    const isOwner = isDev || ownerEmails.includes(session?.user?.email ?? '')
+    const isGrandfathered = isOwner || ((user.plan === 'starter' || user.plan === 'launch') && !user.stripeSubscriptionId)
     if (!isGrandfathered) {
       if (user.plan === 'free' || !user.plan) {
         return NextResponse.json(
