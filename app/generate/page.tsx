@@ -236,6 +236,8 @@ function GeneratePageInner() {
   const [publishing, setPublishing] = useState(false)
   const [publishedUrl, setPublishedUrl] = useState<string | null>(null)
   const [publishError, setPublishError] = useState('')
+  const [needsSubscription, setNeedsSubscription] = useState(false)
+  const [checkingOut, setCheckingOut] = useState(false)
   const [subdomain, setSubdomain] = useState('')
   const [editingSiteId, setEditingSiteId] = useState<string | null>(null)
   const [newAccreditation, setNewAccreditation] = useState('')
@@ -264,7 +266,7 @@ function GeneratePageInner() {
       return
     }
 
-    // Restore draft saved before auth redirect
+    // Restore draft saved before auth or checkout redirect
     try {
       const draftRaw = localStorage.getItem('craftmypage_draft')
       if (draftRaw) {
@@ -273,7 +275,17 @@ function GeneratePageInner() {
           setContent(draft.content)
           if (draft.subdomain) setSubdomain(draft.subdomain)
           if (draft.step) setStep(draft.step)
-          localStorage.removeItem('craftmypage_draft')
+          // Auto-publish after returning from successful subscription checkout
+          if (searchParams.get('subscribed') === 'true') {
+            localStorage.removeItem('craftmypage_draft')
+            // Delay slightly to allow state to settle
+            setTimeout(() => {
+              const publishBtn = document.querySelector('[data-publish-btn]') as HTMLButtonElement
+              if (publishBtn) publishBtn.click()
+            }, 500)
+          } else {
+            localStorage.removeItem('craftmypage_draft')
+          }
           return
         }
       }
@@ -521,9 +533,10 @@ function GeneratePageInner() {
       }
 
       if (data.error === 'subscription_required' || data.error === 'subscription_inactive') {
-        // Save draft and redirect to pricing
+        // Save draft so they don't lose work
         localStorage.setItem('craftmypage_draft', JSON.stringify({ content, subdomain: slug, step }))
         setPublishError(data.message || 'A subscription is required to publish.')
+        setNeedsSubscription(true)
         return
       }
 
@@ -539,6 +552,30 @@ function GeneratePageInner() {
       setPublishError('Something went wrong. Please try again.')
     } finally {
       setPublishing(false)
+    }
+  }
+
+  async function handleCheckout(tier: 'starter' | 'pro', interval: 'monthly' | 'yearly') {
+    const slug = subdomain || content.businessName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    if (!slug) return
+    setCheckingOut(true)
+    try {
+      localStorage.setItem('craftmypage_draft', JSON.stringify({ content, subdomain: slug, step }))
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier, interval, subdomain: slug }),
+      })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        setPublishError(data.error || 'Failed to start checkout.')
+      }
+    } catch {
+      setPublishError('Something went wrong. Please try again.')
+    } finally {
+      setCheckingOut(false)
     }
   }
 
@@ -1273,18 +1310,49 @@ function GeneratePageInner() {
                       <span className="text-sm text-neutral-400 whitespace-nowrap">.craftmypage.com</span>
                     </div>
                     <button
+                      data-publish-btn
                       onClick={handlePublish}
                       disabled={publishing}
                       className="w-full px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50"
                     >
                       {publishing ? 'Publishing...' : 'Publish live'}
                     </button>
-                    {publishError && (
-                      <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
-                        <p className="text-sm text-amber-800">{publishError}</p>
-                        <Link href="/#pricing" className="text-sm text-brand-600 hover:text-brand-700 font-medium mt-1 inline-block">
-                          View plans
-                        </Link>
+                    <p className="text-xs text-neutral-400 text-center">You can update your site content any time from your dashboard.</p>
+                    {publishError && !needsSubscription && (
+                      <div className="p-3 rounded-lg bg-red-50 border border-red-200">
+                        <p className="text-sm text-red-800">{publishError}</p>
+                      </div>
+                    )}
+                    {needsSubscription && (
+                      <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 space-y-4">
+                        <p className="text-sm font-medium text-amber-800">Choose a plan to publish your site</p>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="rounded-lg border border-neutral-200 bg-white p-3 space-y-2">
+                            <p className="text-sm font-semibold text-neutral-900">Starter</p>
+                            <p className="text-xs text-neutral-500">Single-page site</p>
+                            <p className="text-lg font-bold text-neutral-900">£9<span className="text-xs font-normal text-neutral-400">/mo</span></p>
+                            <button
+                              onClick={() => handleCheckout('starter', 'monthly')}
+                              disabled={checkingOut}
+                              className="w-full py-2 text-xs font-semibold rounded-lg border border-neutral-300 text-neutral-700 hover:bg-neutral-50 disabled:opacity-50"
+                            >
+                              {checkingOut ? 'Loading...' : 'Subscribe'}
+                            </button>
+                          </div>
+                          <div className="rounded-lg border-2 border-brand-600 bg-white p-3 space-y-2">
+                            <p className="text-sm font-semibold text-neutral-900">Pro</p>
+                            <p className="text-xs text-neutral-500">Multi-page site</p>
+                            <p className="text-lg font-bold text-neutral-900">£19<span className="text-xs font-normal text-neutral-400">/mo</span></p>
+                            <button
+                              onClick={() => handleCheckout('pro', 'monthly')}
+                              disabled={checkingOut}
+                              className="w-full py-2 text-xs font-semibold rounded-lg bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-50"
+                            >
+                              {checkingOut ? 'Loading...' : 'Subscribe'}
+                            </button>
+                          </div>
+                        </div>
+                        <p className="text-xs text-neutral-400 text-center">30-day money-back guarantee. Cancel any time.</p>
                       </div>
                     )}
                   </div>

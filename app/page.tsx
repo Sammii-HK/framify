@@ -1,6 +1,94 @@
 import Link from 'next/link'
 import { PricingSection } from '@/components/PricingSection'
 
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'CraftMyPage',
+    url: 'https://craftmypage.com',
+    description: 'Create a professional website for your business in minutes. No coding required. Hosting, domain, and deployment all sorted for you.',
+    applicationCategory: 'WebApplication',
+    operatingSystem: 'Web',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+      description: 'Free to start. Custom domain and branding upgrades available.',
+      hasMerchantReturnPolicy: {
+        '@type': 'MerchantReturnPolicy',
+        applicableCountry: ['US', 'GB', 'AU', 'CA', 'IE', 'NZ'],
+        returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+        merchantReturnDays: 30,
+        returnMethod: 'https://schema.org/ReturnByMail',
+        refundType: 'https://schema.org/FullRefund',
+      },
+    },
+    featureList: [
+      'No coding required',
+      'Mobile-ready websites',
+      'Free hosting included',
+      'Custom domain support',
+      'Live in minutes',
+      '30-day money-back guarantee',
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: 'How long does it take to build a website with CraftMyPage?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Most businesses are live within 5 minutes. You choose a template, fill in your business details, and publish — no coding, no hosting setup, no domain configuration needed.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'Do I need any technical knowledge to use CraftMyPage?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'No. CraftMyPage is built for business owners, not developers. If you can fill in a form, you can build a professional website.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'Is hosting included?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes. Every CraftMyPage site comes with free hosting included. Your site is deployed instantly to a global CDN — no separate hosting account needed.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'Can I use my own domain name?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes. You can connect a domain you already own, or register a new one through CraftMyPage. Custom domains are available as an add-on.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'Is there a money-back guarantee?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes. We offer a 30-day money-back guarantee. If you are not happy for any reason, contact us within 30 days of your purchase for a full refund — no questions asked.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'Does CraftMyPage work for businesses outside the UK?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes. CraftMyPage works for businesses worldwide. Sites are hosted on a global CDN and load fast everywhere.',
+        },
+      },
+    ],
+  },
+]
+
 const palettes = [
   {
     name: 'Dark Celestial',
@@ -46,6 +134,11 @@ const businessTypes = [
 export default function Home() {
   return (
     <main>
+      {/* JSON-LD structured data — hardcoded, no user input, safe */}
+      {/* eslint-disable-next-line react/no-danger */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd[0]) }} />
+      {/* eslint-disable-next-line react/no-danger */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd[1]) }} />
       {/* Hero */}
       <section className="bg-white">
         <div className="mx-auto max-w-5xl px-6 py-24 md:py-32 text-center">
@@ -192,7 +285,7 @@ export default function Home() {
               </div>
               <h3 className="text-lg font-semibold text-neutral-900">Custom domain</h3>
               <p className="mt-2 text-neutral-500 text-sm leading-relaxed">
-                Connect your own domain like yourbusiness.co.uk. Bring one you already own or register a new one. From £10/yr.
+                Connect your own domain like yourbusiness.com. Bring one you already own or register a new one.
               </p>
             </div>
             <div className="rounded-xl bg-white border border-neutral-200 p-6">
@@ -203,7 +296,7 @@ export default function Home() {
               </div>
               <h3 className="text-lg font-semibold text-neutral-900">White-label branding</h3>
               <p className="mt-2 text-neutral-500 text-sm leading-relaxed">
-                Remove the CraftMyPage footer and present your site as entirely your own. Just £3/mo.
+                Remove the CraftMyPage footer and present your site as entirely your own.
               </p>
             </div>
           </div>
@@ -272,6 +365,18 @@ export default function Home() {
           </Link>
         </div>
       </section>
+
+      {/* Site footer */}
+      <footer className="bg-neutral-950 border-t border-neutral-800">
+        <div className="mx-auto max-w-5xl px-6 py-10 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-neutral-500">&copy; {new Date().getFullYear()} CraftMyPage. All rights reserved.</p>
+          <div className="flex items-center gap-6">
+            <Link href="/templates" className="text-sm text-neutral-500 hover:text-neutral-300 transition-colors">Templates</Link>
+            <Link href="/terms" className="text-sm text-neutral-500 hover:text-neutral-300 transition-colors">Terms of service</Link>
+            <Link href="/privacy" className="text-sm text-neutral-500 hover:text-neutral-300 transition-colors">Privacy</Link>
+          </div>
+        </div>
+      </footer>
     </main>
   )
 }

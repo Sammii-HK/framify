@@ -30,16 +30,29 @@ export async function generateMetadata({ params }: TemplatePageProps) {
     const { id } = await params
     const template = await prisma.template.findUnique({
       where: { id },
-      select: { title: true },
+      select: { title: true, description: true },
     })
 
+    if (!template) return { title: 'Template — CraftMyPage' }
+
+    const desc = template.description || `Use the ${template.title} template to build a professional website for your business in minutes.`
+
     return {
-      title: template ? `${template.title} - CraftMyPage` : 'Template - CraftMyPage',
+      title: template.title,
+      description: desc,
+      openGraph: {
+        title: `${template.title} — CraftMyPage`,
+        description: desc,
+        url: `https://craftmypage.com/template/${id}`,
+      },
+      twitter: {
+        card: 'summary_large_image' as const,
+        title: `${template.title} — CraftMyPage`,
+        description: desc,
+      },
     }
   } catch {
-    return {
-      title: 'Template - CraftMyPage',
-    }
+    return { title: 'Template — CraftMyPage' }
   }
 }
 

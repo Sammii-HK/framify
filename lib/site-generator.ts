@@ -830,14 +830,17 @@ ${canonicalUrl ? `  <meta property="og:url" content="${canonicalUrl}" />\n` : ''
                   {SITE.description}
                 </p>
               </div>
+              {SITE.services.filter(s => s?.title).length > 0 && (
               <div>
                 <h3 className="text-lg font-semibold mb-4">Services</h3>
                 <ul className="space-y-2">
-                  {SITE.services.map((s, i) => (
-                    <li key={i} className="text-sm" style={{ color: t.textSecondary }}>{s?.title}</li>
+                  {SITE.services.filter(s => s?.title).map((s, i) => (
+                    <li key={i} className="text-sm" style={{ color: t.textSecondary }}>{s.title}</li>
                   ))}
                 </ul>
               </div>
+              )}
+              {(SITE.contact.email || SITE.contact.phone || SITE.contact.location) && (
               <div>
                 <h3 className="text-lg font-semibold mb-4">Contact</h3>
                 <ul className="space-y-2 text-sm" style={{ color: t.textSecondary }}>
@@ -846,6 +849,8 @@ ${canonicalUrl ? `  <meta property="og:url" content="${canonicalUrl}" />\n` : ''
                   {SITE.contact.location && <li className="flex items-center gap-2"><MapPin className="w-4 h-4" /> {SITE.contact.location}</li>}
                 </ul>
               </div>
+              )}
+              {(SITE.social.instagram || SITE.social.facebook || SITE.social.twitter) && (
               <div>
                 <h3 className="text-lg font-semibold mb-4">Follow Us</h3>
                 <ul className="space-y-2 text-sm" style={{ color: t.textSecondary }}>
@@ -854,6 +859,7 @@ ${canonicalUrl ? `  <meta property="og:url" content="${canonicalUrl}" />\n` : ''
                   {SITE.social.twitter && <li><a href={SITE.social.twitter} className="hover:underline">Twitter</a></li>}
                 </ul>
               </div>
+              )}
             </div>
             <div className="mt-12 pt-6 text-center text-xs border-t" style={{ borderColor: t.borderSubtle, color: t.textMuted }}>
               &copy; ${new Date().getFullYear()} {SITE.businessName}. All rights reserved.

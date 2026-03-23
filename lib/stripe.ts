@@ -123,8 +123,8 @@ export async function createSubscriptionCheckoutSession({
       subdomain,
       ...(siteId ? { siteId } : {}),
     },
-    success_url: `${appUrl}/dashboard?payment=success`,
-    cancel_url: `${appUrl}/dashboard?payment=cancelled`,
+    success_url: `${appUrl}/generate?subscribed=true`,
+    cancel_url: `${appUrl}/generate`,
   }
 
   // Attach to existing customer if we have one, otherwise pass email for new customer creation

@@ -8,30 +8,56 @@ import "../styles/globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-	title: "CraftMyPage — Professional Websites for Local Businesses",
+	metadataBase: new URL("https://craftmypage.com"),
+	title: {
+		default: "CraftMyPage — Professional Websites for Local Businesses",
+		template: "%s | CraftMyPage",
+	},
 	description:
-		"Create a beautiful, mobile-ready website for your business in minutes. No coding required. Free hosting included.",
+		"Create a beautiful, mobile-ready website for your local business in minutes. No coding required. Hosting, domain, and deployment all sorted for you.",
 	keywords: [
-		"website builder",
+		"website builder for local businesses",
+		"small business website builder",
+		"get a website for my business",
 		"local business website",
-		"no code website",
+		"no code website builder",
 		"free website hosting",
-		"small business website",
-		"professional website",
+		"professional website builder",
 		"CraftMyPage",
 	],
 	openGraph: {
 		title: "CraftMyPage — Professional Websites for Local Businesses",
 		description:
-			"Create a beautiful, mobile-ready website for your business in minutes. No coding required. Free hosting included.",
+			"Create a beautiful, mobile-ready website for your local business in minutes. No coding required. Hosting, domain, and deployment all sorted for you.",
 		type: "website",
 		siteName: "CraftMyPage",
+		url: "https://craftmypage.com",
+		images: [
+			{
+				url: "/og-image.png",
+				width: 1200,
+				height: 630,
+				alt: "CraftMyPage — Professional Websites for Local Businesses",
+			},
+		],
 	},
 	twitter: {
 		card: "summary_large_image",
 		title: "CraftMyPage — Professional Websites for Local Businesses",
 		description:
-			"Create a beautiful, mobile-ready website for your business in minutes. No coding required. Free hosting included.",
+			"Create a beautiful, mobile-ready website for your local business in minutes. No coding required. Hosting, domain, and deployment all sorted for you.",
+		images: ["/og-image.png"],
+	},
+	robots: {
+		index: true,
+		follow: true,
+		googleBot: {
+			index: true,
+			follow: true,
+			"max-snippet": -1,
+			"max-image-preview": "large",
+			"max-video-preview": -1,
+		},
 	},
 };
 

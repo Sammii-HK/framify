@@ -1,0 +1,9 @@
+name = "site-proxy"
+main = "index.js"
+compatibility_date = "2024-09-23"
+
+# Routes: wildcard subdomain on craftmypage.com
+# Replace CLOUDFLARE_ZONE_ID with your actual zone ID for craftmypage.com
+[[routes]]
+pattern = "*.craftmypage.com/*"
+zone_name = "craftmypage.com"

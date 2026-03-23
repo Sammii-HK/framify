@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
     try {
       const result = execFileSync(
         'wrangler',
-        ['pages', 'deploy', deployDir, '--project-name', projectName, '--commit-dirty=true'],
+        ['pages', 'deploy', deployDir, '--project-name', projectName, '--branch', subdomain, '--commit-dirty=true'],
         { encoding: 'utf-8', timeout: 30000 }
       )
 
@@ -138,8 +138,12 @@ export async function POST(request: NextRequest) {
         },
       })
 
+      const customerDomain = process.env.NEXT_PUBLIC_CUSTOMER_DOMAIN || 'craftmypage.com'
+      const canonicalUrl = `https://${subdomain}.${customerDomain}`
+
       return NextResponse.json({
-        url: deploymentUrl,
+        url: canonicalUrl,
+        cfDeploymentUrl: deploymentUrl,
         subdomain,
         projectUrl: `https://${process.env.NEXT_PUBLIC_SITE_DOMAIN || 'craftmypage.com'}`,
       })
