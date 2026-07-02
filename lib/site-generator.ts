@@ -32,7 +32,7 @@ export interface SiteContent {
   testimonials: { quote: string; name: string; role: string }[]
   contact: { email: string; phone: string; location: string }
   social: { instagram: string; facebook: string; twitter: string }
-  images?: { hero?: string; gallery?: string[]; about?: string }
+  images?: { hero?: string; gallery?: { url: string; alt: string }[]; about?: string }
   // Template-specific fields
   templateType?: 'trades' | 'salon' | 'restaurant' | 'portfolio' | 'consultant' | 'standard'
   // Trades
@@ -70,7 +70,6 @@ function escapeHtml(str: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
 }
 
 export function generateStaticSite(content: SiteContent, subdomain?: string, analyticsToken?: string, showBranding: boolean = true): string {
@@ -165,8 +164,8 @@ export function generateStaticSite(content: SiteContent, subdomain?: string, ana
   const rawHeroImage = content.images?.hero || ''
   const heroImage = isUnsplashUrl(rawHeroImage) ? '' : escapeHtml(rawHeroImage)
   const galleryImages = (content.images?.gallery || [])
-    .map(img => isUnsplashUrl(img) ? '' : escapeHtml(img))
-    .filter(img => img !== '')
+    .filter(img => !isUnsplashUrl(img.url))
+    .map(img => ({ url: escapeHtml(img.url), alt: escapeHtml(img.alt || '') }))
 
   const canonicalUrl = subdomain ? `https://${subdomain}.craftmypage.com` : ''
   const pageTitle = `${businessName} — ${tagline}`
@@ -244,7 +243,29 @@ ${canonicalUrl ? `  <meta property="og:url" content="${canonicalUrl}" />\n` : ''
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
   <script>window.react = window.React;<\/script>
   <script src="https://unpkg.com/lucide-react@0.460.0/dist/umd/lucide-react.min.js"><\/script>
-  <style>* { margin: 0; padding: 0; box-sizing: border-box; } html { scroll-behavior: smooth; }</style>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, [tabindex]:focus-visible {
+      outline: 2px solid #4A90D9;
+      outline-offset: 2px;
+    }
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      z-index: 100;
+      padding: 12px 20px;
+      background: #000;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 0 0 8px 0;
+    }
+    .skip-link:focus {
+      left: 0;
+    }
+  </style>
 </head>
 <body>
   <div id="root"></div>
@@ -316,6 +337,7 @@ ${canonicalUrl ? `  <meta property="og:url" content="${canonicalUrl}" />\n` : ''
 
       return (
         <div style={{ backgroundColor: t.bg, color: t.textPrimary, minHeight: "100vh" }}>
+          <a href="#main-content" className="skip-link">Skip to content</a>
           {/* Nav */}
           <header aria-label="Site header">
             <nav className="flex justify-between items-center px-4 md:px-8 lg:px-12 py-4" aria-label="Main navigation">
@@ -345,14 +367,14 @@ ${canonicalUrl ? `  <meta property="og:url" content="${canonicalUrl}" />\n` : ''
             </nav>
           </header>
 
-          <main>
+          <main id="main-content">
           {/* Hero */}
           <section
             id="hero"
             className="min-h-[80vh] flex flex-col justify-center items-center text-center px-4"
             style={{
               background: isDark ? "${dark.gradient}" : "${light.gradient}",
-              ...(SITE.templateType === "portfolio" && SITE.heroImage ? {
+              ...(SITE.heroImage ? {
                 backgroundImage: "linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url(" + SITE.heroImage + ")",
                 backgroundSize: "cover",
                 backgroundPosition: "center",
@@ -382,7 +404,7 @@ ${canonicalUrl ? `  <meta property="og:url" content="${canonicalUrl}" />\n` : ''
                SITE.templateType === "consultant" ? "Book a Consultation" :
                "Get Started"} <ArrowRight className="w-4 h-4" />
             </a>
-            {SITE.templateType === "portfolio" && !SITE.heroImage && (
+            {!SITE.heroImage && (
               <p className="mt-6 text-xs" style={{ color: t.textMuted, opacity: 0.6 }}>
                 Add a hero background image to make this section stand out
               </p>
@@ -582,8 +604,8 @@ ${canonicalUrl ? `  <meta property="og:url" content="${canonicalUrl}" />\n` : ''
             <section className="py-12 md:py-16 px-4 md:px-8 lg:px-12" style={{ backgroundColor: t.elevated }}>
               <div className="columns-1 md:columns-2 lg:columns-3 gap-4 max-w-6xl mx-auto">
                 {SITE.galleryImages.length > 0 ? (
-                  SITE.galleryImages.map((src, i) => (
-                    <img key={i} src={src} alt={"Gallery image " + (i + 1)} className="w-full rounded-lg mb-4 break-inside-avoid" loading="lazy" />
+                  SITE.galleryImages.map((img, i) => (
+                    <img key={i} src={img.url} alt={img.alt || (SITE.businessName + " — photo " + (i + 1))} className="w-full rounded-lg mb-4 break-inside-avoid" loading="lazy" />
                   ))
                 ) : (
                   [1, 2, 3].map((n) => (
@@ -1014,7 +1036,29 @@ ${pageCanonical ? `  <meta property="og:url" content="${pageCanonical}" />\n` : 
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
   <script>window.react = window.React;<\/script>
   <script src="https://unpkg.com/lucide-react@0.460.0/dist/umd/lucide-react.min.js"><\/script>
-  <style>* { margin: 0; padding: 0; box-sizing: border-box; } html { scroll-behavior: smooth; }</style>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, [tabindex]:focus-visible {
+      outline: 2px solid #4A90D9;
+      outline-offset: 2px;
+    }
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      z-index: 100;
+      padding: 12px 20px;
+      background: #000;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 0 0 8px 0;
+    }
+    .skip-link:focus {
+      left: 0;
+    }
+  </style>
 </head>
 <body>
   <div id="root"></div>
@@ -1073,6 +1117,7 @@ ${pageCanonical ? `  <meta property="og:url" content="${pageCanonical}" />\n` : 
 
       return (
         <div style={{ backgroundColor: t.bg, color: t.textPrimary, minHeight: "100vh" }}>
+          <a href="#main-content" className="skip-link">Skip to content</a>
           {/* Nav */}
           <header aria-label="Site header">
             <nav className="flex justify-between items-center px-4 md:px-8 lg:px-12 py-4" aria-label="Main navigation">
@@ -1083,6 +1128,7 @@ ${pageCanonical ? `  <meta property="og:url" content="${pageCanonical}" />\n` : 
                   <a
                     key={i}
                     href={np.href}
+                    aria-current={np.slug === PAGE.slug ? "page" : undefined}
                     className={"hidden md:block text-sm hover:opacity-80" + (np.slug === PAGE.slug ? " font-semibold" : "")}
                     style={{ color: np.slug === PAGE.slug ? t.accent : t.textSecondary }}
                   >
@@ -1101,7 +1147,7 @@ ${pageCanonical ? `  <meta property="og:url" content="${pageCanonical}" />\n` : 
             </nav>
           </header>
 
-          <main>
+          <main id="main-content">
             {/* Page hero */}
             <section
               className="py-16 md:py-24 flex flex-col justify-center items-center text-center px-4"

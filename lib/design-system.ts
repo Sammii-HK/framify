@@ -115,7 +115,7 @@ export const PALETTES: Record<PaletteKey, ColourPalette> = {
     targetBuyer:
       'Tarot readers, astrologers, witchy brands, occult practitioners',
     bg: { deep: '#0D0B1A', surface: '#161331', elevated: '#1E1A42' },
-    text: { primary: '#F5F0E8', secondary: '#C4B89C', muted: '#7B7592' },
+    text: { primary: '#F5F0E8', secondary: '#C4B89C', muted: '#837E99' },
     accent: {
       primary: '#C4A265',
       secondary: '#8B6FC0',
@@ -149,7 +149,7 @@ export const PALETTES: Record<PaletteKey, ColourPalette> = {
     targetBuyer:
       'Meditation coaches, reiki practitioners, spiritual coaches, wellness brands',
     bg: { deep: '#F8F6FC', surface: '#FFFFFF', elevated: '#F0EDF8' },
-    text: { primary: '#1A1528', secondary: '#4A4358', muted: '#8B84A0' },
+    text: { primary: '#1A1528', secondary: '#4A4358', muted: '#766D8E' },
     accent: {
       primary: '#9B72CF',
       secondary: '#7B5DAF',
@@ -183,7 +183,7 @@ export const PALETTES: Record<PaletteKey, ColourPalette> = {
     targetBuyer:
       'Trades, professional services, contractors, engineering firms',
     bg: { deep: '#0F1923', surface: '#1A2735', elevated: '#243348' },
-    text: { primary: '#E8EDF2', secondary: '#8A9BB0', muted: '#5A6F85' },
+    text: { primary: '#E8EDF2', secondary: '#8A9BB0', muted: '#7B90A6' },
     accent: {
       primary: '#4A90D9',
       secondary: '#3570B0',
@@ -200,7 +200,7 @@ export const PALETTES: Record<PaletteKey, ColourPalette> = {
     targetBuyer:
       'Restaurants, cafes, pubs, bakeries, hospitality, food brands',
     bg: { deep: '#1F1710', surface: '#2A2018', elevated: '#352A20' },
-    text: { primary: '#F0E8DC', secondary: '#B09880', muted: '#7A6A58' },
+    text: { primary: '#F0E8DC', secondary: '#B09880', muted: '#998671' },
     accent: {
       primary: '#D4943A',
       secondary: '#B07828',
@@ -221,7 +221,7 @@ export const LIGHT_PALETTES: Record<PaletteKey, ColourPalette> = {
     description: 'Warm parchment with indigo accents. Mystical but airy.',
     targetBuyer: 'Same buyers who want a lighter option',
     bg: { deep: '#FAF7F2', surface: '#FFFFFF', elevated: '#F0EBE3' },
-    text: { primary: '#1A1528', secondary: '#3D3650', muted: '#7B7592' },
+    text: { primary: '#1A1528', secondary: '#3D3650', muted: '#736D8A' },
     accent: {
       primary: '#8B6FC0',
       secondary: '#6B52A0',
@@ -235,7 +235,7 @@ export const LIGHT_PALETTES: Record<PaletteKey, ColourPalette> = {
     description: 'Warm cream with sage green accents. Fresh and grounded.',
     targetBuyer: 'Same buyers who want a lighter option',
     bg: { deep: '#FAFAF5', surface: '#FFFFFF', elevated: '#F0F0E8' },
-    text: { primary: '#1A1F1A', secondary: '#3A4238', muted: '#6B7F5C' },
+    text: { primary: '#1A1F1A', secondary: '#3A4238', muted: '#667958' },
     accent: {
       primary: '#6B7F5C',
       secondary: '#5A6E4C',
@@ -263,9 +263,9 @@ export const LIGHT_PALETTES: Record<PaletteKey, ColourPalette> = {
     description: 'Soft blush with rose accents. Warm and inviting.',
     targetBuyer: 'Same buyers who want a lighter option',
     bg: { deep: '#FDF8F6', surface: '#FFFFFF', elevated: '#F8F0ED' },
-    text: { primary: '#2A2022', secondary: '#4A3E40', muted: '#8B7A7E' },
+    text: { primary: '#2A2022', secondary: '#4A3E40', muted: '#7E6E71' },
     accent: {
-      primary: '#C4868B',
+      primary: '#C17F84',
       secondary: '#A06A6F',
       highlight: '#E8C4C4',
     },
@@ -293,7 +293,7 @@ export const LIGHT_PALETTES: Record<PaletteKey, ColourPalette> = {
     bg: { deep: '#FBF6F0', surface: '#FFFFFF', elevated: '#F5EDE2' },
     text: { primary: '#1F1710', secondary: '#4E3E30', muted: '#7A6A58' },
     accent: {
-      primary: '#D4943A',
+      primary: '#C0822A',
       secondary: '#B07828',
       highlight: '#F0B860',
     },

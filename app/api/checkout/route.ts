@@ -7,6 +7,7 @@ import {
   createSubscriptionCheckoutSession,
   createDomainCheckoutSession,
   createBrandingRemovalCheckoutSession,
+  detectCurrency,
 } from '@/lib/stripe'
 import type { SubscriptionTier, SubscriptionInterval } from '@/lib/stripe'
 
@@ -23,15 +24,17 @@ const VALID_INTERVALS: SubscriptionInterval[] = ['monthly', 'yearly']
 export async function POST(req: NextRequest) {
   try {
     const session = await auth0.getSession()
-    if (!session?.user) {
+    const body = await req.json()
+
+    // Gallery template downloads don't require login
+    if (body.productType !== 'gallery_template' && !session?.user) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       )
     }
 
-    const user = await findOrCreateUser(session.user)
-    const body = await req.json()
+    const user = session?.user ? await findOrCreateUser(session.user) : null
 
     // ── Subscription checkout ──
     if (body.tier && VALID_SUBSCRIPTION_TIERS.includes(body.tier)) {
@@ -61,8 +64,8 @@ export async function POST(req: NextRequest) {
         interval,
         siteId,
         subdomain,
-        customerEmail: session.user.email || undefined,
-        customerId: user.stripeCustomerId || undefined,
+        customerEmail: session?.user?.email || undefined,
+        customerId: user?.stripeCustomerId || undefined,
       })
 
       return NextResponse.json({
@@ -106,8 +109,8 @@ export async function POST(req: NextRequest) {
         siteId,
         domainPrice,
         customDomain,
-        customerEmail: session.user.email || undefined,
-        customerId: user.stripeCustomerId || undefined,
+        customerEmail: session?.user?.email || undefined,
+        customerId: user?.stripeCustomerId || undefined,
       })
 
       return NextResponse.json({
@@ -133,14 +136,50 @@ export async function POST(req: NextRequest) {
       const checkoutSession = await createBrandingRemovalCheckoutSession({
         siteId,
         subdomain,
-        customerEmail: session.user.email || undefined,
-        customerId: user.stripeCustomerId || undefined,
+        customerEmail: session?.user?.email || undefined,
+        customerId: user?.stripeCustomerId || undefined,
       })
 
       return NextResponse.json({
         url: checkoutSession.url,
         sessionId: checkoutSession.id,
       })
+    }
+
+    // ── Gallery template download (no auth required, no DB lookup) ──
+    if (body.productType === 'gallery_template') {
+      const { templateType, templateName, priceGbp } = body as {
+        templateType: string
+        templateName: string
+        priceGbp: number
+      }
+
+      if (!templateType || !priceGbp) {
+        return NextResponse.json({ error: 'templateType and priceGbp required' }, { status: 400 })
+      }
+
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://craftmypage.com'
+      const currency = detectCurrency(
+        req.headers.get('accept-language') || undefined,
+        req.headers.get('cf-ipcountry') || undefined,
+      )
+      const checkoutSession = await createCheckoutSession({
+        productName: `${templateName} Template — CraftMyPage`,
+        productId: templateType,
+        productType: 'template',
+        priceInCents: Math.round(priceGbp * 100),
+        customerEmail: session?.user?.email || undefined,
+        successUrl: `${appUrl}/download?template=${templateType}&session_id={CHECKOUT_SESSION_ID}`,
+        cancelUrl: `${appUrl}/templates`,
+        currency,
+        // productType stays 'template' (shared with the generic marketplace webhook
+        // path) — this source flag is what actually distinguishes a gallery purchase
+        // so the webhook can capture the buyer's email, which is otherwise never
+        // stored anywhere (gallery checkout has no auth, no User/Site record).
+        extraMetadata: { source: 'gallery', templateName },
+      })
+
+      return NextResponse.json({ url: checkoutSession.url })
     }
 
     // ── Marketplace product checkout (existing flow) ──
@@ -201,7 +240,7 @@ export async function POST(req: NextRequest) {
       productId: product.id,
       productType,
       priceInCents: Math.round(product.price * 100),
-      customerEmail: session.user.email || undefined,
+      customerEmail: session?.user?.email || undefined,
       successUrl: `${appUrl}/purchase/success?session_id={CHECKOUT_SESSION_ID}`,
       cancelUrl: `${appUrl}/marketplace`,
     })

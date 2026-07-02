@@ -91,18 +91,28 @@ interface DeployResult {
   deploymentId: string
 }
 
-export async function deploySite(html: string, subdomain: string): Promise<DeployResult> {
-  // Cloudflare Pages Direct Upload API
-  // Step 1: Create a deployment
+/**
+ * Deploy one or more HTML files to Cloudflare Pages via Direct Upload API.
+ * `files` is a map of filename (e.g. "index.html", "about.html") → HTML content.
+ * `branch` sets the Pages branch alias (use the subdomain so the Worker can route to it).
+ */
+export async function deploySite(files: Map<string, string>, branch: string): Promise<DeployResult> {
   const formData = new FormData()
-  formData.append('index.html', new Blob([html], { type: 'text/html' }), '/index.html')
+
+  for (const [filename, content] of files) {
+    const path = filename.startsWith('/') ? filename : `/${filename}`
+    formData.append(path, new Blob([content], { type: 'text/html' }), path)
+  }
+
+  // Branch name determines the alias URL: {branch}.{project}.pages.dev
+  formData.append('branch', branch)
 
   const res = await fetch(
     `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/pages/projects/${PROJECT_NAME}/deployments`,
     {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${API_TOKEN}`,
+        Authorization: `Bearer ${API_TOKEN}`,
       },
       body: formData,
     }
@@ -117,7 +127,7 @@ export async function deploySite(html: string, subdomain: string): Promise<Deplo
   const deploymentUrl = data.result?.url
 
   if (!deploymentUrl) {
-    throw new Error('No deployment URL returned from Cloudflare')
+    throw new Error(`No deployment URL in Cloudflare response: ${JSON.stringify(data)}`)
   }
 
   return {

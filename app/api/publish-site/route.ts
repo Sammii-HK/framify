@@ -3,10 +3,7 @@ import { generateStaticSite, generateMultiPageSite, VALID_PALETTES, type SiteCon
 import { auth0 } from '@/lib/auth0'
 import { prisma } from '@/lib/prisma'
 import { findOrCreateUser } from '@/lib/users'
-import { createWebAnalyticsSite } from '@/lib/cloudflare'
-import { writeFileSync, mkdirSync, rmSync } from 'fs'
-import { execFileSync } from 'child_process'
-import { join } from 'path'
+import { createWebAnalyticsSite, deploySite } from '@/lib/cloudflare'
 
 export async function POST(request: NextRequest) {
   try {
@@ -77,43 +74,21 @@ export async function POST(request: NextRequest) {
       analyticsToken = await createWebAnalyticsSite(subdomain)
     }
 
-    // Write to temp directory and deploy via Wrangler
-    const deployDir = join('/tmp', `framify-deploy-${subdomain}-${Date.now()}`)
-    mkdirSync(deployDir, { recursive: true })
-
     // Branding is shown by default — only hidden if user paid for removal
     const showBranding = !existingSite?.hideBranding
 
-    // Multi-page: generate all HTML files; single-page: just index.html
+    // Build file map — multi-page generates multiple HTML files; single-page is just index.html
+    let deployFiles: Map<string, string>
     if (content.pages && content.pages.length > 0) {
-      const files = generateMultiPageSite(content, subdomain, analyticsToken ?? undefined, showBranding)
-      for (const [filename, html] of files) {
-        writeFileSync(join(deployDir, filename), html)
-      }
+      deployFiles = generateMultiPageSite(content, subdomain, analyticsToken ?? undefined, showBranding)
     } else {
       const html = generateStaticSite(content, subdomain, analyticsToken ?? undefined, showBranding)
-      writeFileSync(join(deployDir, 'index.html'), html)
+      deployFiles = new Map([['index.html', html]])
     }
 
-    const projectName = process.env.CLOUDFLARE_PAGES_PROJECT || 'framify-sites'
-
     try {
-      const result = execFileSync(
-        'wrangler',
-        ['pages', 'deploy', deployDir, '--project-name', projectName, '--branch', subdomain, '--commit-dirty=true'],
-        { encoding: 'utf-8', timeout: 30000 }
-      )
-
-      // Extract deployment URL from wrangler output
-      const urlMatch = result.match(/https:\/\/[^\s]+\.pages\.dev/)
-      const deploymentUrl = urlMatch ? urlMatch[0] : null
-
-      // Clean up temp directory
-      rmSync(deployDir, { recursive: true, force: true })
-
-      if (!deploymentUrl) {
-        return NextResponse.json({ error: 'Deploy succeeded but could not extract URL' }, { status: 500 })
-      }
+      // Deploy via Cloudflare Pages Direct Upload API (no wrangler CLI needed)
+      const { url: deploymentUrl } = await deploySite(deployFiles, subdomain)
 
       // Save to database
       await prisma.site.upsert({
@@ -148,8 +123,7 @@ export async function POST(request: NextRequest) {
         projectUrl: `https://${process.env.NEXT_PUBLIC_SITE_DOMAIN || 'craftmypage.com'}`,
       })
     } catch (deployError) {
-      rmSync(deployDir, { recursive: true, force: true })
-      console.error('Wrangler deploy failed:', deployError)
+      console.error('Cloudflare deploy failed:', deployError)
       return NextResponse.json({ error: 'Failed to deploy to Cloudflare' }, { status: 500 })
     }
   } catch (error) {

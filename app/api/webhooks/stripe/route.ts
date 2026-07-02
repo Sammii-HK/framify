@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { prisma } from '@/lib/prisma'
 import { constructWebhookEvent } from '@/lib/stripe'
-import { provisionDomain } from '@/lib/domain-automation'
+import { provisionDomain, type RegistrantContact } from '@/lib/domain-automation'
 import { flipAutoRenew } from '@/lib/domain-renewal'
+import { sendGalleryPurchaseNurture } from '@/lib/email'
 
 /**
  * POST /api/webhooks/stripe
@@ -104,7 +105,33 @@ export async function POST(req: NextRequest) {
 
         // ── Domain purchase ──
         if (metadata.tier === 'domain' && metadata.customDomain && metadata.subdomain && metadata.siteId) {
-          const result = await provisionDomain(metadata.subdomain, metadata.customDomain, metadata.siteId)
+          // Registrant is the CUSTOMER, not Sammii — collected via billing_address_collection
+          // + phone_number_collection on the domain checkout session (see lib/stripe.ts).
+          // Without this, the customer isn't the WHOIS owner of their own domain.
+          const details = session.customer_details
+          let registrant: RegistrantContact | undefined
+          if (details?.email && details.phone && details.name && details.address?.line1 &&
+              details.address.city && details.address.postal_code && details.address.country) {
+            registrant = {
+              email: details.email,
+              phone: details.phone,
+              name: details.name,
+              address: {
+                street: [details.address.line1, details.address.line2].filter(Boolean).join(', '),
+                city: details.address.city,
+                state: details.address.state || details.address.city,
+                postal_code: details.address.postal_code,
+                country_code: details.address.country,
+              },
+            }
+          } else {
+            console.warn(
+              `[Domain] Checkout session ${session.id} is missing registrant contact fields — ` +
+              `domain will register under the account default contact instead of the customer.`
+            )
+          }
+
+          const result = await provisionDomain(metadata.subdomain, metadata.customDomain, metadata.siteId, registrant)
           console.log(
             `[Hosting] Domain provisioning ${result.success ? 'succeeded' : 'failed'}: ${result.domain}`,
             JSON.stringify(result.steps)
@@ -173,6 +200,10 @@ export async function POST(req: NextRequest) {
               salesCount: { increment: 1 },
               downloadCount: { increment: 1 },
             },
+          }).catch(() => {
+            // Gallery templates aren't rows in the Template table (they're static
+            // data in lib/template-data.ts) — this update is a no-op for them, which
+            // is fine, the gallery-lead capture below is the real record for those.
           })
         } else if (productType === 'component') {
           await prisma.component.update({
@@ -182,6 +213,49 @@ export async function POST(req: NextRequest) {
               downloadCount: { increment: 1 },
             },
           })
+        }
+
+        if (metadata.source === 'gallery') {
+          // Gallery downloads are anonymous (no auth, no User/Site record), so this
+          // is the only place a buyer's email is ever captured and persisted —
+          // previously it only lived transiently in Stripe.
+          const buyerEmail = session.customer_email || session.customer_details?.email
+          const templateName = metadata.templateName || productId
+
+          if (buyerEmail) {
+            try {
+              await prisma.galleryLead.create({
+                data: {
+                  email: buyerEmail,
+                  templateType: productId,
+                  templateName,
+                  amount: session.amount_total ?? 0,
+                  stripeSessionId: session.id,
+                },
+              })
+
+              const { sent } = await sendGalleryPurchaseNurture({
+                to: buyerEmail,
+                templateType: productId,
+                templateName,
+              })
+              if (sent) {
+                await prisma.galleryLead.update({
+                  where: { stripeSessionId: session.id },
+                  data: { nurtureEmailSentAt: new Date() },
+                })
+              }
+            } catch (err) {
+              // Duplicate webhook delivery (same session.id) hits the unique constraint —
+              // safe to ignore, everything else should still surface
+              const msg = err instanceof Error ? err.message : String(err)
+              if (!msg.includes('Unique constraint')) {
+                console.error(`[Marketplace] Gallery lead capture failed: ${msg}`)
+              }
+            }
+          } else {
+            console.warn(`[Marketplace] Gallery template purchase with no buyer email, session ${session.id}`)
+          }
         }
 
         console.log(

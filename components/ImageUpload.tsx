@@ -9,11 +9,14 @@ import { useState, useRef, useCallback } from 'react'
 interface UploadedImage {
   url: string
   filename: string
+  alt: string
 }
 
 interface ImageUploadProps {
   siteId: string
-  onUpload: (url: string) => void
+  onUpload: (image: { url: string; alt: string }) => void
+  onDelete?: (url: string) => void
+  onAltChange?: (url: string, alt: string) => void
   maxImages?: number
   existingImages?: UploadedImage[]
 }
@@ -25,6 +28,8 @@ interface ImageUploadProps {
 export default function ImageUpload({
   siteId,
   onUpload,
+  onDelete,
+  onAltChange,
   maxImages = 20,
   existingImages = [],
 }: ImageUploadProps) {
@@ -94,9 +99,9 @@ export default function ImageUpload({
           },
         )
 
-        const newImage: UploadedImage = { url: result.url, filename: result.filename }
+        const newImage: UploadedImage = { url: result.url, filename: result.filename, alt: '' }
         setImages((prev) => [...prev, newImage])
-        onUpload(result.url)
+        onUpload({ url: result.url, alt: '' })
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Upload failed')
       } finally {
@@ -126,11 +131,20 @@ export default function ImageUpload({
         }
 
         setImages((prev) => prev.filter((img) => img.filename !== image.filename))
+        onDelete?.(image.url)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Delete failed')
       }
     },
-    [siteId],
+    [siteId, onDelete],
+  )
+
+  const handleAltChange = useCallback(
+    (image: UploadedImage, alt: string) => {
+      setImages((prev) => prev.map((img) => (img.filename === image.filename ? { ...img, alt } : img)))
+      onAltChange?.(image.url, alt)
+    },
+    [onAltChange],
   )
 
   // -----------------------------------------------------------------------
@@ -241,31 +255,41 @@ export default function ImageUpload({
 
       {/* Thumbnails */}
       {images.length > 0 && (
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {images.map((image) => (
-            <div
-              key={image.filename}
-              className="group relative aspect-square rounded-lg overflow-hidden bg-gray-800"
-            >
-              <img
-                src={image.url}
-                alt=""
-                className="h-full w-full object-cover"
+            <div key={image.filename} className="space-y-1">
+              <div className="group relative aspect-square rounded-lg overflow-hidden bg-gray-800">
+                {/* Decorative preview thumbnail in the editor — the real alt text below is
+                    what actually ships on the published site, this image is purely visual */}
+                <img
+                  src={image.url}
+                  alt=""
+                  role="presentation"
+                  className="h-full w-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleDelete(image)}
+                  className="
+                    absolute top-1 right-1 h-6 w-6 rounded-full
+                    bg-black/70 text-white text-xs
+                    opacity-0 group-hover:opacity-100 transition-opacity
+                    flex items-center justify-center
+                    hover:bg-red-600
+                  "
+                  title="Delete image"
+                >
+                  X
+                </button>
+              </div>
+              <input
+                type="text"
+                defaultValue={image.alt}
+                onBlur={(e) => handleAltChange(image, e.target.value)}
+                placeholder="Describe this photo"
+                aria-label="Photo description for screen readers"
+                className="w-full text-xs px-2 py-1 rounded border border-gray-700 bg-gray-800 text-gray-200 placeholder-gray-500"
               />
-              <button
-                type="button"
-                onClick={() => handleDelete(image)}
-                className="
-                  absolute top-1 right-1 h-6 w-6 rounded-full
-                  bg-black/70 text-white text-xs
-                  opacity-0 group-hover:opacity-100 transition-opacity
-                  flex items-center justify-center
-                  hover:bg-red-600
-                "
-                title="Delete image"
-              >
-                X
-              </button>
             </div>
           ))}
         </div>

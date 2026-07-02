@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { palettes as galleryPalettes, templates as galleryTemplates } from '@/lib/template-data'
 import TemplateMockup from '@/components/TemplateMockup'
+import ImageUpload from '@/components/ImageUpload'
 
 type PaletteKey = 'dark-celestial' | 'earthy-sage' | 'ethereal-light' | 'crystal-rose' | 'steel-blue' | 'warm-amber'
 
@@ -86,6 +87,7 @@ interface SiteContent {
     facebook: string
     twitter: string
   }
+  images?: { hero?: string; gallery: { url: string; alt: string }[] }
   // Template-specific optional fields
   coverageArea?: string
   accreditations?: string[]
@@ -206,6 +208,7 @@ const defaultContent: SiteContent = {
   ],
   contact: { email: '', phone: '', location: '' },
   social: { instagram: '', facebook: '', twitter: '' },
+  images: { gallery: [] },
 }
 
 function getSteps(templateType: string): string[] {
@@ -687,6 +690,39 @@ function GeneratePageInner() {
                 value={content.description}
                 onChange={e => setContent({ ...content, description: e.target.value })}
               />
+            </div>
+            <div>
+              <label className={labelClass}>Your photos</label>
+              {editingSiteId ? (
+                <ImageUpload
+                  siteId={editingSiteId}
+                  maxImages={20}
+                  onUpload={({ url, alt }) => setContent({
+                    ...content,
+                    images: content.images?.hero
+                      ? { ...content.images, gallery: [...(content.images?.gallery || []), { url, alt }] }
+                      : { ...content.images, hero: url, gallery: content.images?.gallery || [] },
+                  })}
+                  onDelete={(url) => setContent({
+                    ...content,
+                    images: {
+                      hero: content.images?.hero === url ? undefined : content.images?.hero,
+                      gallery: (content.images?.gallery || []).filter(g => g.url !== url),
+                    },
+                  })}
+                  onAltChange={(url, alt) => setContent({
+                    ...content,
+                    images: {
+                      ...content.images,
+                      gallery: (content.images?.gallery || []).map(g => g.url === url ? { ...g, alt } : g),
+                    },
+                  })}
+                />
+              ) : (
+                <p className="text-sm text-neutral-500 p-4 rounded-xl border border-dashed border-neutral-300 bg-neutral-50">
+                  Publish your site first, then come back here to add your own photos — the first one becomes your hero background, up to 20 photos total, 5MB each.
+                </p>
+              )}
             </div>
           </div>
         )}

@@ -16,6 +16,20 @@ interface ProvisionResult {
   steps: StepResult[]
 }
 
+export interface RegistrantContact {
+  email: string
+  phone: string
+  name: string
+  organization?: string
+  address: {
+    street: string
+    city: string
+    state: string
+    postal_code: string
+    country_code: string
+  }
+}
+
 async function cfFetch(path: string, options: RequestInit = {}): Promise<Response> {
   return fetch(`https://api.cloudflare.com/client/v4${path}`, {
     ...options,
@@ -38,7 +52,8 @@ async function cfFetch(path: string, options: RequestInit = {}): Promise<Respons
 export async function provisionDomain(
   subdomain: string,
   customDomain: string,
-  siteId: string
+  siteId: string,
+  registrant?: RegistrantContact
 ): Promise<ProvisionResult> {
   const steps: StepResult[] = []
   const pagesTarget = `${PAGES_PROJECT}.pages.dev`
@@ -46,16 +61,46 @@ export async function provisionDomain(
   // Strip any leading/trailing whitespace or protocol
   const domain = customDomain.replace(/^https?:\/\//, '').replace(/\/+$/, '').trim()
 
+  // Used as the free email-forwarding destination (Step 5) — the business's own
+  // contact email, already collected in the wizard, so no extra question is needed.
+  let forwardTo: string | null = null
+  try {
+    const site = await prisma.site.findUnique({ where: { id: siteId }, select: { content: true } })
+    const content = site?.content as { contact?: { email?: string } } | null
+    forwardTo = content?.contact?.email || null
+  } catch {
+    // Non-fatal — email forwarding step below just gets skipped
+  }
+
   console.log(`[Domain] Starting provisioning: domain=${domain}, subdomain=${subdomain}, siteId=${siteId}`)
 
   // ── Step 1: Register domain on CF Registrar ──
   try {
     console.log(`[Domain] Step 1: Registering ${domain} on Cloudflare Registrar`)
+    if (!registrant) {
+      console.warn(
+        `[Domain] No registrant contact supplied for ${domain} — falling back to the ` +
+        `account's default registrant. The customer will NOT be the WHOIS owner of this domain.`
+      )
+    }
     const res = await cfFetch(`/accounts/${ACCOUNT_ID}/registrar/domains`, {
       method: 'POST',
       body: JSON.stringify({
         name: domain,
         auto_renew: true,
+        ...(registrant && {
+          contacts: {
+            registrant: {
+              email: registrant.email,
+              phone: registrant.phone,
+              postal_info: {
+                name: registrant.name,
+                organization: registrant.organization,
+                address: registrant.address,
+              },
+            },
+          },
+        }),
       }),
     })
 
@@ -256,7 +301,61 @@ export async function provisionDomain(
     console.error(`[Domain] Pages www domain error: ${msg}`)
   }
 
-  // ── Step 5: Update database ──
+  // ── Step 5: Enable free email forwarding (hello@domain → business's existing inbox) ──
+  // Cloudflare Email Routing is free and reuses the zone we already created — bundled
+  // automatically as a perk, not sold. Cloudflare requires the destination address to be
+  // verified via a one-time confirmation email before forwarding actually starts; that
+  // step is outside our control and doesn't block domain registration if it's pending.
+  if (zoneId && forwardTo) {
+    try {
+      console.log(`[Domain] Step 5a: Enabling Email Routing for ${domain}`)
+      const enableRes = await cfFetch(`/zones/${zoneId}/email/routing/enable`, { method: 'POST' })
+      if (enableRes.ok || enableRes.status === 409) {
+        steps.push({ name: 'email_routing_enable', success: true })
+      } else {
+        const body = await enableRes.json().catch(() => null)
+        steps.push({ name: 'email_routing_enable', success: false, error: body?.errors?.[0]?.message || `HTTP ${enableRes.status}` })
+      }
+
+      console.log(`[Domain] Step 5b: Registering destination address ${forwardTo}`)
+      const addrRes = await cfFetch(`/accounts/${ACCOUNT_ID}/email/routing/addresses`, {
+        method: 'POST',
+        body: JSON.stringify({ email: forwardTo }),
+      })
+      if (!addrRes.ok && addrRes.status !== 409) {
+        const body = await addrRes.json().catch(() => null)
+        steps.push({ name: 'email_routing_address', success: false, error: body?.errors?.[0]?.message || `HTTP ${addrRes.status}` })
+      } else {
+        steps.push({ name: 'email_routing_address', success: true, error: 'Destination pending one-time email confirmation' })
+      }
+
+      console.log(`[Domain] Step 5c: Adding forwarding rule hello@${domain} -> ${forwardTo}`)
+      const ruleRes = await cfFetch(`/zones/${zoneId}/email/routing/rules`, {
+        method: 'POST',
+        body: JSON.stringify({
+          matchers: [{ type: 'literal', field: 'to', value: `hello@${domain}` }],
+          actions: [{ type: 'forward', value: [forwardTo] }],
+          enabled: true,
+        }),
+      })
+      if (ruleRes.ok || ruleRes.status === 409) {
+        steps.push({ name: 'email_routing_rule', success: true })
+        console.log(`[Domain] Email forwarding live once ${forwardTo} confirms: hello@${domain}`)
+      } else {
+        const body = await ruleRes.json().catch(() => null)
+        // Expected if the destination hasn't clicked the confirmation link yet
+        steps.push({ name: 'email_routing_rule', success: false, error: body?.errors?.[0]?.message || `HTTP ${ruleRes.status}` })
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      steps.push({ name: 'email_routing_rule', success: false, error: msg })
+      console.error(`[Domain] Email forwarding setup error: ${msg}`)
+    }
+  } else {
+    console.log(`[Domain] Skipping email forwarding: ${!zoneId ? 'no zone ID' : 'no contact email on site'}`)
+  }
+
+  // ── Step 6: Update database ──
   try {
     console.log(`[Domain] Step 5: Updating Site record ${siteId}`)
     await prisma.site.update({
@@ -274,7 +373,12 @@ export async function provisionDomain(
     console.error(`[Domain] Database update failed: ${msg}`)
   }
 
-  const allSuccess = steps.every((s) => s.success)
+  // Email forwarding is a best-effort bonus perk (and often blocked on the customer
+  // clicking a one-time confirmation link) — it shouldn't flip the overall domain
+  // purchase to "failed" when registration/DNS/hosting all succeeded.
+  const allSuccess = steps
+    .filter((s) => !s.name.startsWith('email_routing'))
+    .every((s) => s.success)
   console.log(
     `[Domain] Provisioning ${allSuccess ? 'completed' : 'completed with errors'}: ${domain}`,
     JSON.stringify(steps, null, 2)

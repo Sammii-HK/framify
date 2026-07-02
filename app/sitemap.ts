@@ -17,13 +17,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Dynamic template pages
   try {
     const templates = await prisma.template.findMany({
-      select: { id: true, updatedAt: true },
+      select: { id: true },
       where: { isPublic: true },
     })
 
     const templatePages: MetadataRoute.Sitemap = templates.map((t) => ({
       url: `${base}/template/${t.id}`,
-      lastModified: t.updatedAt,
       changeFrequency: 'monthly',
       priority: 0.6,
     }))

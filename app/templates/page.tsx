@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
+
 import { palettes, templates, categories, type Palette, type Template, type CategoryType } from '@/lib/template-data'
 import TemplateMockup from '@/components/TemplateMockup'
 
@@ -48,6 +49,30 @@ export default function TemplatesPage() {
   )
   const [pageFilter, setPageFilter] = useState<FilterType>('all')
   const [categoryFilter, setCategoryFilter] = useState<CategoryType>('all')
+  const [buyingTemplate, setBuyingTemplate] = useState<string | null>(null)
+
+  async function buyTemplate(type: string, name: string, price: number) {
+    setBuyingTemplate(type)
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productType: 'gallery_template', templateType: type, templateName: name, priceGbp: price }),
+      })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        console.error('Checkout error:', data)
+        alert('Something went wrong — please try again.')
+      }
+    } catch (err) {
+      console.error('Checkout failed:', err)
+      alert('Something went wrong — please try again.')
+    } finally {
+      setBuyingTemplate(null)
+    }
+  }
 
   const filteredTemplates = useMemo(() => {
     return templates.filter((t) => {
@@ -230,6 +255,29 @@ export default function TemplatesPage() {
                     <span className="font-medium text-neutral-500 dark:text-neutral-400">Best for:</span>{' '}
                     {template.bestFor}
                   </p>
+
+                  {/* CTAs */}
+                  <div className="mt-4 flex items-center gap-2">
+                    <Link
+                      href={`/generate?template=${template.type}`}
+                      className="flex-1 text-center rounded-lg bg-brand-600 hover:bg-brand-700 px-3 py-2 text-sm font-semibold text-white transition-colors"
+                    >
+                      Deploy this now
+                    </Link>
+                    {template.price ? (
+                      <button
+                        onClick={() => buyTemplate(template.type, template.name, template.price!)}
+                        disabled={buyingTemplate === template.type}
+                        className="flex-1 text-center rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-800 px-3 py-2 text-sm font-semibold text-neutral-700 dark:text-neutral-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {buyingTemplate === template.type ? 'Redirecting...' : `Download · £${template.price}`}
+                      </button>
+                    ) : (
+                      <span className="flex-1 text-center rounded-lg border border-dashed border-neutral-200 dark:border-neutral-800 px-3 py-2 text-sm font-medium text-neutral-400 dark:text-neutral-600 cursor-default select-none">
+                        Download soon
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             )
@@ -241,17 +289,22 @@ export default function TemplatesPage() {
       <section className="bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800">
         <div className="mx-auto max-w-5xl px-6 py-16 md:py-20 text-center">
           <h2 className="text-2xl md:text-3xl font-bold text-neutral-900 dark:text-white tracking-tight">
-            Not sure which to pick?
+            Want it live without the hassle?
           </h2>
           <p className="mt-3 text-neutral-500 dark:text-neutral-400 max-w-lg mx-auto">
-            Every template is fully customisable. Start with any layout and make it yours.
+            Hit <strong className="text-neutral-700 dark:text-neutral-300">Deploy this now</strong> on any template and we handle everything — hosting, your domain, SSL, and deployment. You're live in minutes with zero technical setup.
           </p>
-          <Link
-            href="/generate"
-            className="mt-8 inline-flex items-center justify-center rounded-lg bg-brand-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-brand-700 transition-colors"
-          >
-            Build your site now
-          </Link>
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              href="/generate"
+              className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-brand-700 transition-colors"
+            >
+              Build your site now
+            </Link>
+            <p className="text-sm text-neutral-400 dark:text-neutral-500">
+              Or download any template to host it yourself.
+            </p>
+          </div>
         </div>
       </section>
     </main>

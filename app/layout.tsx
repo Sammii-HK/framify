@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 		url: "https://craftmypage.com",
 		images: [
 			{
-				url: "/og-image.png",
+				url: "/opengraph-image",
 				width: 1200,
 				height: 630,
 				alt: "CraftMyPage — Professional Websites for Local Businesses",
@@ -46,7 +46,10 @@ export const metadata: Metadata = {
 		title: "CraftMyPage — Professional Websites for Local Businesses",
 		description:
 			"Create a beautiful, mobile-ready website for your local business in minutes. No coding required. Hosting, domain, and deployment all sorted for you.",
-		images: ["/og-image.png"],
+		images: ["/opengraph-image"],
+	},
+	alternates: {
+		canonical: "https://craftmypage.com",
 	},
 	robots: {
 		index: true,

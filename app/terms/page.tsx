@@ -41,7 +41,7 @@ export default function TermsPage() {
 
           <h2>5. Add-ons</h2>
           <ul>
-            <li><strong>Custom domains</strong> are purchased through us via Cloudflare Registrar. Domain registrations are non-refundable once completed. Renewal pricing may change based on registry costs.</li>
+            <li><strong>Custom domains</strong> are purchased through us via Cloudflare Registrar. Domain registrations are non-refundable once completed. Renewal pricing may change based on registry costs. You are registered as the domain&apos;s registrant (owner) using the contact details provided at checkout &mdash; we act only as registrar of record to keep setup one-click. You can request your domain&apos;s transfer authorisation code at any time to move it to another registrar, including if you cancel your CraftMyPage subscription; your domain keeps running independently of your hosting plan and is not deleted when you cancel.</li>
             <li><strong>Branding removal</strong> is a monthly add-on. Cancelling it restores the CraftMyPage footer badge.</li>
           </ul>
 

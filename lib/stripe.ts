@@ -12,6 +12,21 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 /**
  * Create a Stripe Checkout session for a template or component purchase
  */
+// Supported currencies — GBP is the base. Others are presented at Stripe's
+// live exchange rate via Adaptive Pricing (enable in Stripe Dashboard).
+const SUPPORTED_CURRENCIES = ['gbp', 'usd', 'eur', 'cad', 'aud', 'nzd'] as const
+type SupportedCurrency = typeof SUPPORTED_CURRENCIES[number]
+
+export function detectCurrency(acceptLanguage?: string, cfCountry?: string): SupportedCurrency {
+  const countryToCurrency: Record<string, SupportedCurrency> = {
+    US: 'usd', CA: 'cad', AU: 'aud', NZ: 'nzd',
+    DE: 'eur', FR: 'eur', ES: 'eur', IT: 'eur', NL: 'eur', BE: 'eur',
+    AT: 'eur', PT: 'eur', IE: 'eur', FI: 'eur', GR: 'eur', LU: 'eur',
+  }
+  if (cfCountry && countryToCurrency[cfCountry]) return countryToCurrency[cfCountry]
+  return 'gbp'
+}
+
 export async function createCheckoutSession({
   productName,
   productId,
@@ -20,6 +35,8 @@ export async function createCheckoutSession({
   customerEmail,
   successUrl,
   cancelUrl,
+  currency = 'gbp',
+  extraMetadata,
 }: {
   productName: string
   productId: string
@@ -28,6 +45,8 @@ export async function createCheckoutSession({
   customerEmail?: string
   successUrl: string
   cancelUrl: string
+  currency?: SupportedCurrency
+  extraMetadata?: Record<string, string>
 }): Promise<Stripe.Checkout.Session> {
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
@@ -36,23 +55,18 @@ export async function createCheckoutSession({
     line_items: [
       {
         price_data: {
-          currency: 'gbp',
+          currency,
           product_data: {
             name: productName,
-            metadata: {
-              productId,
-              productType,
-            },
+            metadata: { productId, productType },
           },
           unit_amount: priceInCents,
         },
         quantity: 1,
       },
     ],
-    metadata: {
-      productId,
-      productType,
-    },
+    metadata: { productId, productType, ...extraMetadata },
+    allow_promotion_codes: true,
     success_url: successUrl,
     cancel_url: cancelUrl,
   })
@@ -165,6 +179,12 @@ export async function createDomainCheckoutSession({
   const sessionParams: Stripe.Checkout.SessionCreateParams = {
     mode: 'payment',
     payment_method_types: ['card'],
+    // Collected as the registrant contact on the domain — see /api/webhooks/stripe
+    // and lib/domain-automation.ts. Without this, Cloudflare falls back to the
+    // account's own default registrant, making Sammii the legal WHOIS owner of
+    // every customer domain instead of the customer.
+    billing_address_collection: 'required',
+    phone_number_collection: { enabled: true },
     line_items: [
       {
         price_data: {
@@ -301,6 +321,7 @@ export async function createBillingPortalSession(customerId: string, returnUrl: 
   const session = await stripe.billingPortal.sessions.create({
     customer: customerId,
     return_url: returnUrl,
+    configuration: 'bpc_1TEDf1DKfOPoJ4ilQetvdYOD',
   })
   return session
 }
