@@ -11,6 +11,7 @@ import {
 } from '@/lib/stripe'
 import type { SubscriptionTier, SubscriptionInterval } from '@/lib/stripe'
 import { getTemplate } from '@/lib/template-data'
+import { quoteDomainPricePence } from '@/lib/domain-pricing'
 
 const VALID_SUBSCRIPTION_TIERS: SubscriptionTier[] = ['starter', 'pro']
 const VALID_INTERVALS: SubscriptionInterval[] = ['monthly', 'yearly']
@@ -19,7 +20,7 @@ const VALID_INTERVALS: SubscriptionInterval[] = ['monthly', 'yearly']
  * POST /api/checkout
  * Create a Stripe Checkout session for:
  * - Subscriptions (starter, pro) — pass { tier, interval, subdomain, siteId? }
- * - Domain purchase — pass { tier: 'domain', subdomain, siteId, domainPrice, customDomain }
+ * - Domain purchase — pass { tier: 'domain', subdomain, siteId, customDomain }; the price is quoted server-side
  * - Marketplace products (template, component) — pass { productId, productType }
  */
 export async function POST(req: NextRequest) {
@@ -77,10 +78,9 @@ export async function POST(req: NextRequest) {
 
     // ── Domain purchase checkout (one-off) ──
     if (body.tier === 'domain') {
-      const { subdomain, siteId, domainPrice, customDomain } = body as {
+      const { subdomain, siteId, customDomain } = body as {
         subdomain: string
         siteId: string
-        domainPrice: number
         customDomain: string
       }
 
@@ -91,19 +91,15 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      if (!domainPrice || domainPrice <= 0) {
-        return NextResponse.json(
-          { error: 'domainPrice (in pence) is required for domain purchase' },
-          { status: 400 }
-        )
-      }
-
       if (!customDomain) {
         return NextResponse.json(
           { error: 'customDomain is required' },
           { status: 400 }
         )
       }
+
+      // Priced here, never from the request body, so a buyer can't change what they pay.
+      const domainPrice = await quoteDomainPricePence(String(customDomain).trim().toLowerCase())
 
       const checkoutSession = await createDomainCheckoutSession({
         subdomain,
