@@ -524,7 +524,8 @@ export default function TemplateDetailClient({ type }: { type: string }) {
                   >
                     Use this template
                   </Link>
-                  {galleryTemplate.price ? (
+                  {/* Legacy templates share one generic download, so they're deploy-only for now */}
+                  {galleryTemplate.price && galleryTemplate.kit ? (
                     <button
                       type="button"
                       onClick={buy}

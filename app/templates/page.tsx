@@ -303,7 +303,9 @@ export default function TemplatesPage() {
                     >
                       Deploy this now
                     </Link>
-                    {template.price ? (
+                    {/* Legacy gallery templates all download the same generic page, so
+                        only finished kits are sold as downloads until each has a real kit. */}
+                    {template.price && template.kit ? (
                       <button
                         onClick={() => buyTemplate(template.type)}
                         disabled={buyingTemplate === template.type}
@@ -312,9 +314,12 @@ export default function TemplatesPage() {
                         {buyingTemplate === template.type ? 'Redirecting...' : `Download · £${template.price}`}
                       </button>
                     ) : (
-                      <span className="flex-1 text-center rounded-lg border border-dashed border-neutral-200 dark:border-neutral-800 px-3 py-2 text-sm font-medium text-neutral-400 dark:text-neutral-600 cursor-default select-none">
-                        Download soon
-                      </span>
+                      <Link
+                        href={`/templates/${template.type}`}
+                        className="flex-1 text-center rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-800 px-3 py-2 text-sm font-semibold text-neutral-700 dark:text-neutral-300 transition-colors"
+                      >
+                        Details<span className="sr-only"> for {template.name}</span>
+                      </Link>
                     )}
                     </>
                     )}
@@ -343,7 +348,7 @@ export default function TemplatesPage() {
               Build your site now
             </Link>
             <p className="text-sm text-neutral-400 dark:text-neutral-500">
-              Or download any template to host it yourself.
+              Or buy a finished template (marked New) and host it yourself.
             </p>
           </div>
         </div>
