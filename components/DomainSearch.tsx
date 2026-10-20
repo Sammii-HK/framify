@@ -99,7 +99,6 @@ export default function DomainSearch({ siteId, subdomain, onPurchaseStarted }: D
           tier: 'domain',
           siteId,
           subdomain,
-          domainPrice: pricePence,
           customDomain: domain,
         }),
       })
