@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Auth0Provider } from "@auth0/nextjs-auth0/client";
 import Navigation from "@/components/Navigation";
-import ChatWidget from "@/components/ChatWidget";
 import "../styles/globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -75,7 +74,6 @@ export default function RootLayout({
 				<Auth0Provider>
 					<Navigation />
 					{children}
-					<ChatWidget />
 				</Auth0Provider>
 			</body>
 		</html>
