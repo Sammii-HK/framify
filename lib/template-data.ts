@@ -27,6 +27,15 @@ export interface Template {
   category: CategoryType
   buyUrl?: string   // Lemon Squeezy product URL — set once store is live
   price?: number    // Price in GBP
+  /** Slug of a finished, sellable kit in /template-kits. Templates with a kit
+   *  download as that kit; templates without one download the generic page. */
+  kit?: string
+  /** Real screenshots of the kit, served from /public/templates/<type>/ */
+  preview?: { light: string; dark: string; mobile: string; mobileDark: string; cover: string; og: string }
+  /** Live demo of the kit, served from /public/demos/<kit>/ */
+  demoUrl?: string
+  /** Short product name used in listings, e.g. "Haven" */
+  productName?: string
 }
 
 export interface TemplateDetail {
@@ -37,6 +46,11 @@ export interface TemplateDetail {
   features: { title: string; description: string }[]
   layoutSections: string[]  // Used for single-page templates (or default page for multi)
   pages?: { name: string; sections: string[] }[]  // For multi-page templates
+  /** What's in the download, shown on the detail page for kit templates */
+  included?: string[]
+  /** SEO title and description for the detail page */
+  seoTitle?: string
+  seoDescription?: string
 }
 
 // ---------------------------------------------------------------------------
@@ -82,8 +96,24 @@ export const palettes: Palette[] = [
 // Templates (gallery list)
 // ---------------------------------------------------------------------------
 
+function kitPreview(type: string): Template['preview'] {
+  const base = `/templates/${type}`
+  return {
+    light: `${base}/desktop-light.webp`,
+    dark: `${base}/desktop-dark.webp`,
+    mobile: `${base}/mobile-light.webp`,
+    mobileDark: `${base}/mobile-dark.webp`,
+    cover: `${base}/cover.webp`,
+    og: `${base}/og.png`,
+  }
+}
+
 export const templates: Template[] = [
-  // Single-page — $15 each
+  // Finished kits — real, distinct templates with live demos (see /template-kits)
+  { type: 'therapist', name: 'Haven: Therapist & Counsellor', productName: 'Haven', description: 'A calm one-page site for private practice. Who you help, how you work, fees, what to expect and a gentle booking form.', bestFor: 'Therapists, counsellors, psychotherapists, coaches', pages: 'single', mockupStyle: 'grid-3', category: 'health-wellness', price: 29, kit: 'haven-therapist', demoUrl: '/demos/haven-therapist/index.html', preview: kitPreview('therapist') },
+  { type: 'app-launch', name: 'Launchpad: Indie App Launch', productName: 'Launchpad', description: 'A launch page for an iPhone or Android app, with the Support and Privacy Policy pages App Store Connect asks for.', bestFor: 'Indie app developers, solo founders, small studios', pages: 'single', mockupStyle: 'hero-wide', category: 'tech', price: 24, kit: 'launchpad-app', demoUrl: '/demos/launchpad-app/index.html', preview: kitPreview('app-launch') },
+  { type: 'cleaning', name: 'Spotless: Cleaning Company', productName: 'Spotless', description: 'A bright site for cleaning businesses with an instant price estimate, room-by-room checklist and postcode checker.', bestFor: 'Home cleaners, end-of-tenancy and office cleaning companies', pages: 'single', mockupStyle: 'grid-3', category: 'services', price: 24, kit: 'spotless-cleaning', demoUrl: '/demos/spotless-cleaning/index.html', preview: kitPreview('cleaning') },
+  // Single-page — £15 each
   { type: 'standard', name: 'Standard', description: 'A clean, versatile layout that works for any business. Hero section, services grid, testimonials, and contact form.', bestFor: 'Any business', pages: 'single', mockupStyle: 'grid-3', category: 'services', price: 15 },
   { type: 'trades', name: 'Trades and Services', description: 'Built for businesses that work with their hands. Project gallery, service area map, and quote request form.', bestFor: 'Plumbers, builders, electricians, roofers', pages: 'single', mockupStyle: 'split-gallery', category: 'services', price: 15 },
   { type: 'hair-beauty', name: 'Hair and Beauty', description: 'Designed to showcase your craft. Portfolio grid, price list, and booking integration ready.', bestFor: 'Salons, spas, barbers, nail techs', pages: 'single', mockupStyle: 'gallery-4', category: 'health-wellness', price: 15 },
@@ -99,7 +129,7 @@ export const templates: Template[] = [
   { type: 'medical', name: 'Medical and Dental', description: 'Service list, team credentials, patient booking, and trust signals throughout.', bestFor: 'Clinics, dentists, physios, opticians', pages: 'single', mockupStyle: 'grid-3', category: 'health-wellness', price: 15 },
   { type: 'creative-agency', name: 'Creative Agency', description: 'Bold case studies, client logos, team section, and a strong visual identity.', bestFor: 'Design studios, marketing agencies, dev shops', pages: 'single', mockupStyle: 'hero-wide', category: 'creative', price: 15 },
   { type: 'shop', name: 'Shop', description: 'Product grid, category filters, and a clean layout ready for e-commerce integration.', bestFor: 'Boutiques, gift shops, artisan sellers, online stores', pages: 'single', mockupStyle: 'product-grid', category: 'retail', price: 15 },
-  // Multi-page — $29 each
+  // Multi-page — £29 each
   { type: 'business-pro', name: 'Business Pro', description: 'A full multi-page website with Home, About, Services, Blog, and Contact pages. Everything a growing business needs.', bestFor: 'Established businesses, agencies, consultancies', pages: 'multi', pageCount: 6, mockupStyle: 'multi-tabs', category: 'professional', price: 29 },
   { type: 'startup', name: 'Startup', description: 'Landing page with product features, pricing table, team profiles, blog, and a clear sign-up funnel.', bestFor: 'SaaS startups, tech companies, app launches', pages: 'multi', pageCount: 5, mockupStyle: 'multi-tabs', category: 'tech', price: 29 },
   { type: 'restaurant-full', name: 'Restaurant Full', description: 'Multi-page site with dedicated menu, gallery, events, reservations, and about pages.', bestFor: 'Restaurants, bars, hotels, catering businesses', pages: 'multi', pageCount: 6, mockupStyle: 'multi-tabs', category: 'food-hospitality', price: 29 },
@@ -113,6 +143,60 @@ export const templates: Template[] = [
 // ---------------------------------------------------------------------------
 
 export const templateDetails: Record<string, TemplateDetail> = {
+  therapist: {
+    name: 'Haven: Therapist & Counsellor',
+    description: 'A calm, trustworthy website for your private practice.',
+    longDescription: 'Haven is built around the questions people ask before they book a first call with a therapist: who do you help, how do you work, what does it cost and what happens next. Warm typography, a fees section with reduced-fee spaces, a gentle booking form, crisis signposting and no testimonials, because many professional bodies restrict them. Light and dark mode, accessible to WCAG 2.1 AA.',
+    bestFor: 'Therapists, counsellors, psychotherapists, coaches',
+    seoTitle: 'Therapist Website Template (HTML, light & dark): Haven',
+    seoDescription: 'A calm one-page website template for therapists and counsellors in private practice. Fees, approach, FAQ, booking form, privacy notice and crisis signposting. Instant download, £29.',
+    features: [
+      { title: 'Written for therapy', description: 'Sections for who you help, your approach, credentials, fees and what to expect, in the order clients look for them.' },
+      { title: 'No testimonials, on purpose', description: 'Builds trust with credentials and a “check my registration” link instead, in line with common professional-body guidance.' },
+      { title: 'Fees up front', description: 'Session fee, free intro call, reduced-fee spaces and cancellation policy, so fewer back-and-forth emails.' },
+      { title: 'Gentle booking form', description: 'Asks for very little, tells people not to share sensitive details, and links to a ready-to-adapt privacy notice.' },
+      { title: 'Crisis signposting', description: 'A footer note with emergency and helpline numbers, for anyone who finds your site at a hard moment.' },
+      { title: 'Light, dark, accessible', description: 'Follows the visitor’s system theme, with a toggle. Checked with axe-core to WCAG 2.1 AA in every palette.' },
+    ],
+    included: ['index.html, thank-you.html, privacy.html and 404.html', 'styles.css and main.js (no frameworks, no build step)', '3 colour palettes, light and dark mode', 'README with setup, form and free-hosting guide', 'Standard licence for one website'],
+    layoutSections: ['nav', 'hero', 'credentials', 'testimonials', 'lead-form', 'footer'],
+  },
+  'app-launch': {
+    name: 'Launchpad: Indie App Launch',
+    description: 'A launch page that looks as good as your app.',
+    longDescription: 'Launchpad is a landing page for an indie iPhone or Android app, made by someone who ships apps. A pure-CSS phone mockup, a features bento, a privacy label section, pricing, changelog and FAQ, plus the Support and Privacy Policy pages App Store Connect and Google Play ask for. Flip one attribute to switch to pre-launch mode with a waitlist form.',
+    bestFor: 'Indie app developers, solo founders, small studios',
+    seoTitle: 'App Landing Page Template with Support & Privacy Pages: Launchpad',
+    seoDescription: 'An HTML landing page template for indie iOS and Android apps. Phone mockup, features, privacy label, pricing, changelog, plus App Store-ready support and privacy policy pages. £24.',
+    features: [
+      { title: 'App Store-ready pages', description: 'Includes the Support URL and Privacy Policy URL pages that App Store Connect and Google Play require.' },
+      { title: 'Pre-launch mode', description: 'Change one attribute and the store buttons become a waitlist form. Switch back on launch day.' },
+      { title: 'Pure-CSS phone mockup', description: 'Sharp on every screen and editable as HTML, or drop in your own screenshots.' },
+      { title: 'Privacy label section', description: 'Show what you collect (ideally nothing) in a format App Store shoppers already recognise.' },
+      { title: 'Pricing and changelog', description: 'Free, subscription and lifetime plans, and a changelog that proves the app is alive.' },
+      { title: 'Light, dark, accessible', description: 'Follows the visitor’s system theme, with a toggle. Checked with axe-core to WCAG 2.1 AA in every palette.' },
+    ],
+    included: ['index.html, support.html, privacy.html and 404.html', 'styles.css and main.js (no frameworks, no build step)', '3 colour palettes, light and dark, live and pre-launch modes', 'README with badge, Smart App Banner and hosting guide', 'Standard licence for one website'],
+    layoutSections: ['nav', 'hero', 'credentials', 'testimonials', 'contact', 'footer'],
+  },
+  cleaning: {
+    name: 'Spotless: Cleaning Company',
+    description: 'Show a price in 30 seconds. Get the booking while they’re keen.',
+    longDescription: 'Spotless is a website for cleaning businesses with an instant estimate built into the hero. Visitors pick the type of clean, bedrooms, bathrooms, frequency and extras and see a price range straight away. Then they book it with the estimate copied into the form. Also includes a room-by-room checklist, postcode checker, guarantee band and FAQ.',
+    bestFor: 'Home cleaners, end-of-tenancy and office cleaning companies',
+    seoTitle: 'Cleaning Business Website Template with Instant Quote: Spotless',
+    seoDescription: 'A cleaning company website template with a built-in instant price estimate, room-by-room checklist, postcode checker and booking form. HTML, light and dark. £24.',
+    features: [
+      { title: 'Instant estimate', description: 'Prices, extras and frequency discounts live in one small config block. The estimate is copied into the booking form.' },
+      { title: 'What’s included, room by room', description: 'An accessible tabbed checklist that answers “what do you actually do?” before anyone asks.' },
+      { title: 'Postcode checker', description: 'Visitors check whether you cover them. It reads the same list as your areas section.' },
+      { title: 'Real-reviews guidance', description: 'Example reviews are labelled, with guidance on replacing them with real ones (fake reviews are illegal in the UK and US).' },
+      { title: 'Booking form that converts', description: 'Short, mobile-friendly and ready for Formspree, Basin or Netlify Forms.' },
+      { title: 'Light, dark, accessible', description: 'Follows the visitor’s system theme, with a toggle. Checked with axe-core to WCAG 2.1 AA in every palette.' },
+    ],
+    included: ['index.html, thank-you.html, privacy.html and 404.html', 'styles.css, main.js and estimator.js (your prices)', '3 colour palettes, light and dark mode', 'README with pricing, form and free-hosting guide', 'Standard licence for one website'],
+    layoutSections: ['nav', 'hero', 'services-grid', 'testimonials', 'quote-form', 'footer'],
+  },
   standard: {
     name: 'Standard',
     description: 'A clean, versatile layout that works for any business.',
@@ -485,4 +569,8 @@ export function getTemplateByType(type: string): Template | undefined {
 // Helper to get detail data, falling back to standard
 export function getTemplateDetail(type: string): TemplateDetail {
   return templateDetails[type] || templateDetails.standard
+}
+
+export function getTemplate(type: string): Template | undefined {
+  return templates.find((t) => t.type === type)
 }
