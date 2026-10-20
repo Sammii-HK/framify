@@ -58,7 +58,7 @@ export default function TermsPage() {
             <li>Publish illegal, defamatory, abusive, or hateful content.</li>
             <li>Distribute malware, phishing pages, or deceptive content.</li>
             <li>Send spam or bulk unsolicited messages via contact forms.</li>
-            <li>Attempt to access other users' accounts or data.</li>
+            <li>Attempt to access other users&apos; accounts or data.</li>
             <li>Use the Service to build sites that impersonate other businesses or individuals.</li>
           </ul>
           <p>
