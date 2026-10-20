@@ -8,6 +8,7 @@ export const metadata: Metadata = {
     description: 'Choose a template, add your business details, and publish your professional website in minutes. No coding required.',
     url: 'https://craftmypage.com/generate',
   },
+  alternates: { canonical: 'https://craftmypage.com/generate' },
   robots: { index: false },
 }
 

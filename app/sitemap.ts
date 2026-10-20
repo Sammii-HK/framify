@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next'
 import { prisma } from '@/lib/prisma'
+import { templates as galleryTemplates } from '@/lib/template-data'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = 'https://craftmypage.com'
@@ -7,12 +8,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [
     { url: base, lastModified: new Date(), changeFrequency: 'weekly', priority: 1 },
-    { url: `${base}/generate`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.9 },
     { url: `${base}/marketplace`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
     { url: `${base}/templates`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
     { url: `${base}/privacy`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
     { url: `${base}/terms`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
   ]
+
+  // Gallery template detail pages (the pages people search for, e.g. "therapist website template").
+  // /generate is noindex, so it stays out of the sitemap.
+  const galleryPages: MetadataRoute.Sitemap = galleryTemplates.map((t) => ({
+    url: `${base}/templates/${t.type}`,
+    changeFrequency: 'monthly',
+    priority: t.kit ? 0.8 : 0.6,
+    ...(t.preview ? { images: [`${base}${t.preview.og}`] } : {}),
+  }))
 
   // Dynamic template pages
   try {
@@ -27,8 +36,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }))
 
-    return [...staticPages, ...templatePages]
+    return [...staticPages, ...galleryPages, ...templatePages]
   } catch {
-    return staticPages
+    return [...staticPages, ...galleryPages]
   }
 }
