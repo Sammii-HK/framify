@@ -26,7 +26,10 @@ export async function resolveDownloadAccess(sessionId: string | null, productId:
     try {
       const { stripe } = await import('@/lib/stripe')
       const session = await stripe.checkout.sessions.retrieve(sessionId)
-      if (session.payment_status !== 'paid') return { ok: false, status: 402, error: 'Payment not completed' }
+      // 'no_payment_required' = a 100% promo code; prices are server-side, so only a coupon can zero them
+      if (session.payment_status !== 'paid' && session.payment_status !== 'no_payment_required') {
+        return { ok: false, status: 402, error: 'Payment not completed' }
+      }
       if (session.metadata?.productId !== productId) return { ok: false, status: 403, error: 'This purchase is for a different template' }
       const email = session.customer_details?.email || session.customer_email
       if (!email) return { ok: false, status: 400, error: 'No email on purchase' }
