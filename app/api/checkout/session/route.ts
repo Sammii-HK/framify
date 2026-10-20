@@ -14,7 +14,8 @@ export async function GET(request: NextRequest) {
   try {
     const session = await stripe.checkout.sessions.retrieve(id)
 
-    if (session.payment_status !== 'paid') {
+    // 'no_payment_required' covers 100% promo codes (checkout allows promotion codes)
+    if (session.payment_status !== 'paid' && session.payment_status !== 'no_payment_required') {
       return NextResponse.json({ error: 'Payment not completed' }, { status: 402 })
     }
 

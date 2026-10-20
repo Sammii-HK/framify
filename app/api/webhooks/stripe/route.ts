@@ -5,6 +5,7 @@ import { constructWebhookEvent } from '@/lib/stripe'
 import { provisionDomain, type RegistrantContact } from '@/lib/domain-automation'
 import { flipAutoRenew } from '@/lib/domain-renewal'
 import { sendGalleryPurchaseNurture } from '@/lib/email'
+import { getTemplate } from '@/lib/template-data'
 
 /**
  * POST /api/webhooks/stripe
@@ -238,6 +239,8 @@ export async function POST(req: NextRequest) {
                 to: buyerEmail,
                 templateType: productId,
                 templateName,
+                sessionId: session.id,
+                canDeploy: !getTemplate(productId)?.kit,
               })
               if (sent) {
                 await prisma.galleryLead.update({

@@ -51,13 +51,13 @@ export default function TemplatesPage() {
   const [categoryFilter, setCategoryFilter] = useState<CategoryType>('all')
   const [buyingTemplate, setBuyingTemplate] = useState<string | null>(null)
 
-  async function buyTemplate(type: string, name: string, price: number) {
+  async function buyTemplate(type: string) {
     setBuyingTemplate(type)
     try {
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productType: 'gallery_template', templateType: type, templateName: name, priceGbp: price }),
+        body: JSON.stringify({ productType: 'gallery_template', templateType: type }),
       })
       const data = await res.json()
       if (data.url) {
@@ -185,13 +185,32 @@ export default function TemplatesPage() {
                 className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden hover:shadow-md dark:hover:shadow-neutral-900/50 hover:border-neutral-300 dark:hover:border-neutral-700 transition-all group"
               >
                 {/* Preview mockup */}
-                <Link href={`/templates/${template.type}`} className="block p-4 pb-0">
-                  <TemplateMockup palette={activePalette} template={template} isDark={isDark} />
+                <Link href={`/templates/${template.type}`} className="block p-4 pb-0 relative">
+                  {template.preview ? (
+                    <span className="block overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-700 aspect-[16/10] bg-neutral-100 dark:bg-neutral-800">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={isDark ? template.preview.dark : template.preview.light}
+                        alt={`${template.name} template preview`}
+                        width={1440}
+                        height={900}
+                        loading="lazy"
+                        className="w-full h-full object-cover object-top"
+                      />
+                    </span>
+                  ) : (
+                    <TemplateMockup palette={activePalette} template={template} isDark={isDark} />
+                  )}
+                  {template.kit && (
+                    <span className="absolute top-6 left-6 rounded-full bg-brand-600 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-white shadow">New</span>
+                  )}
                 </Link>
 
                 {/* Controls row */}
                 <div className="px-4 pt-3 flex items-center gap-1.5">
-                  {palettes.map((palette, index) => (
+                  {template.kit ? (
+                    <span className="text-xs text-neutral-500 dark:text-neutral-400">Real screenshot · 3 palettes</span>
+                  ) : palettes.map((palette, index) => (
                     <button
                       key={palette.id}
                       onClick={() => setActivePalettes((prev) => ({ ...prev, [template.type]: index }))}
@@ -258,24 +277,51 @@ export default function TemplatesPage() {
 
                   {/* CTAs */}
                   <div className="mt-4 flex items-center gap-2">
+                    {template.kit ? (
+                      <>
+                        <button
+                          onClick={() => buyTemplate(template.type)}
+                          disabled={buyingTemplate === template.type}
+                          className="flex-1 text-center rounded-lg bg-brand-600 hover:bg-brand-700 px-3 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-50"
+                        >
+                          {buyingTemplate === template.type ? 'Redirecting...' : `Buy · £${template.price}`}
+                        </button>
+                        <a
+                          href={template.demoUrl}
+                          target="_blank"
+                          rel="noopener"
+                          className="flex-1 text-center rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-800 px-3 py-2 text-sm font-semibold text-neutral-700 dark:text-neutral-300 transition-colors"
+                        >
+                          Live demo<span className="sr-only"> of {template.name} (opens in a new tab)</span>
+                        </a>
+                      </>
+                    ) : (
+                    <>
                     <Link
                       href={`/generate?template=${template.type}`}
                       className="flex-1 text-center rounded-lg bg-brand-600 hover:bg-brand-700 px-3 py-2 text-sm font-semibold text-white transition-colors"
                     >
                       Deploy this now
                     </Link>
-                    {template.price ? (
+                    {/* Legacy gallery templates all download the same generic page, so
+                        only finished kits are sold as downloads until each has a real kit. */}
+                    {template.price && template.kit ? (
                       <button
-                        onClick={() => buyTemplate(template.type, template.name, template.price!)}
+                        onClick={() => buyTemplate(template.type)}
                         disabled={buyingTemplate === template.type}
                         className="flex-1 text-center rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-800 px-3 py-2 text-sm font-semibold text-neutral-700 dark:text-neutral-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {buyingTemplate === template.type ? 'Redirecting...' : `Download · £${template.price}`}
                       </button>
                     ) : (
-                      <span className="flex-1 text-center rounded-lg border border-dashed border-neutral-200 dark:border-neutral-800 px-3 py-2 text-sm font-medium text-neutral-400 dark:text-neutral-600 cursor-default select-none">
-                        Download soon
-                      </span>
+                      <Link
+                        href={`/templates/${template.type}`}
+                        className="flex-1 text-center rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-800 px-3 py-2 text-sm font-semibold text-neutral-700 dark:text-neutral-300 transition-colors"
+                      >
+                        Details<span className="sr-only"> for {template.name}</span>
+                      </Link>
+                    )}
+                    </>
                     )}
                   </div>
                 </div>
@@ -292,7 +338,7 @@ export default function TemplatesPage() {
             Want it live without the hassle?
           </h2>
           <p className="mt-3 text-neutral-500 dark:text-neutral-400 max-w-lg mx-auto">
-            Hit <strong className="text-neutral-700 dark:text-neutral-300">Deploy this now</strong> on any template and we handle everything — hosting, your domain, SSL, and deployment. You're live in minutes with zero technical setup.
+            Hit <strong className="text-neutral-700 dark:text-neutral-300">Deploy this now</strong> on any template and we handle everything — hosting, your domain, SSL, and deployment. You&apos;re live in minutes with zero technical setup.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
@@ -302,7 +348,7 @@ export default function TemplatesPage() {
               Build your site now
             </Link>
             <p className="text-sm text-neutral-400 dark:text-neutral-500">
-              Or download any template to host it yourself.
+              Or buy a finished template (marked New) and host it yourself.
             </p>
           </div>
         </div>

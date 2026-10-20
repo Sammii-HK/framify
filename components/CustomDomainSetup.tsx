@@ -193,7 +193,7 @@ export default function CustomDomainSetup({ siteId, onConnected }: CustomDomainS
         <p className="text-xs text-neutral-600 leading-relaxed">
           <span className="font-medium">How to do this:</span> Log in to wherever you bought your domain
           (e.g. GoDaddy, Namecheap). Find the DNS settings page and add the two CNAME records above.
-          If your registrar does not support a CNAME on the root (@), use their "alias" or "flattening"
+          If your registrar does not support a CNAME on the root (@), use their &quot;alias&quot; or &quot;flattening&quot;
           option instead. DNS changes can take up to 48 hours to propagate.
         </p>
       </div>

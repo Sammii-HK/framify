@@ -1,0 +1,315 @@
+<!doctype html>
+<!-- data-mode="live" shows store buttons. Change to data-mode="prelaunch" to show a waitlist form instead. -->
+<html lang="en" data-palette="ember" data-mode="live">
+<head>
+  <meta name="robots" content="noindex, follow" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Morrow: plan tomorrow in sixty seconds</title>
+  <meta name="description" content="Morrow is a tiny planner for iPhone and Android. Pick tomorrow's three things tonight, wake up knowing where to start. No account, works offline." />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Morrow: plan tomorrow in sixty seconds" />
+  <meta property="og:description" content="Pick tomorrow's three things tonight. No account, works offline." />
+  <meta property="og:image" content="https://www.example.com/assets/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <!-- EDIT: replace with your App Store ID to show Safari's Smart App Banner on iPhone -->
+  <!-- <meta name="apple-itunes-app" content="app-id=0000000000" /> -->
+  <meta name="theme-color" content="#f6f3ee" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0d0c0b" media="(prefers-color-scheme: dark)" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="styles.css" />
+  <script>
+    document.documentElement.classList.add('js');
+    (function () { try { var t = localStorage.getItem('launchpad-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {} })();
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "MobileApplication",
+    "name": "Morrow",
+    "operatingSystem": "iOS, Android",
+    "applicationCategory": "ProductivityApplication",
+    "description": "Plan tomorrow in sixty seconds.",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "GBP" }
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#top" aria-label="Morrow, home">
+        <span class="app-icon" aria-hidden="true"><span class="sun"></span></span>
+        <span class="brand-name">Morrow</span>
+      </a>
+      <nav class="site-nav" id="site-nav" aria-label="Main">
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#privacy">Privacy</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#changelog">Changelog</a></li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+        <button class="icon-btn theme-toggle" type="button" aria-label="Switch to dark theme" data-theme-toggle>
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg>
+        </button>
+        <a class="btn btn-small" href="#get">Get Morrow</a>
+        <button class="icon-btn menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" data-menu-toggle>
+          <span class="visually-hidden">Menu</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <a class="release-chip" href="#changelog"><span class="mono">v1.4</span> Home Screen widgets are here <span aria-hidden="true">&rarr;</span></a>
+          <h1>Plan tomorrow in <span class="hl">sixty seconds.</span></h1>
+          <p class="lead">Morrow asks one question each evening: what are tomorrow&rsquo;s three things? Answer it tonight and wake up knowing exactly where to start.</p>
+
+          <div class="store-row launch-only" id="get">
+            <!-- EDIT: replace these with the official App Store / Google Play badges (see README) and your store links -->
+            <a class="store-btn" href="#" aria-label="Download Morrow on the App Store">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10.5 18.5h3"/></svg>
+              <span><small>Download on the</small>App Store</span>
+            </a>
+            <a class="store-btn" href="#" aria-label="Get Morrow on Google Play">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5v17l13-8.5z"/></svg>
+              <span><small>Get it on</small>Google Play</span>
+            </a>
+          </div>
+
+          <form class="waitlist prelaunch-only" action="https://formspree.io/f/YOUR_FORM_ID" method="POST" data-enhanced-form data-success="#waitlist" data-success-message="You&rsquo;re on the list. We&rsquo;ll email you once on launch day." novalidate>
+            <label class="visually-hidden" for="hero-email">Email address</label>
+            <input id="hero-email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required />
+            <button class="btn" type="submit">Join the waitlist</button>
+            <p class="form-status" role="status" aria-live="polite"></p>
+          </form>
+
+          <ul class="hero-points" role="list">
+            <li>Free to start</li>
+            <li>No account needed</li>
+            <li>Works offline</li>
+          </ul>
+        </div>
+
+        <div class="hero-visual" aria-hidden="true">
+          <div class="glow"></div>
+          <div class="phone">
+            <div class="phone-screen">
+              <div class="status"><span class="mono">9:41</span><span class="island"></span><span class="bars"><i></i><i></i><i></i></span></div>
+              <div class="app-top">
+                <p class="app-kicker mono">WED 21 OCT</p>
+                <p class="app-title">Tomorrow</p>
+              </div>
+              <div class="ring-row">
+                <div class="ring"><span>3/3</span></div>
+                <p>Planned.<br /><span>Sleep well.</span></p>
+              </div>
+              <ul class="tasks">
+                <li class="done"><span class="tick"></span>Send invoice to Studio North</li>
+                <li><span class="tick"></span>30-minute run before work</li>
+                <li><span class="tick"></span>Call Mum back</li>
+              </ul>
+              <div class="carry"><span class="mono">CARRIED OVER</span> Book dentist</div>
+              <div class="nudge"><span class="dot"></span>Evening review &middot; 9:30pm</div>
+              <div class="tabbar"><i class="on"></i><i></i><i></i></div>
+            </div>
+          </div>
+          <div class="sticker s1"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.5 3 8.3 7 9.5 4-1.2 7-5 7-9.5V6z"/><path d="m9 12 2 2 4-4"/></svg>Data not collected</div>
+          <div class="sticker s2"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="16" height="7" rx="2"/></svg>Widget ready</div>
+          <div class="sticker s3"><span class="mono">0:58</span> to plan</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="features" aria-labelledby="features-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <p class="eyebrow mono">// Features</p>
+          <h2 id="features-title">Small on purpose.</h2>
+          <p class="muted">Most planners want your whole life. Morrow only wants tomorrow, and it&rsquo;s better for it.</p>
+        </div>
+        <div class="bento">
+          <article class="tile tile-wide reveal">
+            <div class="tile-art timer" aria-hidden="true"><span class="mono">00:60</span><div class="timer-bar"><i></i></div></div>
+            <h3>Sixty-second planning</h3>
+            <p>One prompt, three slots, done. A gentle timer keeps it quick so planning never becomes a chore of its own.</p>
+          </article>
+          <article class="tile reveal">
+            <div class="tile-art widget" aria-hidden="true"><b>Today</b><i></i><i></i><i class="short"></i></div>
+            <h3>Home Screen widgets</h3>
+            <p>Your three things, right where you look first.</p>
+          </article>
+          <article class="tile reveal">
+            <div class="tile-art notif" aria-hidden="true"><span class="app-icon tiny"><span class="sun"></span></span><span><b>Morrow</b>What&rsquo;s tomorrow about?</span></div>
+            <h3>One gentle nudge</h3>
+            <p>A single evening reminder at the time you choose. Never more.</p>
+          </article>
+          <article class="tile reveal">
+            <div class="tile-art carry-art" aria-hidden="true"><span>Book dentist</span><svg viewBox="0 0 24 24"><path d="M5 12h12M13 7l5 5-5 5"/></svg></div>
+            <h3>Carry over, not guilt</h3>
+            <p>Unfinished things roll to tomorrow with one tap. No red badges.</p>
+          </article>
+          <article class="tile reveal">
+            <div class="tile-art shortcuts" aria-hidden="true"><span class="mono">&ldquo;Plan tomorrow&rdquo;</span></div>
+            <h3>Shortcuts &amp; voice</h3>
+            <p>Add a task from Siri, Shortcuts or the share sheet.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section steps-section" aria-labelledby="how-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <p class="eyebrow mono">// How it works</p>
+          <h2 id="how-title">Three steps. One minute.</h2>
+        </div>
+        <ol class="steps" role="list">
+          <li class="reveal"><span class="mono step-num">01</span><h3>Get the nudge</h3><p>At 9:30pm (or whenever suits you), Morrow asks about tomorrow.</p></li>
+          <li class="reveal"><span class="mono step-num">02</span><h3>Pick three things</h3><p>Type, dictate or pull from what you didn&rsquo;t finish today.</p></li>
+          <li class="reveal"><span class="mono step-num">03</span><h3>Wake up ready</h3><p>Your three things wait on the widget and Lock Screen.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section" id="privacy" aria-labelledby="privacy-title">
+      <div class="container privacy-grid">
+        <div class="reveal">
+          <p class="eyebrow mono">// Privacy</p>
+          <h2 id="privacy-title">Your plans are none of our business.</h2>
+          <p class="muted">Morrow has no accounts, no analytics and no ads. Everything stays on your phone and, if you turn on sync, in your own cloud storage.</p>
+          <a class="link-arrow" href="privacy.html">Read the privacy policy <span aria-hidden="true">&rarr;</span></a>
+        </div>
+        <div class="label-card reveal">
+          <p class="label-head">App privacy</p>
+          <div class="label-main">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 3 8.3 7 9.5 4-1.2 7-5 7-9.5V6z"/><path d="m9 12 2 2 4-4"/></svg>
+            <div>
+              <p class="label-title">Data not collected</p>
+              <p class="label-sub">The developer does not collect any data from this app.</p>
+            </div>
+          </div>
+          <ul class="label-list" role="list">
+            <li><span>Tracking</span><b>None</b></li>
+            <li><span>Account required</span><b>No</b></li>
+            <li><span>Third-party SDKs</span><b>0</b></li>
+            <li><span>Works offline</span><b>Yes</b></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section maker" aria-labelledby="maker-title">
+      <div class="container maker-card reveal">
+        <span class="avatar" aria-hidden="true">JR</span>
+        <div>
+          <h2 id="maker-title" class="maker-title">Made by one person, not a growth team.</h2>
+          <p>Hi, I&rsquo;m Jo. I built Morrow because every planner I tried turned into a second job. It&rsquo;s funded by the people who pay for Pro, so there&rsquo;s no reason to sell your data or nag you to open it. If something&rsquo;s broken or missing, <a href="support.html">tell me directly</a>.</p>
+          <p class="signature">Jo Rivera, Leeds</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="pricing" aria-labelledby="pricing-title">
+      <div class="container">
+        <div class="section-head center reveal">
+          <p class="eyebrow mono">// Pricing</p>
+          <h2 id="pricing-title">Free to plan. Pro if you love it.</h2>
+        </div>
+        <div class="pricing">
+          <article class="plan reveal">
+            <h3>Free</h3>
+            <p class="price">£0</p>
+            <ul role="list"><li>Three things a day</li><li>Evening nudge</li><li>One widget</li></ul>
+          </article>
+          <article class="plan plan-pro reveal">
+            <p class="badge mono">Most popular</p>
+            <h3>Pro yearly</h3>
+            <p class="price">£14.99<span>/year</span></p>
+            <p class="plan-alt">or £1.99 a month</p>
+            <ul role="list"><li>Everything in Free</li><li>All widgets and Lock Screen</li><li>Sync across devices</li><li>Shortcuts and Siri</li><li>Family Sharing</li></ul>
+          </article>
+          <article class="plan reveal">
+            <h3>Lifetime</h3>
+            <p class="price">£29.99</p>
+            <p class="plan-alt">Pay once, keep Pro forever</p>
+            <ul role="list"><li>Everything in Pro</li><li>Every future update</li></ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="changelog" aria-labelledby="changelog-title">
+      <div class="container narrow">
+        <div class="section-head reveal">
+          <p class="eyebrow mono">// Changelog</p>
+          <h2 id="changelog-title">Shipped lately</h2>
+        </div>
+        <ol class="changelog reveal" role="list">
+          <li><span class="mono ver">1.4</span><time class="mono" datetime="2026-10-14">14 Oct 2026</time><p><b>Home Screen and Lock Screen widgets.</b> Plus a calmer dark mode.</p></li>
+          <li><span class="mono ver">1.3</span><time class="mono" datetime="2026-09-02">2 Sep 2026</time><p><b>Shortcuts and Siri.</b> &ldquo;Add to tomorrow&rdquo; from anywhere.</p></li>
+          <li><span class="mono ver">1.2</span><time class="mono" datetime="2026-07-20">20 Jul 2026</time><p><b>Carry over.</b> Roll unfinished things forward with one tap.</p></li>
+          <li><span class="mono ver">1.0</span><time class="mono" datetime="2026-05-11">11 May 2026</time><p><b>Hello, world.</b> Morrow launches on iPhone and Android.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section faq" aria-labelledby="faq-title">
+      <div class="container narrow">
+        <div class="section-head reveal">
+          <p class="eyebrow mono">// FAQ</p>
+          <h2 id="faq-title">Questions</h2>
+        </div>
+        <div class="faq-list reveal">
+          <details><summary>Do I need an account?</summary><p>No. Open the app and start planning. Sync uses your own iCloud or Google account, so there&rsquo;s nothing to sign up for.</p></details>
+          <details><summary>What happens to my data if I delete the app?</summary><p>It&rsquo;s gone from your phone. If you turned on sync, you can delete the synced copy from Settings &gt; Morrow &gt; Delete synced data.</p></details>
+          <details><summary>Can I cancel Pro any time?</summary><p>Yes. Subscriptions are managed by the App Store or Google Play, and you can cancel in your account settings at any time.</p></details>
+          <details><summary>Is there an iPad or Mac version?</summary><p>Morrow runs on iPad today. A Mac version is on the roadmap.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="section cta-band" aria-labelledby="cta-title">
+      <div class="container cta-inner reveal">
+        <h2 id="cta-title">Tomorrow starts tonight.</h2>
+        <p class="muted">Free on iPhone and Android. Takes a minute to try.</p>
+        <div class="store-row center launch-only">
+          <a class="store-btn" href="#" aria-label="Download Morrow on the App Store"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10.5 18.5h3"/></svg><span><small>Download on the</small>App Store</span></a>
+          <a class="store-btn" href="#" aria-label="Get Morrow on Google Play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5v17l13-8.5z"/></svg><span><small>Get it on</small>Google Play</span></a>
+        </div>
+        <p class="prelaunch-only" id="waitlist-done">Launching soon. <a href="#top">Join the waitlist at the top of the page.</a></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <a class="brand" href="#top" aria-label="Morrow, back to top"><span class="app-icon small" aria-hidden="true"><span class="sun"></span></span><span class="brand-name">Morrow</span></a>
+      <nav class="footer-links" aria-label="Footer">
+        <a href="support.html">Support</a>
+        <a href="privacy.html">Privacy policy</a>
+        <a href="mailto:hello@example.com">Press</a>
+      </nav>
+      <p class="small muted footer-legal">&copy; <span data-year>2026</span> Morrow Labs. App Store is a trademark of Apple Inc. Google Play is a trademark of Google LLC.</p>
+    </div>
+  </footer>
+
+  <script src="main.js" defer></script>
+
+<!-- CraftMyPage demo bar (not part of the template) -->
+<a href="https://craftmypage.com/templates/app-launch" style="position:fixed;right:16px;bottom:16px;z-index:9999;display:inline-flex;align-items:center;gap:10px;padding:10px 16px;border-radius:999px;background:#111;color:#fff;font:600 14px/1.2 system-ui,-apple-system,'Segoe UI',sans-serif;text-decoration:none;box-shadow:0 10px 30px -10px rgba(0,0,0,.5)">
+  <span style="opacity:.7;font-weight:500">Demo</span> Launchpad template on CraftMyPage <span aria-hidden="true">&rarr;</span>
+</a>
+</body>
+</html>

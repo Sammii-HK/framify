@@ -10,6 +10,7 @@ import {
   detectCurrency,
 } from '@/lib/stripe'
 import type { SubscriptionTier, SubscriptionInterval } from '@/lib/stripe'
+import { getTemplate } from '@/lib/template-data'
 
 const VALID_SUBSCRIPTION_TIERS: SubscriptionTier[] = ['starter', 'pro']
 const VALID_INTERVALS: SubscriptionInterval[] = ['monthly', 'yearly']
@@ -148,15 +149,15 @@ export async function POST(req: NextRequest) {
 
     // ── Gallery template download (no auth required, no DB lookup) ──
     if (body.productType === 'gallery_template') {
-      const { templateType, templateName, priceGbp } = body as {
-        templateType: string
-        templateName: string
-        priceGbp: number
+      // Name and price come from template-data.ts, never from the request body,
+      // so a buyer can't change what they pay.
+      const galleryTemplate = getTemplate(String(body.templateType || ''))
+      if (!galleryTemplate || !galleryTemplate.price) {
+        return NextResponse.json({ error: 'Unknown template' }, { status: 400 })
       }
-
-      if (!templateType || !priceGbp) {
-        return NextResponse.json({ error: 'templateType and priceGbp required' }, { status: 400 })
-      }
+      const templateType = galleryTemplate.type
+      const templateName = galleryTemplate.productName ? `${galleryTemplate.productName} website template` : galleryTemplate.name
+      const priceGbp = galleryTemplate.price
 
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://craftmypage.com'
       const currency = detectCurrency(
@@ -164,13 +165,13 @@ export async function POST(req: NextRequest) {
         req.headers.get('cf-ipcountry') || undefined,
       )
       const checkoutSession = await createCheckoutSession({
-        productName: `${templateName} Template — CraftMyPage`,
+        productName: `${templateName} (CraftMyPage)`,
         productId: templateType,
         productType: 'template',
         priceInCents: Math.round(priceGbp * 100),
         customerEmail: session?.user?.email || undefined,
         successUrl: `${appUrl}/download?template=${templateType}&session_id={CHECKOUT_SESSION_ID}`,
-        cancelUrl: `${appUrl}/templates`,
+        cancelUrl: `${appUrl}/templates/${templateType}`,
         currency,
         // productType stays 'template' (shared with the generic marketplace webhook
         // path) — this source flag is what actually distinguishes a gallery purchase

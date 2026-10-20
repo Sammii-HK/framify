@@ -19,7 +19,7 @@ export default function PrivacyPage() {
           <ul>
             <li><strong>Account data:</strong> email address, name (from Auth0 login).</li>
             <li><strong>Site content:</strong> business information, images, and text you enter when building your site.</li>
-            <li><strong>Contact form submissions:</strong> messages visitors send via your published site's contact form.</li>
+            <li><strong>Contact form submissions:</strong> messages visitors send via your published site&apos;s contact form.</li>
             <li><strong>Payment data:</strong> processed by Stripe. We do not store card numbers.</li>
             <li><strong>Usage analytics:</strong> page views and basic analytics via Cloudflare Web Analytics (cookieless, privacy-friendly).</li>
           </ul>

@@ -1,5 +1,8 @@
 import Link from 'next/link'
 import { PricingSection } from '@/components/PricingSection'
+import { templates } from '@/lib/template-data'
+
+const kitTemplates = templates.filter((t) => t.kit && t.preview)
 
 const jsonLd = [
   {
@@ -263,6 +266,38 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Finished templates you can buy once */}
+      {kitTemplates.length > 0 && (
+        <section className="bg-white" aria-labelledby="kits-title">
+          <div className="mx-auto max-w-5xl px-6 py-20 md:py-24">
+            <p className="text-brand-600 font-semibold text-sm tracking-wide uppercase mb-3 text-center">New: buy once, host anywhere</p>
+            <h2 id="kits-title" className="text-3xl md:text-4xl font-bold text-neutral-900 text-center tracking-tight">
+              Finished templates, ready to download
+            </h2>
+            <p className="mt-4 text-neutral-500 text-center text-lg max-w-2xl mx-auto">
+              Hand-built HTML templates with light and dark mode, live demos and a setup guide. Pay once, edit in any text editor, host free.
+            </p>
+            <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+              {kitTemplates.map((t) => (
+                <Link
+                  key={t.type}
+                  href={`/templates/${t.type}`}
+                  className="group rounded-xl border border-neutral-200 overflow-hidden hover:border-neutral-300 hover:shadow-md transition-all"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={t.preview!.cover} alt={`${t.name} template`} width={1280} height={720} loading="lazy" className="w-full aspect-video object-cover" />
+                  <div className="p-5">
+                    <p className="text-sm text-neutral-500">{t.bestFor.split(',').slice(0, 2).join(',')}</p>
+                    <h3 className="mt-1 text-lg font-semibold text-neutral-900 group-hover:text-brand-600 transition-colors">{t.name}</h3>
+                    <p className="mt-2 text-sm font-semibold text-neutral-900">£{t.price} <span className="font-normal text-neutral-500">one-off</span></p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Pricing */}
       <PricingSection />
