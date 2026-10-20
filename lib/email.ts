@@ -46,30 +46,36 @@ export async function sendEmail({
 }
 
 /**
- * Follow-up sent right after a gallery template purchase — the download page
- * shows the same "deploy it for me" CTA, this just reaches people who close
- * the tab before clicking it.
+ * Sent right after a gallery template purchase. Always includes a link back to
+ * the download (people close the tab), plus the hosted "deploy it for me" offer
+ * for templates the site builder can actually deploy.
  */
 export async function sendGalleryPurchaseNurture({
   to,
   templateType,
   templateName,
+  sessionId,
+  canDeploy = true,
 }: {
   to: string
   templateType: string
   templateName: string
+  sessionId?: string
+  canDeploy?: boolean
 }): Promise<{ sent: boolean; error?: string }> {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://craftmypage.com'
   const deployUrl = `${appUrl}/generate?template=${templateType}`
+  const downloadUrl = sessionId ? `${appUrl}/download?template=${templateType}&session_id=${sessionId}` : null
 
   return sendEmail({
     to,
-    subject: `Your ${templateName} template is ready`,
+    subject: `Your ${templateName} is ready to download`,
     html: `
-      <p>Thanks for buying the ${templateName} template.</p>
-      <p>If you'd rather not deal with hosting, DNS, and SSL yourself, we can put it live on a working website in a few minutes — free subdomain to start, your own domain if you want one.</p>
-      <p><a href="${deployUrl}">Deploy it for me →</a></p>
-      <p>If you're all set with your own hosting, no action needed — just replying with any questions works too.</p>
+      <p>Thanks for buying ${templateName}.</p>
+      ${downloadUrl ? `<p><a href="${downloadUrl}">Download your template</a>. Keep this email: the link works whenever you need the files again.</p>` : ''}
+      <p>Start with README.md in the zip. It walks you through editing, connecting the form and publishing for free.</p>
+      ${canDeploy ? `<p>Rather not deal with hosting, DNS and SSL yourself? We can put it live for you in a few minutes. <a href="${deployUrl}">Deploy it for me</a>.</p>` : ''}
+      <p>Questions or a bug? Just reply to this email.</p>
     `,
   })
 }

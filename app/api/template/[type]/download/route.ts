@@ -1,22 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { templates } from '@/lib/template-data'
+import { getTemplate } from '@/lib/template-data'
+import { buildKitZip, embedWatermark, resolveDownloadAccess } from '@/lib/template-purchase'
 import JSZip from 'jszip'
-
-// Unicode steganography — embeds buyer email as zero-width chars after the closing </html> tag
-// U+200B = bit 0, U+200C = bit 1, U+200D = delimiter between chars
-function embedWatermark(html: string, buyerEmail: string): string {
-  const encode = (char: string): string => {
-    const byte = char.charCodeAt(0)
-    let bits = ''
-    for (let i = 7; i >= 0; i--) {
-      bits += (byte >> i) & 1 ? '\u200C' : '\u200B'
-    }
-    return bits + '\u200D'
-  }
-  const watermark = buyerEmail.split('').map(encode).join('')
-  return html.replace(/<\/html>/i, `</html>${watermark}`)
-}
 
 const README = (title: string, bestFor: string) => `# ${title} — CraftMyPage Template
 
@@ -448,61 +434,80 @@ function generateGalleryTemplateHtml(type: string, name: string, bestFor: string
 </html>`
 }
 
+function zipResponse(buffer: Buffer, filename: string) {
+  return new NextResponse(buffer as unknown as BodyInit, {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/zip',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+      'Content-Length': buffer.length.toString(),
+      'Cache-Control': 'private, no-store',
+    },
+  })
+}
+
+/**
+ * GET /api/template/[type]/download?session_id=cs_...
+ *
+ * Paid templates need a paid Stripe Checkout session for that exact template
+ * (or a signed-in owner). Free templates download without one.
+ */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ type: string }> }
 ) {
   const { type } = await params
-  const buyerEmail = request.nextUrl.searchParams.get('buyer')
+  const sessionId = request.nextUrl.searchParams.get('session_id')
 
-  // ── Gallery template (static, from template-data.ts) ──
-  const galleryTemplate = templates.find(t => t.type === type)
+  // ── Gallery template (from template-data.ts) ──
+  const galleryTemplate = getTemplate(type)
   if (galleryTemplate) {
+    let buyerEmail: string | null = null
+    if (galleryTemplate.price && galleryTemplate.price > 0) {
+      const access = await resolveDownloadAccess(sessionId, galleryTemplate.type)
+      if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status })
+      buyerEmail = access.email
+    }
+
+    // Finished kit: the real multi-file template with README and licence
+    if (galleryTemplate.kit) {
+      const buffer = await buildKitZip(galleryTemplate.kit, buyerEmail)
+      if (!buffer) return NextResponse.json({ error: 'Template files missing' }, { status: 500 })
+      return zipResponse(buffer, `${galleryTemplate.kit}.zip`)
+    }
+
     const rawHtml = generateGalleryTemplateHtml(galleryTemplate.type, galleryTemplate.name, galleryTemplate.bestFor)
     const html = buyerEmail ? embedWatermark(rawHtml, buyerEmail) : rawHtml
-
     const zip = new JSZip()
     const slug = galleryTemplate.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
     zip.file('index.html', html)
     zip.file('README.md', README(galleryTemplate.name, galleryTemplate.bestFor))
-
     const buffer = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' })
-
-    return new NextResponse(buffer as unknown as BodyInit, {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/zip',
-        'Content-Disposition': `attachment; filename="${slug}-template.zip"`,
-        'Content-Length': buffer.length.toString(),
-      },
-    })
+    return zipResponse(buffer, `${slug}-template.zip`)
   }
 
   // ── User-built template (DB lookup) ──
   const template = await prisma.template.findUnique({
     where: { id: type },
-    select: { id: true, title: true, code: true, isPublic: true },
+    select: { id: true, title: true, code: true, isPublic: true, price: true },
   })
 
   if (!template || !template.isPublic) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
+  let buyerEmail: string | null = null
+  if (template.price && template.price > 0) {
+    const access = await resolveDownloadAccess(sessionId, template.id)
+    if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status })
+    buyerEmail = access.email
+  }
+
   const html = buyerEmail ? embedWatermark(template.code, buyerEmail) : template.code
   const zip = new JSZip()
   const slug = template.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
-
   zip.file('index.html', html)
   zip.file('README.md', README(template.title, 'Your business'))
-
   const buffer = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' })
-
-  return new NextResponse(buffer as unknown as BodyInit, {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/zip',
-      'Content-Disposition': `attachment; filename="${slug}.zip"`,
-      'Content-Length': buffer.length.toString(),
-    },
-  })
+  return zipResponse(buffer, `${slug}.zip`)
 }
