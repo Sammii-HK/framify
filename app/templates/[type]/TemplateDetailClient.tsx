@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { palettes, templates, getTemplateDetail, type Palette, type Template } from '@/lib/template-data'
 import type { StockImage } from '@/lib/stock-images'
 import UnsplashImage from '@/components/UnsplashImage'
+import { guidesForTemplate } from '@/lib/guides'
 
 /**
  * Helper: append Unsplash sizing params to a URL.
@@ -494,6 +495,13 @@ export default function TemplateDetailClient({ type }: { type: string }) {
             <p className="mt-3 text-sm text-neutral-400 dark:text-neutral-500">
               <span className="font-medium text-neutral-500 dark:text-neutral-400">Best for:</span> {detail.bestFor}
             </p>
+            {guidesForTemplate(type).map((g) => (
+              <p key={g.slug} className="mt-2 text-sm">
+                <Link href={`/guides/${g.slug}`} className="text-brand-600 hover:underline">
+                  Guide: {g.title}
+                </Link>
+              </p>
+            ))}
             <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3">
               {isKit ? (
                 <>

@@ -31,6 +31,16 @@ export default function Navigation() {
 							Templates
 						</Link>
 						<Link
+							href="/guides"
+							className={`px-4 py-2 rounded-lg font-medium transition-all ${
+								pathname?.startsWith("/guides")
+									? "bg-brand-600 text-white"
+									: "text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-800"
+							}`}
+						>
+							Guides
+						</Link>
+						<Link
 							href="/generate"
 							className={`px-4 py-2 rounded-lg font-medium transition-all ${
 								pathname === "/generate"

@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next'
 import { prisma } from '@/lib/prisma'
 import { templates as galleryTemplates } from '@/lib/template-data'
+import { guides } from '@/lib/guides'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = 'https://craftmypage.com'
@@ -10,6 +11,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: base, lastModified: new Date(), changeFrequency: 'weekly', priority: 1 },
     { url: `${base}/marketplace`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
     { url: `${base}/templates`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${base}/guides`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 },
+    ...guides.map((g) => ({ url: `${base}/guides/${g.slug}`, lastModified: new Date(g.updated), changeFrequency: 'monthly' as const, priority: 0.7 })),
     { url: `${base}/privacy`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
     { url: `${base}/terms`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
   ]
