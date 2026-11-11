@@ -1,0 +1,44 @@
+# Review once, store SAER_CI_TOKEN as a repository secret, then copy into .github/workflows/saer.yml.
+# Trusted same-repository PRs run automatically. Fork jobs are refused before the secret-bearing step.
+# No source dependencies or repository scripts run with the Saer key present.
+name: Saer design-system check
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      base:
+        type: string
+        description: Local base branch or commit to compare
+        required: true
+        default: main
+permissions:
+  contents: read
+jobs:
+  saer:
+    name: Saer drift gate
+    runs-on: macos-15
+    timeout-minutes: 15
+    steps:
+      - name: Refuse fork jobs
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+        run: |
+          echo 'Fork checks require a maintainer-reviewed branch. This change has not been checked.'
+          exit 2
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - name: Check introduced drift
+        env:
+          SAER_CI_TOKEN: ${{ secrets.SAER_CI_TOKEN }}
+          SAER_BASE: ${{ github.event.pull_request.base.sha || inputs.base }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://saer.app/install | sh
+          "$HOME/.local/bin/saer" login
+          "$HOME/.local/bin/saer" ci --base "$SAER_BASE" --github
